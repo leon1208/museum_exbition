@@ -1,0 +1,71 @@
+# -*- coding: utf-8 -*-
+# @Author  : {{ table.function_author }}
+# @FileName: {{ underscore(table.class_name) }}_service.py
+# @Time    : {{ datetime }}
+
+from typing import List, Tuple
+from ruoyi_generator.domain.entity import {{ table.class_name }}
+from ruoyi_generator.mapper.{{ underscore(table.class_name) }}_mapper import {{ table.class_name }}Mapper
+
+class {{ table.class_name }}Service:
+    """{{ table.function_name }}服务类"""
+
+    def select_{{ table.business_name }}_list(self, {{ table.business_name }}: {{ table.class_name }}) -> Tuple[List[{{ table.class_name }}], int]:
+        """
+        查询{{ table.function_name }}列表
+
+        Args:
+            {{ table.business_name }} ({{ table.class_name }}): {{ table.function_name }}对象
+
+        Returns:
+            Tuple[List[{{ table.class_name }}], int]: {{ table.function_name }}列表和总数
+        """
+        return {{ table.class_name }}Mapper.select_list({{ table.business_name }})
+
+    def select_{{ table.business_name }}_by_id(self, {{ underscore(table.pk_column.java_field) if table.pk_column }}: int) -> {{ table.class_name }}:
+        """
+        根据ID查询{{ table.function_name }}
+
+        Args:
+            {{ underscore(table.pk_column.java_field) if table.pk_column }} (int): {{ table.pk_column.column_comment if table.pk_column }}
+
+        Returns:
+            {{ table.class_name }}: {{ table.function_name }}对象
+        """
+        return {{ table.class_name }}Mapper.select_by_id({{ underscore(table.pk_column.java_field) if table.pk_column }})
+
+    def insert_{{ table.business_name }}(self, {{ table.business_name }}: {{ table.class_name }}) -> int:
+        """
+        新增{{ table.function_name }}
+
+        Args:
+            {{ table.business_name }} ({{ table.class_name }}): {{ table.function_name }}对象
+
+        Returns:
+            int: 插入的记录数
+        """
+        return {{ table.class_name }}Mapper.insert({{ table.business_name }})
+
+    def update_{{ table.business_name }}(self, {{ table.business_name }}: {{ table.class_name }}) -> int:
+        """
+        修改{{ table.function_name }}
+
+        Args:
+            {{ table.business_name }} ({{ table.class_name }}): {{ table.function_name }}对象
+
+        Returns:
+            int: 更新的记录数
+        """
+        return {{ table.class_name }}Mapper.update({{ table.business_name }})
+
+    def delete_{{ table.business_name }}_by_ids(self, ids: List[int]) -> int:
+        """
+        批量删除{{ table.function_name }}
+
+        Args:
+            ids (List[int]): ID列表
+
+        Returns:
+            int: 删除的记录数
+        """
+        return {{ table.class_name }}Mapper.delete_by_ids(ids)

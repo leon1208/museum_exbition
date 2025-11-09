@@ -1,0 +1,15 @@
+ruoyi:
+  name: 'ruoyi-vue-flask'
+  version: '1.0.0'
+  author: 'shaw'
+  host: 'localhost'
+  port: 9000
+  api:
+    version: '/'
+  env: 'dev'
+  profile: 'dev'
+
+token:
+    header: 'Authorization'
+    secret: 'abcdefghijklmnopqrstuvwxyz'
+    expireTime: 30

@@ -1,0 +1,28 @@
+# -*- coding: utf-8 -*-
+# @Author  : {{ table.function_author }}
+# @FileName: {{ table.class_name }}.py
+# @Time    : {{ datetime }}
+
+from typing import Optional
+from datetime import datetime
+from ruoyi_common.base.model import BaseEntity
+from pydantic import ConfigDict, Field
+from ruoyi_common.utils.base import DateUtil
+
+class {{ table.class_name }}(BaseEntity):
+    """
+    {{ table.table_comment }}
+    """
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_encoders = {
+            datetime: lambda v: v.strftime(DateUtil.YYYY_MM_DD_HH_MM_SS) if v else None
+        },
+        alias_generator = lambda field: ''.join(['_' + c.lower() if c.isupper() else c for c in field]).lstrip('_')
+    )
+
+{% for column in table.columns %}    {{ underscore(column.java_field) }}: Optional[{{ column.java_type }}] = Field(None, alias='{{ column.java_field }}')
+{% endfor %}
+    # 分页参数
+    page_num: Optional[int] = Field(None, alias='pageNum')
+    page_size: Optional[int] = Field(None, alias='pageSize')

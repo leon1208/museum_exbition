@@ -1,0 +1,88 @@
+from flask import request, Blueprint
+from ruoyi_common.descriptor.validator import QueryValidator, BodyValidator, PathValidator
+from ruoyi_common.descriptor.serializer import JsonSerializer
+from ruoyi_framework.descriptor.permission import HasPerm, PreAuthorize
+from ruoyi_generator.domain.po import {{ table.class_name }}PO
+from ruoyi_generator.domain.entity import {{ table.class_name }}
+from ruoyi_generator.service.{{ underscore(table.class_name) }}_service import {{ table.class_name }}Service
+from ruoyi_common.base.model import AjaxResponse, TableResponse
+from ruoyi_common.constant import HttpStatus
+
+# 创建蓝图
+gen = Blueprint('{{ underscore(table.class_name) }}', __name__, url_prefix='/{{ table.module_name }}/{{ table.business_name }}')
+
+{{ table.class_name|lower }}_service = {{ table.class_name }}Service()
+
+@gen.route('/list', methods=["GET"])
+@QueryValidator(is_page=True)
+@PreAuthorize(HasPerm('{{ table.module_name }}:{{ table.business_name }}:list'))
+@JsonSerializer()
+def {{ table.business_name }}_list(dto: {{ table.class_name }}PO):
+    """查询{{ table.function_name }}列表"""
+    {{ table.class_name|lower }} = {{ table.class_name }}()
+    # 转换PO到Entity对象
+    for attr in dto.model_fields.keys():
+        if hasattr({{ table.class_name|lower }}, attr):
+            setattr({{ table.class_name|lower }}, attr, getattr(dto, attr))
+    {{ table.business_name }}s, total = {{ table.class_name|lower }}_service.select_{{ table.business_name }}_list({{ table.class_name|lower }})
+    return TableResponse(code=HttpStatus.SUCCESS, msg='查询成功', rows={{ table.business_name }}s, total=total)
+
+{# 修复第35行的语法错误 #}
+{% if table.pk_column %}
+@gen.route('/<int:{{ underscore(table.pk_column.java_field) }}>', methods=['GET'])
+@PathValidator()
+@PreAuthorize(HasPerm('{{ table.module_name }}:{{ table.business_name }}:query'))
+@JsonSerializer()
+def get_{{ table.business_name }}({{ underscore(table.pk_column.java_field) }}: int):
+    """获取{{ table.function_name }}详细信息"""
+    {{ table.class_name|lower }} = {{ table.class_name|lower }}_service.select_{{ table.business_name }}_by_id({{ underscore(table.pk_column.java_field) }})
+    return AjaxResponse.from_success(data={{ table.class_name|lower }})
+{% endif %}
+
+@gen.route('', methods=['POST'])
+@BodyValidator()
+@PreAuthorize(HasPerm('{{ table.module_name }}:{{ table.business_name }}:add'))
+@JsonSerializer()
+def add_{{ table.business_name }}(dto: {{ table.class_name }}PO):
+    """新增{{ table.function_name }}"""
+    {{ table.class_name|lower }} = {{ table.class_name }}()
+    # 转换PO到Entity对象
+    for attr in dto.model_fields.keys():
+        if hasattr({{ table.class_name|lower }}, attr):
+            setattr({{ table.class_name|lower }}, attr, getattr(dto, attr))
+    result = {{ table.class_name|lower }}_service.insert_{{ table.business_name }}({{ table.class_name|lower }})
+    return AjaxResponse.from_success(msg='操作成功' if result else '操作失败')
+
+{# 修复PUT路由的语法错误 #}
+{% if table.pk_column %}
+@gen.route('/<int:{{ underscore(table.pk_column.java_field) }}>', methods=['PUT'])
+@BodyValidator()
+@PathValidator()
+@PreAuthorize(HasPerm('{{ table.module_name }}:{{ table.business_name }}:edit'))
+@JsonSerializer()
+def update_{{ table.business_name }}({{ underscore(table.pk_column.java_field) }}: int, dto: {{ table.class_name }}PO):
+    """修改{{ table.function_name }}"""
+    {{ table.class_name|lower }} = {{ table.class_name }}()
+    # 转换PO到Entity对象
+    for attr in dto.model_fields.keys():
+        if hasattr({{ table.class_name|lower }}, attr):
+            setattr({{ table.class_name|lower }}, attr, getattr(dto, attr))
+    {{ table.class_name|lower }}.{{ underscore(table.pk_column.java_field) }} = {{ underscore(table.pk_column.java_field) }}
+    result = {{ table.class_name|lower }}_service.update_{{ table.business_name }}({{ table.class_name|lower }})
+    return AjaxResponse.from_success(msg='操作成功' if result else '操作失败')
+{% endif %}
+
+{% if table.pk_column %}
+@gen.route('/<ids>', methods=['DELETE'])
+@PathValidator()
+@PreAuthorize(HasPerm('{{ table.module_name }}:{{ table.business_name }}:remove'))
+@JsonSerializer()
+def delete_{{ table.business_name }}(ids: str):
+    """删除{{ table.function_name }}"""
+    try:
+        id_list = [int(id) for id in ids.split(',')]
+        result = {{ table.class_name|lower }}_service.delete_{{ table.business_name }}_by_ids(id_list)
+        return AjaxResponse.from_success(msg='操作成功' if result else '操作失败')
+    except Exception as e:
+        return AjaxResponse.from_error(msg=f'操作失败: {str(e)}')
+{% endif %}

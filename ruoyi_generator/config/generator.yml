@@ -1,0 +1,5 @@
+gen:
+  author: YY
+  packageName: com.yy.project
+  autoRemovePre: true
+  tablePrefix: sys_
