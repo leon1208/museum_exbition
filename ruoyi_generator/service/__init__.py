@@ -146,11 +146,22 @@ class GenTableService:
             if table_id > 0:
                 # 保存列信息
                 columns = gen_table_mapper.select_db_table_columns_by_name(table_name)
+                if not columns:
+                    print(f"警告：表 {table_name} 没有字段信息，可能表不存在或查询失败")
+                else:
+                    print(f"表 {table_name} 找到 {len(columns)} 个字段")
                 for column in columns:
-                    column.table_id = table_id
-                    column.create_by = "admin"
-                    column.create_time = datetime.now()
-                    gen_table_column_mapper.insert(column)
+                    try:
+                        column.table_id = table_id
+                        column.create_by = "admin"
+                        column.create_time = datetime.now()
+                        # 确保 java_field 已设置
+                        if not column.java_field:
+                            column.java_field = GenUtils.to_camel_case(column.column_name)
+                        gen_table_column_mapper.insert(column)
+                    except Exception as e:
+                        print(f"插入字段 {column.column_name} 失败: {e}")
+                        continue
                 success_count += 1
         return success_count
 
@@ -277,6 +288,16 @@ class GenTableService:
 
         # 查询列信息
         gen_table.columns = gen_table_column_mapper.select_list_by_table_id(gen_table.table_id)
+        
+        # 设置列的 list_index 属性
+        GenUtils.set_column_list_index(gen_table)
+        
+        # 设置主键列
+        pk_columns = [column for column in gen_table.columns if column.is_pk == '1']
+        if pk_columns:
+            gen_table.pk_column = pk_columns[0]
+        else:
+            gen_table.pk_column = None
 
         # 生成代码
         return GenUtils.generator_code(gen_table).getvalue()
@@ -298,6 +319,14 @@ class GenTableService:
             if gen_table:
                 # 查询列信息
                 gen_table.columns = gen_table_column_mapper.select_list_by_table_id(gen_table.table_id)
+                # 设置列的 list_index 属性
+                GenUtils.set_column_list_index(gen_table)
+                # 设置主键列
+                pk_columns = [column for column in gen_table.columns if column.is_pk == '1']
+                if pk_columns:
+                    gen_table.pk_column = pk_columns[0]
+                else:
+                    gen_table.pk_column = None
                 gen_tables.append(gen_table)
 
         # 生成代码
@@ -320,6 +349,16 @@ class GenTableService:
 
         # 查询列信息
         gen_table.columns = gen_table_column_mapper.select_list_by_table_id(table_id)
+        
+        # 设置列的 list_index 属性
+        GenUtils.set_column_list_index(gen_table)
+        
+        # 设置主键列
+        pk_columns = [column for column in gen_table.columns if column.is_pk == '1']
+        if pk_columns:
+            gen_table.pk_column = pk_columns[0]
+        else:
+            gen_table.pk_column = None
 
         # 预览代码
         return GenUtils.preview_code(gen_table)

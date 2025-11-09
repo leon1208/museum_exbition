@@ -4,10 +4,12 @@
 # @Time    : {{ datetime }}
 
 from typing import List
-from ruoyi_generator.domain.entity import {{ table.class_name }}
-from ruoyi_generator.ext import db
-from sqlalchemy import select, update, delete, text
 from datetime import datetime
+
+from sqlalchemy import select, update, delete, func
+
+from ruoyi_admin.ext import db
+from {{ get_import_path(table.package_name, 'domain') }} import {{ table.class_name }}
 
 class {{ table.class_name }}Mapper:
     """{{ table.function_name }}Mapper"""
@@ -26,6 +28,15 @@ class {{ table.class_name }}Mapper:
         try:
             # 构建查询条件
             stmt = select({{ table.class_name }})
+{% for column in table.columns %}
+{% if column.is_query and column.query_type == 'EQ' %}
+            if {{ table.business_name }}.{{ underscore(column.java_field) }} is not None:
+                stmt = stmt.where({{ table.class_name }}.{{ underscore(column.java_field) }} == {{ table.business_name }}.{{ underscore(column.java_field) }})
+{% elif column.is_query and column.query_type == 'LIKE' %}
+            if {{ table.business_name }}.{{ underscore(column.java_field) }}:
+                stmt = stmt.where({{ table.class_name }}.{{ underscore(column.java_field) }}.like("%" + str({{ table.business_name }}.{{ underscore(column.java_field) }}) + "%"))
+{% endif %}
+{% endfor %}
 
             # 添加分页条件
             if {{ table.business_name }}.page_num and {{ table.business_name }}.page_size:
@@ -39,23 +50,54 @@ class {{ table.class_name }}Mapper:
             return []
 
     @staticmethod
-    def select_by_id({{ underscore(table.pk_column.java_field) if table.pk_column }}: int) -> {{ table.class_name }}:
+    def select_count({{ table.business_name }}: {{ table.class_name }}) -> int:
+        """
+        查询{{ table.function_name }}总数
+
+        Args:
+            {{ table.business_name }} ({{ table.class_name }}): {{ table.function_name }}对象
+
+        Returns:
+            int: {{ table.function_name }}总数
+        """
+        try:
+            stmt = select(func.count({{ table.class_name }}.{{ underscore(table.pk_column.java_field) if table.pk_column }}))
+{% for column in table.columns %}
+{% if column.is_query and column.query_type == 'EQ' %}
+            if {{ table.business_name }}.{{ underscore(column.java_field) }} is not None:
+                stmt = stmt.where({{ table.class_name }}.{{ underscore(column.java_field) }} == {{ table.business_name }}.{{ underscore(column.java_field) }})
+{% elif column.is_query and column.query_type == 'LIKE' %}
+            if {{ table.business_name }}.{{ underscore(column.java_field) }}:
+                stmt = stmt.where({{ table.class_name }}.{{ underscore(column.java_field) }}.like("%" + str({{ table.business_name }}.{{ underscore(column.java_field) }}) + "%"))
+{% endif %}
+{% endfor %}
+
+            result = db.session.execute(stmt).scalar()
+            return result if result else 0
+        except Exception as e:
+            print(f"查询{{ table.function_name }}总数出错: {e}")
+            return 0
+
+    {% if table.pk_column %}
+    @staticmethod
+    def select_by_id({{ underscore(table.pk_column.java_field) }}: int) -> {{ table.class_name }}:
         """
         根据ID查询{{ table.function_name }}
 
         Args:
-            {{ underscore(table.pk_column.java_field) if table.pk_column }} (int): {{ table.pk_column.column_comment if table.pk_column }}
+            {{ underscore(table.pk_column.java_field) }} (int): {{ table.pk_column.column_comment }}
 
         Returns:
             {{ table.class_name }}: {{ table.function_name }}对象
         """
         try:
-            stmt = select({{ table.class_name }}).where({{ table.class_name }}.{{ underscore(table.pk_column.java_field) if table.pk_column }} == {{ underscore(table.pk_column.java_field) if table.pk_column }})
+            stmt = select({{ table.class_name }}).where({{ table.class_name }}.{{ underscore(table.pk_column.java_field) }} == {{ underscore(table.pk_column.java_field) }})
             result = db.session.execute(stmt).scalar_one_or_none()
             return result
         except Exception as e:
             print(f"根据ID查询{{ table.function_name }}出错: {e}")
             return None
+    {% endif %}
 
     @staticmethod
     def insert({{ table.business_name }}: {{ table.class_name }}) -> int:
@@ -82,6 +124,7 @@ class {{ table.class_name }}Mapper:
             print(f"新增{{ table.function_name }}出错: {e}")
             return 0
 
+    {% if table.pk_column %}
     @staticmethod
     def update({{ table.business_name }}: {{ table.class_name }}) -> int:
         """
@@ -118,7 +161,7 @@ class {{ table.class_name }}Mapper:
             int: 删除的记录数
         """
         try:
-            stmt = delete({{ table.class_name }}).where({{ table.class_name }}.{{ underscore(table.pk_column.java_field) if table.pk_column }}.in_(ids))
+            stmt = delete({{ table.class_name }}).where({{ table.class_name }}.{{ underscore(table.pk_column.java_field) }}.in_(ids))
             result = db.session.execute(stmt)
             db.session.commit()
             return result.rowcount
@@ -126,3 +169,4 @@ class {{ table.class_name }}Mapper:
             db.session.rollback()
             print(f"批量删除{{ table.function_name }}出错: {e}")
             return 0
+    {% endif %}

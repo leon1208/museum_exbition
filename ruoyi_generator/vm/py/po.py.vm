@@ -1,0 +1,43 @@
+# -*- coding: utf-8 -*-
+# @Author  : {{ table.function_author }}
+# @FileName: {{ table.class_name }}PO.py
+# @Time    : {{ datetime }}
+
+from typing import Optional, Union
+from datetime import datetime
+
+from pydantic import ConfigDict, Field
+
+from ruoyi_common.base.model import BaseEntity
+from ruoyi_common.utils.base import DateUtil
+
+class {{ table.class_name }}PO(BaseEntity):
+    """
+    {{ table.table_comment }}PO对象
+    """
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_encoders = {
+            datetime: lambda v: v.strftime(DateUtil.YYYY_MM_DD_HH_MM_SS) if v else None
+        },
+        alias_generator = lambda field: ''.join(['_' + c.lower() if c.isupper() else c for c in field]).lstrip('_')
+    )
+
+{%- for column in table.columns %}
+{%- if column.java_type == 'String' or column.java_type == 'str' %}
+    {{ underscore(column.java_field) }}: Optional[str] = Field(None, alias='{{ column.java_field }}')
+{%- elif column.java_type == 'Integer' or column.java_type == 'int' %}
+    {{ underscore(column.java_field) }}: Optional[int] = Field(None, alias='{{ column.java_field }}')
+{%- elif column.java_type == 'Long' %}
+    {{ underscore(column.java_field) }}: Optional[int] = Field(None, alias='{{ column.java_field }}')
+{%- elif column.java_type == 'Float' or column.java_type == 'Double' %}
+    {{ underscore(column.java_field) }}: Optional[float] = Field(None, alias='{{ column.java_field }}')
+{%- elif column.java_type == 'Boolean' or column.java_type == 'bool' %}
+    {{ underscore(column.java_field) }}: Optional[bool] = Field(None, alias='{{ column.java_field }}')
+{%- else %}
+    {{ underscore(column.java_field) }}: Optional[str] = Field(None, alias='{{ column.java_field }}')
+{%- endif %}
+{%- endfor %}
+    # 分页参数
+    page_num: Optional[int] = Field(None, alias='pageNum')
+    page_size: Optional[int] = Field(None, alias='pageSize')

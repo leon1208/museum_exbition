@@ -70,6 +70,7 @@ class GenUtils:
             po_name = f"{table.class_name}PO"
             return f"{package_path}/domain/{po_name}.py"
         elif 'vue/index.vue' in template_file:
+            # 无论是树表还是普通表，Vue文件名都是index.vue
             return f"vue/{table.business_name}/index.vue"
         elif 'js/api.js' in template_file:
             return f"js/api/{table.business_name}.js"
@@ -143,6 +144,35 @@ class GenUtils:
         return GenUtils.substring_before(clean_table_name, "_") if "_" in clean_table_name else clean_table_name
 
     @staticmethod
+    def get_import_path(package_name: str, module_type: str, class_name: str = None) -> str:
+        """
+        生成导入路径
+        
+        Args:
+            package_name (str): 包名，如 "com.yy.project" 或 "ruoyi_generator"
+            module_type (str): 模块类型，如 "domain", "service", "mapper", "controller"
+            class_name (str): 类名（可选，用于PO导入）
+            
+        Returns:
+            str: 导入路径，Python包名保持点分隔格式
+        """
+        if not package_name:
+            return f"ruoyi_generator.{module_type}"
+        
+        # Python导入路径使用点分隔，保持原样
+        # 例如: "com.yy.project" -> "com.yy.project"
+        # 例如: "ruoyi_generator" -> "ruoyi_generator" (保持不变)
+        python_package = package_name
+        
+        # 生成导入路径
+        if module_type == "domain" and class_name:
+            return f"{python_package}.domain.po"
+        elif module_type == "domain":
+            return f"{python_package}.domain.entity"
+        else:
+            return f"{python_package}.{module_type}"
+
+    @staticmethod
     def to_camel_case(name: str) -> str:
         """
         将下划线命名转换为驼峰命名
@@ -210,24 +240,42 @@ class GenUtils:
         Returns:
             BytesIO: 生成的代码文件
         """
+        # 设置列的 list_index 属性
+        GenUtils.set_column_list_index(table)
+        
+        # 设置主键列
+        pk_columns = [column for column in table.columns if column.is_pk == '1']
+        if pk_columns:
+            table.pk_column = pk_columns[0]
+        else:
+            table.pk_column = None
+        
         # 获取模板目录
         template_dir = os.path.join(os.path.dirname(__file__), 'vm')
+        
+        # 定义核心模板文件
+        core_templates = [
+            'py/entity.py.vm',
+            'py/po.py.vm', 
+            'py/controller.py.vm',
+            'py/service.py.vm',
+            'py/mapper.py.vm',
+            'js/api.js.vm',
+            'sql/menu.sql.vm'
+        ]
+        
+        # 根据表类型添加相应的Vue模板
+        if table.tpl_category == 'tree':
+            core_templates.append('vue/index-tree.vue.vm')
+        else:
+            core_templates.append('vue/index.vue.vm')
         
         # 创建内存中的ZIP文件
         zip_buffer = BytesIO()
         
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-            # 定义需要处理的模板文件
-            template_files = []
-            for root, dirs, files in os.walk(template_dir):
-                for file in files:
-                    if file.endswith('.vm'):
-                        full_path = os.path.join(root, file)
-                        relative_path = os.path.relpath(full_path, template_dir)
-                        template_files.append(relative_path)
-            
-            # 处理每个模板文件
-            for relative_path in template_files:
+            # 处理每个核心模板文件
+            for relative_path in core_templates:
                 template_path = os.path.join(template_dir, relative_path)
                 if os.path.exists(template_path):
                     # 读取模板内容
@@ -239,7 +287,8 @@ class GenUtils:
                         context = {
                             'table': table,
                             'datetime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                            'underscore': to_underscore  # 添加自定义过滤器
+                            'underscore': to_underscore,  # 添加自定义过滤器
+                            'get_import_path': GenUtils.get_import_path  # 添加导入路径生成函数
                         }
                         
                         # 使用Jinja2渲染模板
@@ -272,8 +321,32 @@ class GenUtils:
         Returns:
             BytesIO: 生成的代码文件
         """
+        # 为每个表设置列的 list_index 属性和主键列
+        for table in tables:
+            GenUtils.set_column_list_index(table)
+            # 设置主键列
+            pk_columns = [column for column in table.columns if column.is_pk == '1']
+            if pk_columns:
+                table.pk_column = pk_columns[0]
+            else:
+                table.pk_column = None
+        
+        # 定义核心模板文件
+        core_templates = [
+            'py/entity.py.vm',
+            'py/po.py.vm', 
+            'py/controller.py.vm',
+            'py/service.py.vm',
+            'py/mapper.py.vm',
+            'js/api.js.vm',
+            'sql/menu.sql.vm'
+        ]
+        
         # 创建内存中的ZIP文件
         zip_buffer = BytesIO()
+        
+        # 获取模板目录
+        template_dir = os.path.join(os.path.dirname(__file__), 'vm')
         
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             # 跟踪已添加的文件名以避免重复
@@ -281,20 +354,14 @@ class GenUtils:
             
             # 处理每个表
             for table in tables:
-                # 获取模板目录
-                template_dir = os.path.join(os.path.dirname(__file__), 'vm')
+                # 根据表类型添加相应的Vue模板
+                if table.tpl_category == 'tree':
+                    current_templates = core_templates + ['vue/index-tree.vue.vm']
+                else:
+                    current_templates = core_templates + ['vue/index.vue.vm']
                 
-                # 定义需要处理的模板文件
-                template_files = []
-                for root, dirs, files in os.walk(template_dir):
-                    for file in files:
-                        if file.endswith('.vm'):
-                            full_path = os.path.join(root, file)
-                            relative_path = os.path.relpath(full_path, template_dir)
-                            template_files.append(relative_path)
-                
-                # 处理每个模板文件
-                for relative_path in template_files:
+                # 处理每个核心模板文件
+                for relative_path in current_templates:
                     template_path = os.path.join(template_dir, relative_path)
                     if os.path.exists(template_path):
                         # 读取模板内容
@@ -306,7 +373,8 @@ class GenUtils:
                             context = {
                                 'table': table,
                                 'datetime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                                'underscore': to_underscore  # 添加自定义过滤器
+                                'underscore': to_underscore,  # 添加自定义过滤器
+                                'get_import_path': GenUtils.get_import_path  # 添加导入路径生成函数
                             }
                             
                             # 使用Jinja2渲染模板
@@ -341,6 +409,24 @@ class GenUtils:
         return zip_buffer
         
     @staticmethod
+    def set_column_list_index(table: GenTable):
+        """
+        为表的列设置 list_index 属性，用于 Vue 模板中的 columns 数组索引
+        
+        Args:
+            table (GenTable): 表信息
+        """
+        if not table.columns:
+            return
+        
+        list_index = 0
+        for column in table.columns:
+            if column.is_list == '1':
+                # 使用 setattr 动态添加属性
+                setattr(column, 'list_index', list_index)
+                list_index += 1
+
+    @staticmethod
     def preview_code(table: GenTable) -> dict:
         """
         预览代码
@@ -351,23 +437,41 @@ class GenUtils:
         Returns:
             dict: 预览代码
         """
+        # 设置列的 list_index 属性
+        GenUtils.set_column_list_index(table)
+        
+        # 设置主键列
+        pk_columns = [column for column in table.columns if column.is_pk == '1']
+        if pk_columns:
+            table.pk_column = pk_columns[0]
+        else:
+            table.pk_column = None
+        
         # 获取模板目录
         template_dir = os.path.join(os.path.dirname(__file__), 'vm')
         
         # 存储预览代码的字典
         preview_data = {}
         
-        # 定义需要预览的模板文件（严格按照项目要求）
-        template_files = []
-        for root, dirs, files in os.walk(template_dir):
-            for file in files:
-                if file.endswith('.vm'):
-                    full_path = os.path.join(root, file)
-                    relative_path = os.path.relpath(full_path, template_dir)
-                    template_files.append(relative_path)
+        # 定义需要预览的核心模板文件
+        core_templates = [
+            'py/entity.py.vm',
+            'py/po.py.vm', 
+            'py/controller.py.vm',
+            'py/service.py.vm',
+            'py/mapper.py.vm',
+            'js/api.js.vm',
+            'sql/menu.sql.vm'
+        ]
         
-        # 处理每个模板文件
-        for relative_path in template_files:
+        # 根据表类型添加相应的Vue模板，但预览时都使用index.vue.vm作为文件名
+        if table.tpl_category == 'tree':
+            core_templates.append('vue/index-tree.vue.vm')
+        else:
+            core_templates.append('vue/index.vue.vm')
+        
+        # 处理每个核心模板文件
+        for relative_path in core_templates:
             template_path = os.path.join(template_dir, relative_path)
             if os.path.exists(template_path):
                 # 读取模板内容
@@ -379,7 +483,8 @@ class GenUtils:
                     context = {
                         'table': table,
                         'datetime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                        'underscore': to_underscore  # 添加自定义过滤器
+                        'underscore': to_underscore,  # 添加自定义过滤器
+                        'get_import_path': GenUtils.get_import_path  # 添加导入路径生成函数
                     }
                     
                     # 使用Jinja2渲染模板
@@ -389,8 +494,9 @@ class GenUtils:
                     # 存储渲染后的内容
                     preview_data[relative_path] = rendered_content
                 except Exception as e:
-                    # 如果渲染失败，存储原始模板内容
-                    with open(template_path, 'r', encoding='utf-8') as f:
-                        preview_data[relative_path] = f.read()
+                    # 如果渲染失败，存储错误信息
+                    preview_data[relative_path] = f"模板渲染失败: {str(e)}"
+            else:
+                preview_data[relative_path] = "模板文件不存在"
         
         return preview_data

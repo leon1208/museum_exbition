@@ -55,6 +55,10 @@ class RuoYiGenerator:
         columns = gen_table_column_mapper.select_list_by_table_id(table_id)
         table.columns = columns
         
+        # 设置列的 list_index 属性
+        from ruoyi_generator.util import GenUtils
+        GenUtils.set_column_list_index(table)
+        
         # 设置主键列
         pk_columns = [column for column in columns if column.is_pk == '1']
         if pk_columns:

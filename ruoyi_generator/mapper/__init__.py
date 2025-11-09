@@ -372,7 +372,8 @@ class GenTableMapper:
                 else:
                     column.java_type = 'String'
                 
-                column.java_field = StringUtil.to_camel_case(row[0]) if hasattr(StringUtil, 'to_camel_case') else row[0]
+                # 使用 GenUtils.to_camel_case 方法转换字段名
+                column.java_field = GenUtils.to_camel_case(row[0])
                 column.is_pk = '1' if row[5] == 'PRI' else '0'
                 column.is_increment = '1' if row[6] == 'auto_increment' else '0'
                 column.is_required = '0' if row[3] == 'YES' else '1'

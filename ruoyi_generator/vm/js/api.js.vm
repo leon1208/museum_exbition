@@ -1,0 +1,71 @@
+import request from '@/utils/request'
+
+// 查询{{ table.function_name }}列表
+export function list{{ table.class_name }}(query) {
+  return request({
+    url: '/{{ table.module_name }}/{{ table.business_name }}/list',
+    method: 'get',
+    params: query
+  })
+}
+
+// 查询{{ table.function_name }}详细
+export function get{{- table.class_name }}({{ underscore(table.pk_column.java_field) if table.pk_column }}) {
+  return request({
+    url: '/{{ table.module_name }}/{{ table.business_name }}/' + {{- underscore(table.pk_column.java_field) if table.pk_column }},
+    method: 'get'
+  })
+}
+
+// 新增{{ table.function_name }}
+export function add{{ table.class_name }}(data) {
+  return request({
+    url: '/{{ table.module_name }}/{{ table.business_name }}',
+    method: 'post',
+    data: data
+  })
+}
+
+// 修改{{ table.function_name }}
+export function update{{ table.class_name }}(data) {
+  return request({
+    url: '/{{ table.module_name }}/{{ table.business_name }}/' + data.{{ underscore(table.pk_column.java_field) if table.pk_column }},
+    method: 'put',
+    data: data
+  })
+}
+
+// 删除{{ table.function_name }}
+export function del{{- table.class_name }}({{ underscore(table.pk_column.java_field) if table.pk_column }}) {
+  return request({
+    url: '/{{ table.module_name }}/{{ table.business_name }}/' + {{- underscore(table.pk_column.java_field) if table.pk_column }},
+    method: 'delete'
+  })
+}
+
+// 导出{{ table.function_name }}
+export function export{{ table.class_name }}(query) {
+  return request({
+    url: '/{{ table.module_name }}/{{ table.business_name }}/export',
+    method: 'post',
+    params: query
+  })
+}
+
+// 下载{{ table.function_name }}导入模板
+export function importTemplate() {
+  return request({
+    url: '/{{ table.module_name }}/{{ table.business_name }}/importTemplate',
+    method: 'post',
+    responseType: 'blob'
+  })
+}
+
+// 导入{{ table.function_name }}
+export function importData(data) {
+  return request({
+    url: '/{{ table.module_name }}/{{ table.business_name }}/importData',
+    method: 'post',
+    data: data
+  })
+}

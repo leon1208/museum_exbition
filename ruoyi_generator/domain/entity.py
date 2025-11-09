@@ -42,9 +42,10 @@ class GenTable(BaseEntity):
     columns: Optional[List['GenTableColumn']] = None
     pk_column: Optional['GenTableColumn'] = Field(None, alias='pkColumn')
     # 添加tree相关字段
-    tree_name: Optional[str] = Field(None, alias='treeName')
     tree_code: Optional[str] = Field(None, alias='treeCode')
     tree_parent_code: Optional[str] = Field(None, alias='treeParentCode')
+    tree_name: Optional[str] = Field(None, alias='treeName')
+
     # 分页参数
     page_num: Optional[int] = Field(None, alias='pageNum')
     page_size: Optional[int] = Field(None, alias='pageSize')
@@ -84,7 +85,7 @@ class GenTableColumn(BaseEntity):
         json_encoders = {
             datetime: lambda v: v.strftime(DateUtil.YYYY_MM_DD_HH_MM_SS) if v else None
         },
-        extra = "forbid"
+        extra = "allow"  # 允许动态添加的属性（如list_index）
     )
 
     column_id: Optional[int] = Field(None, alias='columnId')
@@ -113,12 +114,18 @@ class GenTableColumn(BaseEntity):
     # 分页参数
     page_num: Optional[int] = Field(None, alias='pageNum')
     page_size: Optional[int] = Field(None, alias='pageSize')
+    # 动态添加的list_index属性，用于Vue模板
+    list_index: Optional[int] = Field(None, alias='listIndex', exclude=True)
 
     def model_dump(self, **kwargs):
         # 确保使用别名导出
         kwargs.setdefault('by_alias', True)
         kwargs.setdefault('exclude_none', False)  # 确保包含所有字段
-        return super().model_dump(**kwargs)
+        result = super().model_dump(**kwargs)
+        # 确保包含动态添加的list_index属性（如果存在）
+        if hasattr(self, 'list_index') and self.list_index is not None:
+            result['listIndex'] = self.list_index
+        return result
 
     def model_dump_json(self, **kwargs):
         # 确保使用别名导出为JSON

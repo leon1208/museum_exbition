@@ -21,25 +21,9 @@ class GenTableColumnService:
             Tuple[List[GenTableColumn], int]: 代码生成表列列表和总数
         """
         columns = gen_table_column_mapper.select_list_by_table_id(table_id)
-        # 实现分页逻辑
-        page_num = 1
-        page_size = 10
-        # 从flask的g对象或request中获取分页参数
-        try:
-            from flask import g, request
-            if hasattr(g, 'criterian_meta') and g.criterian_meta.page:
-                page_num = g.criterian_meta.page.page_num
-                page_size = g.criterian_meta.page.page_size
-            elif request and request.args.get('pageNum') and request.args.get('pageSize'):
-                page_num = int(request.args.get('pageNum', 1))
-                page_size = int(request.args.get('pageSize', 10))
-        except Exception:
-            pass
-            
-        start = (page_num - 1) * page_size
-        end = start + page_size
-        paginated_columns = columns[start:end]
-        return paginated_columns, len(columns)
+        # 编辑表时应该显示所有字段，不需要分页
+        # 返回所有字段和总数
+        return columns, len(columns) if columns else 0
 
     def insert_gen_table_column(self, gen_table_column: GenTableColumn) -> bool:
         """
