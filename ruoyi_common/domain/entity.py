@@ -17,7 +17,6 @@ from ruoyi_common.base.transformer import int_to_str, to_datetime, str_to_int
 
 
 class LoginUser(BaseModel, UserMixin):
-
     model_config = strict_base_config.copy()
 
     user_id: int
@@ -67,21 +66,20 @@ class LoginUser(BaseModel, UserMixin):
 
 
 class SysUser(AuditEntity):
-
     user_id: Annotated[
         int,
         BeforeValidator(str_to_int),
-        Field(gt=0,default=None),
+        Field(gt=0, default=None),
         VoField(query=True),
-        ExcelField(name="用户序号",cell_type="numeric",prompt="用户编号")
+        ExcelField(name="用户序号", cell_type="numeric", prompt="用户编号")
     ]
 
     dept_id: Annotated[
         int,
         BeforeValidator(str_to_int),
-        Field(gt=0,default=None),
+        Field(gt=0, default=None),
         VoField(query=True),
-        ExcelField(name="部门编号",action="import")
+        ExcelField(name="部门编号", action="import")
     ]
 
     user_name: Annotated[
@@ -115,14 +113,14 @@ class SysUser(AuditEntity):
     sex: Annotated[
         Optional[str],
         Field(default=None),
-        ExcelField(name="用户性别",converter="0=男,1=女,2=未知")
+        ExcelField(name="用户性别", converter="0=男,1=女,2=未知")
     ]
 
     avatar: Optional[str] = None
 
     password: Annotated[
         str,
-        Field(default=None,exclude=True)
+        Field(default=None, exclude=True)
     ]
 
     salt: Annotated[
@@ -135,7 +133,7 @@ class SysUser(AuditEntity):
         Optional[str],
         Field(default=None),
         VoField(query=True),
-        ExcelField(name="帐号状态",converter="0=正常,1=停用")
+        ExcelField(name="帐号状态", converter="0=正常,1=停用")
     ]
 
     del_flag: Optional[str] = None
@@ -143,7 +141,7 @@ class SysUser(AuditEntity):
     login_ip: Annotated[
         Optional[str],
         Field(default=None),
-        ExcelField(name="最后登录IP",action="export")
+        ExcelField(name="最后登录IP", action="export")
     ]
 
     login_date: Annotated[
@@ -162,8 +160,8 @@ class SysUser(AuditEntity):
         Field(default=None),
         VoField(body=False),
         ExcelFields(
-            ExcelAccess(name="部门名称",width=20,attr="dept_name"),
-            ExcelAccess(name="部门负责人",width=20,attr="leader")
+            ExcelAccess(name="部门名称", width=20, attr="dept_name"),
+            ExcelAccess(name="部门负责人", width=20, attr="leader")
         )
     ]
 
@@ -184,32 +182,24 @@ class SysUser(AuditEntity):
     ]
 
     def is_admin(self) -> bool:
-        # 检查用户是否拥有管理员角色
-        if self.user_id == 1:
-            return True
-        if self.roles:
-            for role in self.roles:
-                if role.role_key == "admin":
-                    return True
-        return False
+        return True if self.user_id and self.user_id == 1 else False
 
 
 class SysRole(AuditEntity):
-
     role_id: Annotated[
         int,
         BeforeValidator(str_to_int),
-        Field(gt=0,default=None,vo=VoAccess(query=True))
+        Field(gt=0, default=None, vo=VoAccess(query=True))
     ]
 
     role_name: Annotated[
         Optional[str],
-        Field(default=None,vo=VoAccess(query=True))
+        Field(default=None, vo=VoAccess(query=True))
     ]
 
     role_key: Annotated[
         Optional[str],
-        Field(default=None,vo=VoAccess(query=True))
+        Field(default=None, vo=VoAccess(query=True))
     ]
 
     role_sort: Annotated[
@@ -220,33 +210,33 @@ class SysRole(AuditEntity):
 
     data_scope: Optional[str] = None
 
-    menu_check_strictly: Annotated[Optional[bool],Strict(False)] = None
+    menu_check_strictly: Annotated[Optional[bool], Strict(False)] = None
 
-    dept_check_strictly: Annotated[Optional[bool],Strict(False)] = None
+    dept_check_strictly: Annotated[Optional[bool], Strict(False)] = None
 
     status: Annotated[
         Optional[str],
-        Field(default=None,vo=VoAccess(query=True))
+        Field(default=None, vo=VoAccess(query=True))
     ]
 
     del_flag: Annotated[
         Optional[str],
-        Field(default=None,vo=VoAccess(body=False))
+        Field(default=None, vo=VoAccess(body=False))
     ]
 
     flag: Annotated[
         Optional[bool],
-        Field(default=None,vo=VoAccess(body=False))
+        Field(default=None, vo=VoAccess(body=False))
     ]
 
     menu_ids: Annotated[
         Optional[List[int]],
-        Field(default=[],vo=VoAccess(body=False))
+        Field(default=[], vo=VoAccess(body=False))
     ]
 
     dept_ids: Annotated[
         Optional[List[int]],
-        Field(default=[],vo=VoAccess(body=False))
+        Field(default=[], vo=VoAccess(body=False))
     ]
 
     def is_admin(self) -> bool:
@@ -254,21 +244,20 @@ class SysRole(AuditEntity):
 
 
 class SysMenu(AuditEntity):
-
     menu_id: Annotated[
         int,
         BeforeValidator(str_to_int),
-        Field(gt=0,default=None,vo=VoAccess(query=True))
+        Field(gt=0, default=None, vo=VoAccess(query=True))
     ]
 
     menu_name: Annotated[
         Optional[str],
-        Field(default=None,vo=VoAccess(query=True))
+        Field(default=None, vo=VoAccess(query=True))
     ]
 
     parent_name: Annotated[
         Optional[int],
-        Field(default=None,exclude=True,vo=VoAccess(body=False))
+        Field(default=None, exclude=True, vo=VoAccess(body=False))
     ]
 
     parent_id: Optional[int] = None
@@ -282,25 +271,25 @@ class SysMenu(AuditEntity):
     query: Optional[str] = None
 
     is_frame: Annotated[str,
-        BeforeValidator(int_to_str),
-        Field(default=None)
+    BeforeValidator(int_to_str),
+    Field(default=None)
     ]
 
     is_cache: Annotated[str,
-        BeforeValidator(int_to_str),
-        Field(default=None)
+    BeforeValidator(int_to_str),
+    Field(default=None)
     ]
 
     menu_type: Optional[str] = None
 
     visible: Annotated[
         Optional[str],
-        Field(default=None,vo=VoAccess(query=True))
+        Field(default=None, vo=VoAccess(query=True))
     ]
 
     status: Annotated[
         Optional[str],
-        Field(default=None,vo=VoAccess(query=True))
+        Field(default=None, vo=VoAccess(query=True))
     ]
 
     perms: Optional[str] = None
@@ -309,62 +298,60 @@ class SysMenu(AuditEntity):
 
     children: Annotated[
         List["SysMenu"] | NoneType,
-        Field(default=[],exclude=True,vo=VoAccess(body=False))
+        Field(default=[], exclude=True, vo=VoAccess(body=False))
     ]
 
 
 class SysDictType(AuditEntity):
-
     dict_id: Annotated[
         int,
         BeforeValidator(str_to_int),
-        Field(default=None,ge=0,vo=VoAccess(query=True))
+        Field(default=None, ge=0, vo=VoAccess(query=True))
     ]
 
     dict_name: Annotated[
         str,
-        Field(default=None,vo=VoAccess(query=True))
+        Field(default=None, vo=VoAccess(query=True))
     ]
 
     dict_type: Annotated[
         str,
-        Field(default=None,vo=VoAccess(query=True))
+        Field(default=None, vo=VoAccess(query=True))
     ]
 
     status: Annotated[
         str,
-        Field(default=None,vo=VoAccess(query=True))
+        Field(default=None, vo=VoAccess(query=True))
     ]
 
 
 class SysDictData(AuditEntity):
-
     dict_code: Annotated[
         int,
         BeforeValidator(str_to_int),
-        Field(default=None,ge=0,vo=VoAccess(query=True))
+        Field(default=None, ge=0, vo=VoAccess(query=True))
     ]
 
-    dict_sort: Annotated[int,Field(default=None)]
+    dict_sort: Annotated[int, Field(default=None)]
 
     dict_label: Annotated[
         str,
-        Field(default=None,vo=VoAccess(query=True))
+        Field(default=None, vo=VoAccess(query=True))
     ]
 
     dict_value: Annotated[
         str,
-        Field(default=None,vo=VoAccess(query=True))
+        Field(default=None, vo=VoAccess(query=True))
     ]
 
     dict_type: Annotated[
         str,
-        Field(default=None,vo=VoAccess(query=True))
+        Field(default=None, vo=VoAccess(query=True))
     ]
 
     css_class: Annotated[
         Optional[str],
-        Field(default=None,vo=VoAccess(body=False))
+        Field(default=None, vo=VoAccess(body=False))
     ]
 
     list_class: Annotated[
@@ -372,33 +359,32 @@ class SysDictData(AuditEntity):
         Field(default=None)
     ]
 
-    is_default: Annotated[str,Field(default=None)]
+    is_default: Annotated[str, Field(default=None)]
 
     status: Annotated[
         str,
-        Field(default=None,vo=VoAccess(query=True))
+        Field(default=None, vo=VoAccess(query=True))
     ]
 
 
 class SysDept(AuditEntity):
-
     dept_id: Annotated[
         int,
         BeforeValidator(str_to_int),
-        Field(gt=0,default=None,vo=VoAccess(query=True))
+        Field(gt=0, default=None, vo=VoAccess(query=True))
     ]
 
     parent_id: Annotated[
         Optional[int],
         BeforeValidator(str_to_int),
-        Field(default=None,vo=VoAccess(query=True))
+        Field(default=None, vo=VoAccess(query=True))
     ]
 
     ancestors: Optional[str] = None
 
     dept_name: Annotated[
         Optional[str],
-        Field(default=None,vo=VoAccess(query=True))
+        Field(default=None, vo=VoAccess(query=True))
     ]
 
     order_num: Optional[int] = None
@@ -411,18 +397,17 @@ class SysDept(AuditEntity):
 
     status: Annotated[
         Optional[str],
-        Field(default=None,vo=VoAccess(query=True))
+        Field(default=None, vo=VoAccess(query=True))
     ]
 
     del_flag: Optional[str] = None
 
-    parent_name: Annotated[Optional[str],Field(default=None,exclude=True,vo=VoAccess(body=False))]
+    parent_name: Annotated[Optional[str], Field(default=None, exclude=True, vo=VoAccess(body=False))]
 
-    children: Annotated[List["SysDept"],Field(default=[],vo=VoAccess(body=False))]
+    children: Annotated[List["SysDept"], Field(default=[], vo=VoAccess(body=False))]
 
 
 class TreeSelect(BaseModel):
-
     # 节点ID
     id: Annotated[int, Field(default=None)]
 

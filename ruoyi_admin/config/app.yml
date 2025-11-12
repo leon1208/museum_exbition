@@ -7,9 +7,9 @@ ruoyi:
   api:
     version: '/'
   env: 'dev'
-  profile: 'dev'
+  profile: 'G:/ruoyi/uploadPath'
 
 token:
-    header: 'Authorization'
-    secret: 'abcdefghijklmnopqrstuvwxyz'
-    expireTime: 30
+  header: 'Authorization'
+  secret: 'abcdefghijklmnopqrstuvwxyz'
+  expireTime: 30

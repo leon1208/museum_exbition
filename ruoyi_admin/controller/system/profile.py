@@ -46,7 +46,7 @@ def system_user_profile_update(dto:SysUser):
     user: SysUser = login_user.user
     dto.user_name = user.user_name
     if dto.phonenumber and UserConstants.NOT_UNIQUE == \
-        SysUserService.check_phone_unique(dto):
+            SysUserService.check_phone_unique(dto):
         return AjaxResponse.from_error(msg=f"修改用户'{user.user_name}'失败，手机号码已存在")
     if dto.email and UserConstants.NOT_UNIQUE == SysUserService.check_email_unique(dto):
         return AjaxResponse.from_error(msg=f"修改用户'{user.user_name}'失败，邮箱账号已存在")
@@ -69,25 +69,25 @@ def system_user_profile_update(dto:SysUser):
 @Log(title = "个人信息", business_type = BusinessType.UPDATE)
 @JsonSerializer()
 def system_user_profile_update_pwd(
-    old_password:Annotated[SecretStr, Field(..., example='admin')],
-    new_password:Annotated[SecretStr, Field(..., example='admin123')]
+        old_password:Annotated[SecretStr, Field(..., example='admin')],
+        new_password:Annotated[SecretStr, Field(..., example='admin123')]
 ):
     '''
         修改密码
     '''
     login_user: LoginUser = SecurityUtil.get_login_user()
     if not SecurityUtil.matches_password(
-        old_password.get_secret_value(), login_user.user.password
+            old_password.get_secret_value(), login_user.user.password
     ):
         return AjaxResponse.from_error(msg="修改密码失败，旧密码错误")
     if SecurityUtil.matches_password(
-        new_password.get_secret_value(), login_user.user.password
+            new_password.get_secret_value(), login_user.user.password
     ):
         return AjaxResponse.from_error(msg="修改密码失败，新密码不能与旧密码相同")
     if SysUserService.reset_user_pwd(
-        login_user.user.user_name, 
-        SecurityUtil.encrypt_password(new_password.get_secret_value())
-        ):
+            login_user.user.user_name,
+            SecurityUtil.encrypt_password(new_password.get_secret_value())
+    ):
         login_user.user.password = SecurityUtil.encrypt_password(
             new_password.get_secret_value()
         )
@@ -111,9 +111,9 @@ def system_user_profile_avatar(file:MultiFile):
         login_user: LoginUser = SecurityUtil.get_login_user()
         avatar_path = FileUploadUtil.upload(file,RuoYiConfig.profile)
         num = SysUserService.update_user_avatar(
-            login_user.user_name, 
+            login_user.user_name,
             avatar_path
-            )
+        )
         if num > 0:
             ajax_response = AjaxResponse.from_success()
             setattr(ajax_response, "img_url", avatar_path)

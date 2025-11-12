@@ -2,12 +2,12 @@
 # @Author  : YY
 
 from ruoyi_common.ruoyi.config import CONFIG_CACHE
-        
+
 
 class RuoYiConfig:
-    
-    profile = CONFIG_CACHE.get("ruoyi.profile", "dev")
-    
+
+    profile = CONFIG_CACHE.get("ruoyi.profile")
+
     @property
     def upload_path(self) -> str:
         """
@@ -17,7 +17,7 @@ class RuoYiConfig:
             str: 上传路径
         """
         return f"uploads/{self.profile}/upload"
-    
+
     @property
     def download_path(self) -> str:
         """
@@ -27,7 +27,7 @@ class RuoYiConfig:
             str: 下载路径
         """
         return f"uploads/{self.profile}/download/"
-    
+
     @property
     def avatar_path(self) -> str:
         """
@@ -37,7 +37,7 @@ class RuoYiConfig:
             str: 头像路径
         """
         return f"uploads/{self.profile}/avatar"
-    
+
     @property
     def import_path(self) -> str:
         """

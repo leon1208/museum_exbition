@@ -74,8 +74,26 @@ class DataScope:
         login_user:LoginUser = SecurityUtil.get_login_user()
         if login_user:
             current_user:SysUser = login_user.user
-            if not SecurityUtil.is_admin(login_user.user_id):
+            # 检查用户是否为超级管理员（用户ID为1或者具有admin角色）
+            if not SecurityUtil.is_admin(login_user.user_id) and not self.is_user_admin(current_user):
                 self.filter_data_scope(current_user)
+    
+    def is_user_admin(self, user: SysUser) -> bool:
+        """
+        判断用户是否为管理员（通过角色判断）
+        
+        Args:
+            user (SysUser): 用户对象
+            
+        Returns:
+            bool: 是否为管理员
+        """
+        if user.roles:
+            for role in user.roles:
+                # 如果用户有任何一个角色的role_key为admin，则认为是超级管理员
+                if hasattr(role, 'role_key') and role.role_key == 'admin':
+                    return True
+        return False
     
     def filter_data_scope(self,user: SysUser):
         """
@@ -141,5 +159,3 @@ class DataScope:
                 print(ValueError("Invalid data_scope value: {}".format(role.data_scope)))
         data_scope = or_(*criterions)
         criterian_meta.scope = data_scope
-
-

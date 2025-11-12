@@ -76,33 +76,6 @@ def get_login_user() -> LoginUser:
     except Exception:
         raise UtilException("获取用户信息异常", HttpStatus.UNAUTHORIZED)
 
-def encrypt_password(password:str) -> str:
-    """
-    加密密码
-
-    Args:
-        password (str): 原始密码
-
-    Returns:
-        str: 加密后的密码
-    """
-    salt = bcrypt.gensalt(rounds=10,prefix=b'2a')
-    bcrypt_password = bcrypt.hashpw(password.encode('utf-8'), salt)
-    return bcrypt_password
-
-def matches_password(raw_password:str, encoded_password:str) -> bool:
-    """
-    验证密码是否匹配
-
-    Args:
-        raw_password (str): 原始密码
-        encoded_password (str): 加密后的密码
-
-    Returns:
-        bool: 密码是否匹配
-    """
-    return bcrypt.checkpw(raw_password.encode('utf-8'), encoded_password.encode('utf-8'))
-
 def is_admin(user_id) -> bool:
     """
     判断用户是否为管理员
@@ -115,6 +88,27 @@ def is_admin(user_id) -> bool:
     """
     return user_id is not None and user_id == 1
 
+def is_user_admin(user) -> bool:
+    """
+    通过用户对象判断是否为管理员
+    
+    Args:
+        user: 用户对象
+        
+    Returns:
+        bool: 是否为管理员
+    """
+    # 检查是否为超级管理员用户
+    if is_admin(user.user_id):
+        return True
+    
+    # 检查用户角色中是否包含admin角色
+    if hasattr(user, 'roles') and user.roles:
+        for role in user.roles:
+            if hasattr(role, 'role_key') and role.role_key == 'admin':
+                return True
+    return False
+
 def login_user_is_admin() -> bool:
     """
     判断当前登录用户是否为管理员
@@ -122,4 +116,8 @@ def login_user_is_admin() -> bool:
     Returns:
         bool: 当前登录用户是否为管理员
     """
-    return is_admin(get_user_id())
+    try:
+        user = get_login_user().user
+        return is_user_admin(user)
+    except:
+        return is_admin(get_user_id())

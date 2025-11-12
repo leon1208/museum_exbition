@@ -18,7 +18,7 @@ from ruoyi_common.base.schema_vo import ArbitrarySchemaFactory, \
 
 
 class AbcValidatorFunction(ABC):
-    
+
     @abstractmethod
     def validate_unbound_parameters(self):
         raise NotImplementedError()
@@ -26,14 +26,14 @@ class AbcValidatorFunction(ABC):
     @abstractmethod
     def validate_function(self):
         raise NotImplementedError()
-    
+
     @abstractmethod
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         raise NotImplementedError()
-    
+
 
 class ValidatorScopeFunction(AbcValidatorFunction):
-    
+
     def __init__(self,func:Callable):
         self.func = func
         self.sig = inspect.signature(self.func)
@@ -48,11 +48,11 @@ class ValidatorScopeFunction(AbcValidatorFunction):
     @property
     def unbound_model(self):
         return self._unbound_model
-    
+
     def _validate_kind(self,kind):
         if kind != inspect.Parameter.POSITIONAL_OR_KEYWORD:
             raise Exception("参数必须是位置参数")
-    
+
     def validate_unbound_parameters(self):
         index = 0
         for key in self.sig.parameters:
@@ -68,18 +68,18 @@ class ValidatorScopeFunction(AbcValidatorFunction):
                 self._unbound_fields[key] = \
                     FieldInfo.from_annotation(param.annotation)
             index += 1
-        
+
     def validate_function(self):
         self.func = validate_call(self.func)
-            
+
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         self.args = args if args else ()
         self.kwargs = kwargs if kwargs else {}
         return self.func(*self.args, **self.kwargs)
-    
+
 
 class ValidatorViewFunction(AbcValidatorFunction):
-        
+
     def __init__(self,func:Callable):
         self.func = func
         self.sig = inspect.signature(self.func)
@@ -94,11 +94,11 @@ class ValidatorViewFunction(AbcValidatorFunction):
     @property
     def unbound_model(self):
         return self._unbound_model
-    
+
     def _validate_kind(self,kind):
         if kind != inspect.Parameter.POSITIONAL_OR_KEYWORD:
             raise Exception("参数必须是位置参数")
-    
+
     def validate_unbound_parameters(self):
         index = 0
         for key in self.sig.parameters:
@@ -127,7 +127,7 @@ class ValidatorViewFunction(AbcValidatorFunction):
                     self._unbound_fields[key] = \
                         FieldInfo.from_annotation(param.annotation)
             index += 1
-        
+
     def validate_function(self):
         if self._schema_factory:
             if self._unbound_model:
@@ -143,21 +143,21 @@ class ValidatorViewFunction(AbcValidatorFunction):
             self.func = validate_call(self.func)
 
     def unbound_data(
-        self, 
-        data_parser: BaseReqParser
-        ):
+            self,
+            data_parser: BaseReqParser
+    ):
         self._data_parser = data_parser
         if self._schema_factory and self._data_parser:
             self._data_parser.prepare_factory(self._schema_factory)
-    
+
     def unbound_schema(
-        self, 
-        schema_factory:Optional[BaseSchemaFactory], 
-        ):
+            self,
+            schema_factory:Optional[BaseSchemaFactory],
+    ):
         self._schema_factory = schema_factory
         self.validate_unbound_parameters()
         self.validate_function()
-    
+
     def bound_data(self, args:Tuple=(), kwargs:Dict={}):
         if self._unbound_model:
             key, bo_model = self._unbound_model
@@ -167,7 +167,7 @@ class ValidatorViewFunction(AbcValidatorFunction):
             data = self._data_parser.data()
             kwargs.clear()
             kwargs.update(data)
-            
+
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         self.args = args if args else ()
         self.kwargs = kwargs if kwargs else {}
@@ -189,28 +189,28 @@ class ValidatorViewFunction(AbcValidatorFunction):
 
 @dataclass
 class BaseValidator:
-    
+
     data_parser:ClassVar = None
-    
+
     schema_factory:ClassVar = None
-    
+
     vo_context:VoValidatorContext = field(init=False)
-    
+
     def __call__(self, func):
-        
+
         view_function = ValidatorViewFunction(func)
         view_function.unbound_schema(self.schema_factory)
         view_function.unbound_data(self.data_parser)
-        
+
         @wraps(func)
         def wrapper(*args, **kwargs):
             return view_function(*args, **kwargs)
         return wrapper
-    
+
 
 @dataclass
 class PathValidator(BaseValidator):
-    
+
     def __post_init__(self):
         self.schema_factory = PathSchemaFactory()
         self.data_parser = PathReqParser()
@@ -218,15 +218,15 @@ class PathValidator(BaseValidator):
 
 @dataclass
 class QueryValidator(BaseValidator):
-    
+
     is_page: bool = False
-    
+
     include:Optional[Set[str]] = field(default=None)
-    
+
     exclude:Optional[Set[str]] = field(default=None)
-    
+
     extra_fields:Optional[Dict[str, FieldInfo]] = field(default=None)
-    
+
     def __post_init__(self):
         vo_context = VoValidatorContext(
             exclude_data_alias=True,
@@ -241,14 +241,14 @@ class QueryValidator(BaseValidator):
             extra_allowed_fields=self.extra_fields
         )
         self.data_parser = QueryReqParser(vo_context)
-        
+
 
 @dataclass
 class BodyValidator(BaseValidator):
-    
+
     include:Optional[Set[str]] = field(default=None)
     exclude:Optional[Set[str]] = field(default=None)
-    
+
     def __post_init__(self):
         vo_context = VoValidatorContext(
             include_fields=self.include,
@@ -260,7 +260,7 @@ class BodyValidator(BaseValidator):
 
 @dataclass
 class FileDownloadValidator(BaseValidator):
-    
+
     def __post_init__(self):
         vo_context = VoValidatorContext(
             exclude_data_alias=True,
@@ -272,7 +272,7 @@ class FileDownloadValidator(BaseValidator):
 
 @dataclass
 class FileUploadValidator(BaseValidator):
-        
+
     def __post_init__(self):
         self.schema_factory = ArbitrarySchemaFactory()
         self.data_parser = UploadFileFormReqParser(
@@ -282,10 +282,9 @@ class FileUploadValidator(BaseValidator):
 
 @dataclass
 class FileValidator(BaseValidator):
-    
+
     include:Optional[Set[str]] = field(default=None)
-    
+
     def __post_init__(self):
         self.schema_factory = ArbitrarySchemaFactory()
         self.data_parser = UploadFileFormReqParser()
-        
