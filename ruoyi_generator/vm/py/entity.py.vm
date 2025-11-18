@@ -8,33 +8,35 @@ from datetime import datetime
 from pydantic import Field, BeforeValidator
 from ruoyi_common.base.model import BaseEntity
 from ruoyi_common.base.transformer import to_datetime
+from ruoyi_common.base.schema_excel import ExcelAccess
 
 class {{ table.class_name }}(BaseEntity):
     """
     {{ table.table_comment }}对象
     """
 {%- for column in table.columns %}
+{%- set excel_name = (column.column_comment or column.java_field)|replace('"', '\\"') %}
 {%- if column.java_type == 'String' or column.java_type == 'str' %}
     # {{ column.column_comment }}
-    {{ underscore(column.java_field) }}: Optional[str] = Field(default=None, description="{{ column.column_comment }}")
+    {{ underscore(column.java_field) }}: Optional[str] = Field(default=None, description="{{ column.column_comment|replace('"','\\"') }}", json_schema_extra={"excel_access": ExcelAccess(name="{{ excel_name }}")})
 {%- elif column.java_type == 'Integer' or column.java_type == 'int' %}
     # {{ column.column_comment }}
-    {{ underscore(column.java_field) }}: Optional[int] = Field(default=None, description="{{ column.column_comment }}")
+    {{ underscore(column.java_field) }}: Optional[int] = Field(default=None, description="{{ column.column_comment|replace('"','\\"') }}", json_schema_extra={"excel_access": ExcelAccess(name="{{ excel_name }}")})
 {%- elif column.java_type == 'Long' %}
     # {{ column.column_comment }}
-    {{ underscore(column.java_field) }}: Optional[int] = Field(default=None, description="{{ column.column_comment }}")
+    {{ underscore(column.java_field) }}: Optional[int] = Field(default=None, description="{{ column.column_comment|replace('"','\\"') }}", json_schema_extra={"excel_access": ExcelAccess(name="{{ excel_name }}")})
 {%- elif column.java_type == 'Float' or column.java_type == 'Double' %}
     # {{ column.column_comment }}
-    {{ underscore(column.java_field) }}: Optional[float] = Field(default=None, description="{{ column.column_comment }}")
+    {{ underscore(column.java_field) }}: Optional[float] = Field(default=None, description="{{ column.column_comment|replace('"','\\"') }}", json_schema_extra={"excel_access": ExcelAccess(name="{{ excel_name }}")})
 {%- elif column.java_type == 'Boolean' or column.java_type == 'bool' %}
     # {{ column.column_comment }}
-    {{ underscore(column.java_field) }}: Optional[bool] = Field(default=None, description="{{ column.column_comment }}")
+    {{ underscore(column.java_field) }}: Optional[bool] = Field(default=None, description="{{ column.column_comment|replace('"','\\"') }}", json_schema_extra={"excel_access": ExcelAccess(name="{{ excel_name }}")})
 {%- elif column.java_type == 'Date' or column.java_type == 'DateTime' %}
     # {{ column.column_comment }}
-    {{ underscore(column.java_field) }}: Annotated[Optional[datetime], BeforeValidator(to_datetime())] = Field(default=None, description="{{ column.column_comment }}")
+    {{ underscore(column.java_field) }}: Annotated[Optional[datetime], BeforeValidator(to_datetime())] = Field(default=None, description="{{ column.column_comment|replace('"','\\"') }}", json_schema_extra={"excel_access": ExcelAccess(name="{{ excel_name }}")})
 {%- else %}
     # {{ column.column_comment }}
-    {{ underscore(column.java_field) }}: Optional[str] = Field(default=None, description="{{ column.column_comment }}")
+    {{ underscore(column.java_field) }}: Optional[str] = Field(default=None, description="{{ column.column_comment|replace('"','\\"') }}", json_schema_extra={"excel_access": ExcelAccess(name="{{ excel_name }}")})
 {%- endif %}
 {%- endfor %}
     # 页码

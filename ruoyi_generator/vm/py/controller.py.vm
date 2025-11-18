@@ -8,7 +8,6 @@ from ruoyi_common.descriptor.validator import QueryValidator, BodyValidator, Pat
 from ruoyi_common.utils.base import ExcelUtil
 from ruoyi_framework.descriptor.permission import HasPerm, PreAuthorize
 from {{ get_import_path(table.package_name, table.module_name, 'controller') }} import {{ underscore(table.class_name) }} as {{ underscore(table.class_name) }}_bp
-from {{ get_import_path(table.package_name, table.module_name, 'domain', table.class_name) }} import {{ underscore(table.class_name) }}_po
 from {{ get_import_path(table.package_name, table.module_name, 'domain') }} import {{ table.class_name }}
 from {{ get_import_path(table.package_name, table.module_name, 'service') }}.{{ underscore(table.class_name) }}_service import {{ underscore(table.class_name) }}_service as {{ underscore(table.class_name) }}_service_class
 
@@ -103,7 +102,6 @@ def delete_{{ underscore(table.business_name) }}(ids: str):
 
 @gen.route('/export', methods=['POST'])
 @FileDownloadValidator()
-@QueryValidator()
 @PreAuthorize(HasPerm('{{ table.module_name }}:{{ table.business_name }}:export'))
 def export_{{ underscore(table.business_name) }}(dto: {{ table.class_name }}):
     """导出{{ table.function_name }}列表"""
@@ -114,7 +112,7 @@ def export_{{ underscore(table.business_name) }}(dto: {{ table.class_name }}):
             setattr({{ underscore(table.class_name) }}_entity, attr, getattr(dto, attr))
     {{ underscore(table.business_name) }}s, total = {{ underscore(table.class_name) }}_service.select_{{ underscore(table.class_name) }}_list({{ underscore(table.class_name) }}_entity)
     # 使用ExcelUtil导出Excel文件
-    excel_util = ExcelUtil({{ underscore(table.class_name) }}_po)
+    excel_util = ExcelUtil({{ table.class_name }})
     return excel_util.export_response({{ underscore(table.business_name) }}s, "{{ table.function_name }}数据")
 
 @gen.route('/importTemplate', methods=['POST'])
@@ -122,7 +120,7 @@ def export_{{ underscore(table.business_name) }}(dto: {{ table.class_name }}):
 @PreAuthorize(HasPerm('{{ table.module_name }}:{{ table.business_name }}:import'))
 def import_template():
     """下载{{ table.function_name }}导入模板"""
-    excel_util = ExcelUtil({{ underscore(table.class_name) }}_po)
+    excel_util = ExcelUtil({{ table.class_name }})
     return excel_util.import_template_response("{{ table.function_name }}导入模板")
 
 @gen.route('/importData', methods=['POST'])
@@ -140,17 +138,8 @@ def import_data():
     
     try:
         # 使用ExcelUtil读取Excel文件
-        excel_util = ExcelUtil({{ underscore(table.class_name) }}_po)
-        po_list = excel_util.import_file(file, sheetname="{{ table.function_name }}数据")
-        
-        # 转换为Entity对象列表
-        {{ underscore(table.business_name) }}_list = []
-        for po in po_list:
-            {{ underscore(table.class_name) }}_entity = {{ table.class_name }}()
-            for attr in po.model_fields.keys():
-                if hasattr({{ underscore(table.class_name) }}_entity, attr):
-                    setattr({{ underscore(table.class_name) }}_entity, attr, getattr(po, attr))
-            {{ underscore(table.business_name) }}_list.append({{ underscore(table.class_name) }}_entity)
+        excel_util = ExcelUtil({{ table.class_name }})
+        {{ underscore(table.business_name) }}_list = excel_util.import_file(file, sheetname="{{ table.function_name }}数据")
         
         # 调用Service层处理导入逻辑
         msg = {{ underscore(table.class_name) }}_service.import_{{ underscore(table.class_name) }}({{ underscore(table.business_name) }}_list, update_support)
