@@ -81,3 +81,18 @@ class SysRoleDeptMapper:
             .where(SysRoleDeptPo.dept_id == dept_id)
         return db.session.execute(stmt).scalar_one_or_none() or 0
 
+    @classmethod
+    def select_dept_ids_by_role_id(cls, role_id: int) -> List[int]:
+        """
+        查询角色下的部门ID列表
+
+        Args:
+            role_id (int): 角色ID
+
+        Returns:
+            List[int]: 部门ID列表
+        """
+        stmt = select(SysRoleDeptPo.dept_id) \
+            .where(SysRoleDeptPo.role_id == role_id)
+        return db.session.execute(stmt).scalars().all()
+

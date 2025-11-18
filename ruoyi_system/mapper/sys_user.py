@@ -305,10 +305,40 @@ class SysUserMapper:
             "remark", "update_time"
         }
         data = user.model_dump(
-            include=fields, exclude_unset=True, exclude_none=True
+            include=fields,
+            exclude_unset=True,
+            exclude_none=True
         )
-        if user.password is not None:
+        # 如果密码为空字符串或 None，则不更新密码字段，避免把密码清空
+        if not user.password:
+            data.pop("password", None)
+        else:
             data["password"] = user.password
+        stmt = update(SysUserPo) \
+            .where(SysUserPo.user_id == user.user_id) \
+            .values(data)
+        return db.session.execute(stmt).rowcount
+
+    @classmethod
+    @Transactional(db.session)
+    def update_user_login_info(cls, user: SysUser) -> int:
+        """
+        更新用户登录信息（登录IP、时间等）
+
+        Args:
+            user (SysUser): 用户信息（需包含 user_id）
+
+        Returns:
+            int: 修改数量
+        """
+        fields = {"login_ip", "login_date", "update_time"}
+        data = user.model_dump(
+            include=fields,
+            exclude_unset=True,
+            exclude_none=True
+        )
+        if not data:
+            return 0
         stmt = update(SysUserPo) \
             .where(SysUserPo.user_id == user.user_id) \
             .values(data)

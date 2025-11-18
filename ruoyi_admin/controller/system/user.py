@@ -118,7 +118,7 @@ def system_update_user(dto: SysUser):
             f"新增用户'{dto.phonenumber}'失败，手机号码已存在"
         )
     elif dto.email \
-            and SysUserService.check_email_unique(dto.email) \
+            and SysUserService.check_email_unique(dto) \
             == UserConstants.NOT_UNIQUE:
         return AjaxResponse.from_error(
             f"新增用户'{dto.email}'失败，邮箱已存在"

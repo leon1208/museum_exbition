@@ -270,6 +270,20 @@ class SysUserService:
         return SysUserMapper.update_user(user)
 
     @classmethod
+    def update_user_login_info(cls, user: SysUser) -> bool:
+        """
+        更新用户登录信息（登录IP、时间）
+
+        Args:
+            user (SysUser): 用户信息
+
+        Returns:
+            bool: 操作结果
+        """
+        user.update_time = datetime.now()
+        return SysUserMapper.update_user_login_info(user) > 0
+
+    @classmethod
     @Transactional(db.session)
     def insert_user_auth(cls, user_id: int, role_ids: List[int]):
         """

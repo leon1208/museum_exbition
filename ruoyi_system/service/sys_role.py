@@ -113,7 +113,11 @@ class SysRoleService:
         Returns:
             SysRole: 角色信息
         """
-        return SysRoleMapper.select_role_by_id(role_id)
+        role = SysRoleMapper.select_role_by_id(role_id)
+        if role:
+            role.menu_ids = SysRoleMenuMapper.select_menu_ids_by_role_id(role_id)
+            role.dept_ids = SysRoleDeptMapper.select_dept_ids_by_role_id(role_id)
+        return role
     
     @classmethod
     def check_role_name_unique(cls, role: SysRole) -> Literal['0', '1']:
@@ -141,8 +145,8 @@ class SysRoleService:
         Returns:
             Literal['0', '1'] : 唯一性校验结果, 0:唯一, 1:不唯一
         """
-        eo:SysRole = SysRoleMapper.check_role_key_unique(role.role_key)
-        if eo and eo.role_id == role.role_id:
+        eo: SysRole = SysRoleMapper.check_role_key_unique(role.role_key)
+        if eo and eo.role_id != role.role_id:
             return UserConstants.NOT_UNIQUE
         return UserConstants.UNIQUE
 

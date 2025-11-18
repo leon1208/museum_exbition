@@ -17,6 +17,21 @@ class SysRoleMenuMapper:
     """
     
     @classmethod
+    def select_menu_ids_by_role_id(cls, role_id: int) -> List[int]:
+        """
+        查询角色下的菜单ID列表
+
+        Args:
+            role_id: 角色ID
+
+        Returns:
+            菜单ID列表
+        """
+        stmt = select(SysRoleMenuPo.menu_id) \
+            .where(SysRoleMenuPo.role_id == role_id)
+        return db.session.execute(stmt).scalars().all()
+    
+    @classmethod
     def check_menu_exist_role(cls, menu_id: int) -> int:
         """
         查询菜单下的菜单数量

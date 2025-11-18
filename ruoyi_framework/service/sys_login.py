@@ -141,7 +141,7 @@ class LoginService:
             login_ip=IpUtil.get_ip(),
             login_date=datetime.datetime.now()
             )
-        SysUserService.update_user(sysuser)
+        SysUserService.update_user_login_info(sysuser)
     
     @classmethod
     def build_logininfor(cls, username:str,status:str,message:str) -> SysLogininfor:

@@ -516,22 +516,17 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
-      const roleId = row.roleId || this.ids
-      const roleMenu = this.getRoleMenuTreeselect(roleId);
-      getRole(roleId).then(response => {
-        this.form = response.data;
+      const roleId = row.roleId || this.ids;
+      Promise.all([this.getRoleMenuTreeselect(roleId), getRole(roleId)]).then(([menuRes, roleRes]) => {
+        this.form = roleRes.data;
         this.open = true;
-        this.$nextTick(() => {
-          roleMenu.then(res => {
-            let checkedKeys = res.checkedKeys
-            checkedKeys.forEach((v) => {
-                this.$nextTick(()=>{
-                    this.$refs.menu.setChecked(v, true ,false);
-                })
-            })
-          });
-        });
         this.title = "修改角色";
+        this.$nextTick(() => {
+          const checkedKeys = (this.form.menuIds && this.form.menuIds.length) ? this.form.menuIds : (menuRes.checkedKeys || []);
+          if (this.$refs.menu) {
+            this.$refs.menu.setCheckedKeys(checkedKeys);
+          }
+        });
       });
     },
     /** 选择角色权限范围触发 */
@@ -543,16 +538,16 @@ export default {
     /** 分配数据权限操作 */
     handleDataScope(row) {
       this.reset();
-      const roleDeptTreeselect = this.getRoleDeptTreeselect(row.roleId);
-      getRole(row.roleId).then(response => {
-        this.form = response.data;
+      Promise.all([this.getRoleDeptTreeselect(row.roleId), getRole(row.roleId)]).then(([deptRes, roleRes]) => {
+        this.form = roleRes.data;
         this.openDataScope = true;
-        this.$nextTick(() => {
-          roleDeptTreeselect.then(res => {
-            this.$refs.dept.setCheckedKeys(res.checkedKeys);
-          });
-        });
         this.title = "分配数据权限";
+        this.$nextTick(() => {
+          const checkedKeys = (this.form.deptIds && this.form.deptIds.length) ? this.form.deptIds : (deptRes.checkedKeys || []);
+          if (this.$refs.dept) {
+            this.$refs.dept.setCheckedKeys(checkedKeys);
+          }
+        });
       });
     },
     /** 分配用户操作 */
