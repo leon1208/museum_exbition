@@ -55,8 +55,8 @@ class SysUserMapper:
         if user.phonenumber is not None and user.phonenumber != '':
             criterions.append(SysUserPo.phonenumber.like(f"%{user.phonenumber}%"))
         if user.dept_id is not None and user.dept_id != 0:
-            subquery = select(SysUserPo.dept_id).where(or_(
-                SysUserPo.dept_id == user.dept_id,
+            subquery = select(SysDeptPo.dept_id).where(or_(
+                SysDeptPo.dept_id == user.dept_id,
                 func.find_in_set(user.dept_id, SysDeptPo.ancestors)
             )).subquery()
             criterions.append(SysUserPo.dept_id.in_(subquery))
@@ -72,7 +72,7 @@ class SysUserMapper:
             criterions.append(g.criterian_meta.scope)
 
         stmt = select(*user_columns, *dept_columns) \
-            .join(SysDeptPo, SysUserPo.dept_id == SysDeptPo.dept_id) \
+            .join(SysDeptPo, SysUserPo.dept_id == SysDeptPo.dept_id, isouter=True) \
             .where(*criterions)
         print("Generated SQL:")
         print(stmt.compile(db.session.bind, compile_kwargs={"literal_binds": True}))
