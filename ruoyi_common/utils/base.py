@@ -21,6 +21,7 @@ from jwt import api_jwt
 from logging import Logger
 
 from ruoyi_common.base.snippet import classproperty
+from pydantic.alias_generators import to_camel
 
 from ..constant import Constants
 
@@ -254,6 +255,45 @@ class DictUtil:
             else:
                 new_dict[k] = v
         new_dict.update(inner_dict)
+        return new_dict
+
+    @classmethod
+    def camelize_keys(cls, dict_obj: dict, deep: bool = True) -> dict:
+        """
+        将字典的所有 key 从下划线命名转换为驼峰命名（front-end 专用）
+
+        Args:
+            dict_obj (dict): 原始字典（通常是实体 / 查询结果的 to_dict）
+            deep (bool): 是否递归处理嵌套字典和列表
+
+        Returns:
+            dict: key 已经转换为驼峰后的新字典
+        """
+        if not isinstance(dict_obj, dict):
+            return dict_obj
+
+        new_dict = {}
+        for k, v in dict_obj.items():
+            # 先转换当前 key
+            new_key = to_camel(k) if isinstance(k, str) else k
+
+            # 再递归处理 value
+            if deep:
+                if isinstance(v, dict):
+                    new_dict[new_key] = cls.camelize_keys(v, deep=True)
+                elif isinstance(v, list):
+                    new_list = []
+                    for item in v:
+                        if isinstance(item, dict):
+                            new_list.append(cls.camelize_keys(item, deep=True))
+                        else:
+                            new_list.append(item)
+                    new_dict[new_key] = new_list
+                else:
+                    new_dict[new_key] = v
+            else:
+                new_dict[new_key] = v
+
         return new_dict
 
     @classmethod

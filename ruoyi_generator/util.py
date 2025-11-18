@@ -30,6 +30,33 @@ def to_underscore(name: str) -> str:
     return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
 
+def to_camel_case(name: str, pascal: bool = True) -> str:
+    """
+    将下划线命名或普通字符串转换为驼峰命名。
+
+    - name = "schedule_info"  -> pascal=True  => "ScheduleInfo"
+    - name = "schedule_info"  -> pascal=False => "scheduleInfo"
+    - name = "ScheduleInfo"   -> pascal=True/False => "ScheduleInfo"/"scheduleInfo"
+    """
+    if name is None:
+        return ""
+    if not isinstance(name, str):
+        name = str(name)
+    if not name:
+        return ""
+
+    # 如果本身已经是驼峰（包含大写且不含下划线），直接按需调整首字母
+    if "_" not in name and any(ch.isupper() for ch in name):
+        base = name[0].upper() + name[1:]
+    else:
+        parts = [p for p in name.split("_") if p]
+        if not parts:
+            return ""
+        base = "".join(p.lower().capitalize() for p in parts)
+
+    return base if pascal else (base[0].lower() + base[1:] if base else base)
+
+
 def capitalize_first(name: str) -> str:
     """
     将字符串首字母大写
@@ -447,10 +474,11 @@ class GenUtils:
                         context = {
                             'table': table,
                             'datetime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                            'underscore': to_underscore,  # 添加自定义过滤器
-                            'capitalize_first': capitalize_first,  # 添加首字母大写函数
-                            'get_import_path': GenUtils.get_import_path,  # 添加导入路径生成函数
-                            'get_tree_column_index': get_tree_column_index,  # 添加树表列索引计算函数
+                            'underscore': to_underscore,  # 下划线命名工具
+                            'capitalize_first': capitalize_first,  # 首字母大写工具
+                            'to_camel_case': to_camel_case,  # 新增：驼峰命名工具
+                            'get_import_path': GenUtils.get_import_path,  # 导入路径生成函数
+                            'get_tree_column_index': get_tree_column_index,  # 树表列索引计算函数
                             'list_cols': list_cols,  # 树表的列表列
                             'query_cols': query_cols,  # 树表的查询列
                             'required_cols': required_cols  # 树表的必填列
@@ -742,9 +770,10 @@ class GenUtils:
                             context = {
                                 'table': table,
                                 'datetime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                                'underscore': to_underscore,  # 添加自定义过滤器
-                                'capitalize_first': capitalize_first,  # 添加首字母大写函数
-                                'get_import_path': GenUtils.get_import_path,  # 添加导入路径生成函数
+                                'underscore': to_underscore,  # 下划线命名工具
+                                'capitalize_first': capitalize_first,  # 首字母大写工具
+                                'to_camel_case': to_camel_case,  # 新增：驼峰命名工具
+                                'get_import_path': GenUtils.get_import_path,  # 导入路径生成函数
                                 'list_cols': list_cols,  # 树表的列表列
                                 'query_cols': query_cols,  # 树表的查询列
                                 'required_cols': required_cols  # 树表的必填列
@@ -1015,9 +1044,10 @@ class GenUtils:
                     context = {
                         'table': table,
                         'datetime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                        'underscore': to_underscore,  # 添加自定义过滤器
-                                'capitalize_first': capitalize_first,  # 添加首字母大写函数
-                        'get_import_path': GenUtils.get_import_path,  # 添加导入路径生成函数
+                        'underscore': to_underscore,  # 下划线命名工具
+                        'capitalize_first': capitalize_first,  # 首字母大写工具
+                        'to_camel_case': to_camel_case,  # 新增：驼峰命名工具
+                        'get_import_path': GenUtils.get_import_path,  # 导入路径生成函数
                         'list_cols': list_cols,  # 树表的列表列
                         'query_cols': query_cols,  # 树表的查询列
                         'required_cols': required_cols  # 树表的必填列

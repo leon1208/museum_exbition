@@ -1,34 +1,35 @@
-{% macro getColumnDictType(column) %}
-  {% if column.dict_type != '' %}{{ column.dict_type }}
-  {% else %}null
-  {% endif %}
-{% endmacro %}
-
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
 {%- for column in table.columns %}
 {%- if column.is_query %}
-      <el-form-item label="{{ column.column_comment }}" prop="{{ underscore(column.java_field) }}">
-  {%- if column.html_type == 'input' %}
+      <el-form-item label="{{ column.column_comment }}" prop="{{ column.java_field }}">
+{%- if column.html_type == 'input' %}
         <el-input
-          v-model="queryParams.{{ underscore(column.java_field) }}"
+          v-model="queryParams.{{ column.java_field }}"
           placeholder="请输入{{ column.column_comment }}"
           clearable
           @keyup.enter.native="handleQuery"
         />
-  {%- elif column.html_type == 'select' and column.dict_type != '' %}
-        <el-select v-model="queryParams.{{ underscore(column.java_field) }}" placeholder="请选择{{ column.column_comment }}" clearable>
+{%- elif column.html_type == 'select' %}
+  {%- if column.dict_type != '' %}
+        <el-select v-model="queryParams.{{ column.java_field }}" placeholder="请选择{{ column.column_comment }}" clearable>
           <el-option
-            v-for="dict in {{ getColumnDictType(column) }}Options"
+            v-for="dict in dict.type.{{ column.dict_type }}"
             :key="dict.value"
             :label="dict.label"
             :value="dict.value"
           />
         </el-select>
+  {%- else %}
+        <el-select v-model="queryParams.{{ column.java_field }}" placeholder="请选择{{ column.column_comment }}" clearable>
+          <el-option label="请选择字典生成" value="" />
+        </el-select>
+  {%- endif %}
   {%- elif column.html_type == 'datetime' %}
+  {%- set attr_name = capitalize_first(column.java_field) %}
         <el-date-picker
-          v-model="daterange{{ column.java_field }}"
+          v-model="dateRange{{ attr_name }}"
           value-format="yyyy-MM-dd"
           type="daterange"
           range-separator="-"
@@ -106,7 +107,7 @@
 {%- for column in table.columns %}
 {%- if column.is_list %}
   {%- if column.is_pk %}
-      <el-table-column label="{{ column.column_comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ underscore(column.java_field) }}" >
+      <el-table-column label="{{ column.column_comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ column.java_field }}" >
         <template slot-scope="scope">
           <el-button
             size="mini"
@@ -118,21 +119,25 @@
         </template>
       </el-table-column>
   {%- elif column.html_type == 'imageUpload' %}
-      <el-table-column label="{{ column.column_comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ underscore(column.java_field) }}" width="100">
+      <el-table-column label="{{ column.column_comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ column.java_field }}" width="100">
         <template slot-scope="scope">
           <image-preview :src="scope.row.{{ underscore(column.java_field) }}" :width="50" :height="50"/>
         </template>
       </el-table-column>
   {%- elif column.dict_type != '' %}
-      <el-table-column label="{{ column.column_comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ underscore(column.java_field) }}" :formatter="dict_{{ underscore(column.java_field) }}_format" />
-  {%- elif column.html_type == 'datetime' %}
-      <el-table-column label="{{ column.column_comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ underscore(column.java_field) }}" width="180">
+      <el-table-column label="{{ column.column_comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ column.java_field }}">
         <template slot-scope="scope">
-          <span>{{ "{{ scope.row." }}{{ underscore(column.java_field) }}{{ " }}" }}</span>
+          <dict-tag :options="dict.type.{{ column.dict_type }}" :value="scope.row.{{ column.java_field }}" />
+        </template>
+      </el-table-column>
+  {%- elif column.html_type == 'datetime' %}
+      <el-table-column label="{{ column.column_comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ column.java_field }}" width="180">
+        <template slot-scope="scope">
+          <span>{{ "{{ scope.row." }}{{ column.java_field }}{{ " }}" }}</span>
         </template>
       </el-table-column>
   {%- else %}
-      <el-table-column label="{{ column.column_comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ underscore(column.java_field) }}" />
+      <el-table-column label="{{ column.column_comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ column.java_field }}" />
   {%- endif %}
 {%- endif %}
 {%- endfor %}
@@ -169,47 +174,65 @@
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
 {%- for column in table.columns %}
 {%- if column.is_insert %}
-        <el-form-item label="{{ column.column_comment }}" prop="{{ underscore(column.java_field) }}">
+        <el-form-item label="{{ column.column_comment }}" prop="{{ column.java_field }}">
   {%- if column.html_type == 'input' %}
-          <el-input v-model="form.{{ underscore(column.java_field) }}" placeholder="请输入{{ column.column_comment }}" />
+          <el-input v-model="form.{{ column.java_field }}" placeholder="请输入{{ column.column_comment }}" />
   {%- elif column.html_type == 'textarea' %}
-          <el-input v-model="form.{{ underscore(column.java_field) }}" type="textarea" placeholder="请输入内容" />
+          <el-input v-model="form.{{ column.java_field }}" type="textarea" placeholder="请输入内容" />
   {%- elif column.html_type == 'select' %}
-          <el-select v-model="form.{{ underscore(column.java_field) }}" placeholder="请选择{{ column.column_comment }}">
+  {%- if column.dict_type != '' %}
+          <el-select v-model="form.{{ column.java_field }}" placeholder="请选择{{ column.column_comment }}">
             <el-option
-              v-for="dict in {{ getColumnDictType(column) }}Options"
+              v-for="dict in dict.type.{{ column.dict_type }}"
               :key="dict.value"
               :label="dict.label"
-              :value="dict.value"
+              :value="{% if column.java_type == 'Integer' or column.java_type == 'Long' %}parseInt(dict.value){% else %}dict.value{% endif %}"
             ></el-option>
           </el-select>
+  {%- else %}
+          <el-select v-model="form.{{ column.java_field }}" placeholder="请选择{{ column.column_comment }}">
+            <el-option label="请选择字典生成" value="" />
+          </el-select>
+  {%- endif %}
   {%- elif column.html_type == 'radio' %}
-          <el-radio-group v-model="form.{{ underscore(column.java_field) }}">
+  {%- if column.dict_type != '' %}
+          <el-radio-group v-model="form.{{ column.java_field }}">
             <el-radio
-              v-for="dict in {{ getColumnDictType(column) }}Options"
+              v-for="dict in dict.type.{{ column.dict_type }}"
               :key="dict.value"
-              :label="dict.value"
+              :label="{% if column.java_type == 'Integer' or column.java_type == 'Long' %}parseInt(dict.value){% else %}dict.value{% endif %}"
             >{{ dict.label }}</el-radio>
           </el-radio-group>
+  {%- else %}
+          <el-radio-group v-model="form.{{ column.java_field }}">
+            <el-radio label="1">请选择字典生成</el-radio>
+          </el-radio-group>
+  {%- endif %}
   {%- elif column.html_type == 'checkbox' %}
-          <el-checkbox-group v-model="form.{{ underscore(column.java_field) }}">
+  {%- if column.dict_type != '' %}
+          <el-checkbox-group v-model="form.{{ column.java_field }}">
             <el-checkbox
-              v-for="dict in {{ getColumnDictType(column) }}Options"
+              v-for="dict in dict.type.{{ column.dict_type }}"
               :key="dict.value"
               :label="dict.value"
             >{{ dict.label }}</el-checkbox>
           </el-checkbox-group>
+  {%- else %}
+          <el-checkbox-group v-model="form.{{ column.java_field }}">
+            <el-checkbox>请选择字典生成</el-checkbox>
+          </el-checkbox-group>
+  {%- endif %}
   {%- elif column.html_type == 'datetime' %}
           <el-date-picker clearable
-            v-model="form.{{ underscore(column.java_field) }}"
+            v-model="form.{{ column.java_field }}"
             type="date"
             value-format="yyyy-MM-dd"
             placeholder="选择{{ column.column_comment }}">
           </el-date-picker>
   {%- elif column.html_type == 'imageUpload' %}
-          <image-upload v-model="form.{{ underscore(column.java_field) }}"/>
+          <image-upload v-model="form.{{ column.java_field }}"/>
   {%- elif column.html_type == 'fileUpload' %}
-          <file-upload v-model="form.{{ underscore(column.java_field) }}"/>
+          <file-upload v-model="form.{{ column.java_field }}"/>
   {%- endif %}
         </el-form-item>
 {%- endif %}
@@ -254,11 +277,27 @@
 </template>
 
 <script>
-import { list{{ table.class_name }}, get{{ table.class_name }}, del{{ table.class_name }}, add{{ table.class_name }}, update{{ table.class_name }}, export{{ table.class_name }}, importTemplate, importData } from "@/api/{{ table.module_name }}/{{ table.business_name }}";
+{# 使用后端工具函数生成接口前缀：
+   - apiName  : scheduleInfo
+   - ApiName  : ScheduleInfo（listScheduleInfo / getScheduleInfo 等） #}
+{% set apiName = to_camel_case(table.class_name, False) %}
+{% set ApiName = capitalize_first(apiName) %}
+import { list{{ ApiName }}, get{{ ApiName }}, del{{ ApiName }}, add{{ ApiName }}, update{{ ApiName }}, export{{ ApiName }}, importTemplate, importData } from "@/api/{{ table.module_name }}/{{ table.business_name }}";
 import { getToken } from "@/utils/auth";
 
 export default {
   name: "{{ table.class_name }}",
+{%- set dicts_list = [] %}
+{%- for column in table.columns %}
+{%- if column.dict_type and column.dict_type != '' %}
+{%- if column.dict_type not in dicts_list %}
+{%- set _ = dicts_list.append(column.dict_type) %}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- if dicts_list|length > 0 %}
+  dicts: [{%- for dict_type in dicts_list %}'{{ dict_type }}'{%- if not loop.last %}, {% endif %}{%- endfor %}],
+{%- endif %}
   data() {
     return {
       // 遮罩层
@@ -283,12 +322,6 @@ export default {
 {%- endif %}
 {%- endfor %}
       ],
-{%- for column in table.columns %}
-{%- if column.dict_type != '' %}
-      // {{ column.column_comment }}字典
-      {{ getColumnDictType(column) }}Options: [],
-{%- endif %}
-{%- endfor %}
       // 弹出层标题
       title: "",
       // 是否显示弹出层
@@ -296,7 +329,8 @@ export default {
 {%- for column in table.columns %}
 {%- if column.html_type == 'datetime' %}
       // {{ column.column_comment }}时间范围
-      daterange{{ column.java_field }}: [],
+  {%- set attr_name = capitalize_first(column.java_field) %}
+      dateRange{{ attr_name }}: [],
 {%- endif %}
 {%- endfor %}
       // 查询参数
@@ -305,7 +339,7 @@ export default {
         pageSize: 10,
 {%- for column in table.columns %}
 {%- if column.is_query %}
-        {{ underscore(column.java_field) }}: null{% if not loop.last %},{% endif %}
+        {{ column.java_field }}: null{% if not loop.last %},{% endif %}
 {%- endif %}
 {%- endfor %}
       },
@@ -328,28 +362,29 @@ export default {
       },
       // 表单校验
       rules: {
+{%- set required_cols = [] %}
 {%- for column in table.columns %}
-{%- if column.is_required %}
-        {{ underscore(column.java_field) }}: [
-          { required: true, message: "{{ column.column_comment }}不能为空", trigger: "blur" }
-        ]{% if not loop.last %},{% endif %}
+{%- if column.is_required == '1' %}
+{%- set _ = required_cols.append(column) %}
 {%- endif %}
+{%- endfor %}
+{%- for column in required_cols %}
+{%- set comment = column.column_comment %}
+{%- if '(' in comment or '（' in comment %}
+{%- if '(' in comment %}
+{%- set comment = comment.split('(')[0] %}
+{%- elif '（' in comment %}
+{%- set comment = comment.split('（')[0] %}
+{%- endif %}
+{%- endif %}
+        {{ column.java_field }}: [
+          { required: true, message: "{{ comment }}不能为空", trigger: {% if column.html_type == 'select' or column.html_type == 'radio' %}"change"{% else %}"blur"{% endif %} }
+        ]{% if not loop.last %},{% endif %}
 {%- endfor %}
       }
     };
   },
   created() {
-{%- set dictExists = false %}
-{%- for column in table.columns %}
-{%- if column.dict_type != '' %}
-    {%- if not dictExists %}
-    this.getDicts("{{ getColumnDictType(column) }}").then(response => {
-      this.{{ getColumnDictType(column) }}Options = response.data;
-    });
-    {%- set dictExists = true %}
-    {%- endif %}
-{%- endif %}
-{%- endfor %}
     this.getList();
   },
   methods: {
@@ -363,26 +398,19 @@ export default {
       this.queryParams.params = {};
 {%- set has_datetime = true %}
 {%- endif %}
-      if (null != this.daterange{{ column.java_field }} && '' != this.daterange{{ column.java_field }}.toString()) {
-        this.queryParams.params["begin{{ column.java_field }}"] = this.daterange{{ column.java_field }}[0];
-        this.queryParams.params["end{{ column.java_field }}"] = this.daterange{{ column.java_field }}[1];
+  {%- set attr_name = capitalize_first(column.java_field) %}
+      if (null != this.dateRange{{ attr_name }} && '' != this.dateRange{{ attr_name }}.toString()) {
+        this.queryParams.params["begin{{ column.java_field }}"] = this.dateRange{{ attr_name }}[0];
+        this.queryParams.params["end{{ column.java_field }}"] = this.dateRange{{ attr_name }}[1];
       }
 {%- endif %}
 {%- endfor %}
-      list{{ table.class_name }}(this.queryParams).then(response => {
+      list{{ ApiName }}(this.queryParams).then(response => {
         this.{{ table.business_name }}List = response.rows;
         this.total = response.total;
         this.loading = false;
       });
     },
-{%- for column in table.columns %}
-{%- if column.dict_type != '' %}
-    // {{ column.column_comment }}字典翻译
-    dict_{{ underscore(column.java_field) }}_format(row, column) {
-      return this.selectDictLabel(this.{{ getColumnDictType(column) }}Options, row.{{ underscore(column.java_field) }});
-    },
-{%- endif %}
-{%- endfor %}
     // 取消按钮
     cancel() {
       this.open = false;
@@ -392,7 +420,7 @@ export default {
     reset() {
       this.form = {
 {%- for column in table.columns %}
-        {{ underscore(column.java_field) }}: null{% if not loop.last %},{% endif %}
+        {{ column.java_field }}: null{% if not loop.last %},{% endif %}
 {%- endfor %}
       };
       this.resetForm("form");
@@ -406,7 +434,8 @@ export default {
     resetQuery() {
 {%- for column in table.columns %}
 {%- if column.html_type == 'datetime' %}
-      this.daterange{{ column.java_field }} = [];
+  {%- set attr_name = capitalize_first(column.java_field) %}
+      this.dateRange{{ attr_name }} = [];
 {%- endif %}
 {%- endfor %}
       this.resetForm("queryForm");
@@ -414,7 +443,7 @@ export default {
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
-      this.ids = selection.map(item => item.{{ underscore(table.pk_column.java_field) if table.pk_column }})
+      this.ids = selection.map(item => item.{{ table.pk_column.java_field if table.pk_column }})
       this.single = selection.length!==1
       this.multiple = !selection.length
     },
@@ -427,8 +456,8 @@ export default {
     /** 修改按钮操作 */
     handleUpdate(row) {
       this.reset();
-      const {{ underscore(table.pk_column.java_field) if table.pk_column }} = row.{{ underscore(table.pk_column.java_field) if table.pk_column }} || this.ids
-      get{{ table.class_name }}({{ underscore(table.pk_column.java_field) if table.pk_column }}).then(response => {
+      const {{ table.pk_column.java_field if table.pk_column }} = row.{{ table.pk_column.java_field if table.pk_column }} || this.ids
+      get{{ ApiName }}({{ table.pk_column.java_field if table.pk_column }}).then(response => {
         this.form = response.data;
         this.open = true;
         this.title = "修改{{ table.function_name }}";
@@ -438,14 +467,14 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
-          if (this.form.{{ underscore(table.pk_column.java_field) if table.pk_column }} != null) {
-            update{{ table.class_name }}(this.form).then(response => {
+          if (this.form.{{ table.pk_column.java_field if table.pk_column }} != null) {
+            update{{ ApiName }}(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
           } else {
-            add{{ table.class_name }}(this.form).then(response => {
+            add{{ ApiName }}(this.form).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
@@ -456,9 +485,9 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const {{ table.business_name }}Ids = row.{{ underscore(table.pk_column.java_field) if table.pk_column }} || this.ids;
+      const {{ table.business_name }}Ids = row.{{ table.pk_column.java_field if table.pk_column }} || this.ids;
       this.$modal.confirm('是否确认删除{{ table.function_name }}编号为"' + {{ table.business_name }}Ids + '"的数据项？').then(function() {
-        return del{{ table.class_name }}({{ table.business_name }}Ids);
+        return del{{ ApiName }}({{ table.business_name }}Ids);
       }).then(() => {
         this.getList();
         this.$modal.msgSuccess("删除成功");

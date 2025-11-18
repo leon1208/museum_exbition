@@ -1,7 +1,13 @@
 import request from '@/utils/request'
 
+{# 使用后端工具函数 to_camel_case 统一处理类名：
+   - apiName  : scheduleInfo（小驼峰）
+   - ApiName  : ScheduleInfo（大驼峰，用于 listScheduleInfo 这种函数名） #}
+{% set apiName = to_camel_case(table.class_name, False) %}
+{% set ApiName = capitalize_first(apiName) %}
+
 // 查询{{ table.function_name }}列表
-export function list{{ table.class_name }}(query) {
+export function list{{ ApiName }}(query) {
   return request({
     url: '/{{ table.module_name }}/{{ table.business_name }}/list',
     method: 'get',
@@ -10,15 +16,15 @@ export function list{{ table.class_name }}(query) {
 }
 
 // 查询{{ table.function_name }}详细
-export function get{{- table.class_name }}({{ underscore(table.pk_column.java_field) if table.pk_column }}) {
+export function get{{ ApiName }}({{ table.pk_column.java_field if table.pk_column }}) {
   return request({
-    url: '/{{ table.module_name }}/{{ table.business_name }}/' + {{- underscore(table.pk_column.java_field) if table.pk_column }},
+    url: '/{{ table.module_name }}/{{ table.business_name }}/' + {{- table.pk_column.java_field if table.pk_column }},
     method: 'get'
   })
 }
 
 // 新增{{ table.function_name }}
-export function add{{ table.class_name }}(data) {
+export function add{{ ApiName }}(data) {
   return request({
     url: '/{{ table.module_name }}/{{ table.business_name }}',
     method: 'post',
@@ -27,24 +33,25 @@ export function add{{ table.class_name }}(data) {
 }
 
 // 修改{{ table.function_name }}
-export function update{{ table.class_name }}(data) {
+export function update{{ ApiName }}(data) {
   return request({
-    url: '/{{ table.module_name }}/{{ table.business_name }}/' + data.{{ underscore(table.pk_column.java_field) if table.pk_column }},
+    // 后端 Flask 控制器使用的是不带主键的 PUT '' 路径，这里保持一致
+    url: '/{{ table.module_name }}/{{ table.business_name }}',
     method: 'put',
     data: data
   })
 }
 
 // 删除{{ table.function_name }}
-export function del{{- table.class_name }}({{ underscore(table.pk_column.java_field) if table.pk_column }}) {
+export function del{{ ApiName }}({{ table.pk_column.java_field if table.pk_column }}) {
   return request({
-    url: '/{{ table.module_name }}/{{ table.business_name }}/' + {{- underscore(table.pk_column.java_field) if table.pk_column }},
+    url: '/{{ table.module_name }}/{{ table.business_name }}/' + {{- table.pk_column.java_field if table.pk_column }},
     method: 'delete'
   })
 }
 
 // 导出{{ table.function_name }}
-export function export{{ table.class_name }}(query) {
+export function export{{ ApiName }}(query) {
   return request({
     url: '/{{ table.module_name }}/{{ table.business_name }}/export',
     method: 'post',
