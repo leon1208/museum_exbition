@@ -69,7 +69,7 @@ class SysConfigService:
             bool: 验证码开关
         """
         captcha_on_off = cls.select_config_by_key("sys.account.captchaOnOff")
-        if captcha_on_off is not None and captcha_on_off.lower() != "false":
+        if captcha_on_off is None:
             return True
         return StringUtil.to_bool(captcha_on_off)
 

@@ -11,6 +11,7 @@ from ruoyi_common.base.model import AjaxResponse
 from ruoyi_common.constant import Constants
 from ruoyi_common.descriptor.serializer import JsonSerializer
 from ruoyi_admin.ext import redis_cache
+from ruoyi_system.service import SysConfigService
 from ... import reg
 
 
@@ -48,4 +49,5 @@ def index_captcha_image():
     ajax_response = AjaxResponse.from_success()
     ajax_response.uuid = uuid_str
     ajax_response.img = str(base64.b64encode(byte_image),encoding="utf-8")
+    ajax_response.captchaOnOff = SysConfigService.select_captcha_on_off()
     return ajax_response
