@@ -184,14 +184,10 @@ class SysConfigService:
         Returns:
             str: 唯一返回UNIQUE，否则返回NOT_UNIQUE
         """
-        eos = SysConfigMapper.select_config_list(body)
-        if len(eos) == 1:
-            if eos[0].config_id == body.config_id:
-                return UserConstants.NOT_UNIQUE
-            else:
-                return UserConstants.UNIQUE
-        else:
-            return UserConstants.UNIQUE
+        exist = SysConfigMapper.check_config_key_unique(body.config_key)
+        if exist and (body.config_id is None or exist.config_id != body.config_id):
+            return UserConstants.NOT_UNIQUE
+        return UserConstants.UNIQUE
 
     @classmethod
     def get_cache_key(cls, key: str) -> str:

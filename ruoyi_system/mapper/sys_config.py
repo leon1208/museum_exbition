@@ -98,8 +98,8 @@ class SysConfigMapper:
         stmt = select(*cls.default_columns) \
             .where(SysConfigPo.config_key == config_key) \
             .limit(1)
-        row = db.session.execute(stmt).scalar_one_or_none()
-        return cls.default_columns.cast(row,SysConfig) if row else None
+        row = db.session.execute(stmt).one_or_none()
+        return cls.default_columns.cast(row, SysConfig) if row else None
 
     @classmethod
     @Transactional(db.session)
