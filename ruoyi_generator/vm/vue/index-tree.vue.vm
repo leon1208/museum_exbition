@@ -94,7 +94,7 @@
 
     <el-table
       v-if="refreshTable"
-      v-loading="loading"
+      :loading="loading"
       :data="{{ table.business_name }}List"
       row-key="{% if table.tree_code %}{{ table.tree_code }}{% else %}id{% endif %}"
       :default-expand-all="isExpandAll"
@@ -552,7 +552,11 @@ export default {
         this.form = response.data;
 {%- for column in table.columns %}
 {%- if column.html_type == 'checkbox' %}
-        this.form.{{ underscore(column.java_field) }} = this.form.{{ underscore(column.java_field) }}.split(",");
+        if (this.form.{{ underscore(column.java_field) }}) {
+          this.form.{{ underscore(column.java_field) }} = this.form.{{ underscore(column.java_field) }}.split(",");
+        } else {
+          this.form.{{ underscore(column.java_field) }} = [];
+        }
 {%- endif %}
 {%- endfor %}
         this.open = true;
@@ -563,19 +567,15 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
-{%- for column in table.columns %}
-{%- if column.html_type == 'checkbox' %}
-          this.form.{{ underscore(column.java_field) }} = this.form.{{ underscore(column.java_field) }}.join(",");
-{%- endif %}
-{%- endfor %}
-          if (this.form.{% if table.pk_column %}{{ underscore(table.pk_column.java_field) }}{% else %}id{% endif %} != null) {
-            update{{ ApiName }}(this.form).then(response => {
+          const submitData = this.buildSubmitData();
+          if (submitData.{% if table.pk_column %}{{ underscore(table.pk_column.java_field) }}{% else %}id{% endif %} != null) {
+            update{{ ApiName }}(submitData).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
           } else {
-            add{{ ApiName }}(this.form).then(response => {
+            add{{ ApiName }}(submitData).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
@@ -583,6 +583,32 @@ export default {
           }
         }
       });
+    },
+    buildSubmitData() {
+      const data = { ...this.form };
+{%- for column in table.columns %}
+{%- if column.html_type == 'checkbox' %}
+      if (Array.isArray(data.{{ underscore(column.java_field) }})) {
+        data.{{ underscore(column.java_field) }} = data.{{ underscore(column.java_field) }}.join(",");
+      } else if (data.{{ underscore(column.java_field) }}) {
+        data.{{ underscore(column.java_field) }} = String(data.{{ underscore(column.java_field) }});
+      }
+{%- endif %}
+{%- if column.java_type in ['Integer', 'Long', 'Short'] %}
+      if (data.{{ underscore(column.java_field) }} !== null && data.{{ underscore(column.java_field) }} !== undefined && data.{{ underscore(column.java_field) }} !== "") {
+        data.{{ underscore(column.java_field) }} = parseInt(data.{{ underscore(column.java_field) }}, 10);
+      } else {
+        data.{{ underscore(column.java_field) }} = null;
+      }
+{%- elif column.java_type in ['Float', 'Double', 'BigDecimal', 'Decimal'] %}
+      if (data.{{ underscore(column.java_field) }} !== null && data.{{ underscore(column.java_field) }} !== undefined && data.{{ underscore(column.java_field) }} !== "") {
+        data.{{ underscore(column.java_field) }} = parseFloat(data.{{ underscore(column.java_field) }});
+      } else {
+        data.{{ underscore(column.java_field) }} = null;
+      }
+{%- endif %}
+{%- endfor %}
+      return data;
     },
     /** 删除按钮操作 */
     handleDelete(row) {

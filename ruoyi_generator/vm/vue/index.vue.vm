@@ -102,45 +102,77 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="{{ table.business_name }}List" @selection-change="handleSelectionChange">
+    <el-table :loading="loading" :data="{{ table.business_name }}List" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
-{%- for column in table.columns %}
-{%- if column.is_list %}
-  {%- if column.is_pk %}
-      <el-table-column label="{{ column.column_comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ column.java_field }}" >
+      {%- for column in table.columns %}
+      {%- set java_field = column.java_field %}
+      {%- set comment = column.column_comment %}
+      {%- if '(' in comment or '（' in comment %}
+      {%- if '(' in comment %}
+      {%- set comment = comment.split('(')[0] %}
+      {%- elif '（' in comment %}
+      {%- set comment = comment.split('（')[0] %}
+      {%- endif %}
+      {%- endif %}
+      {%- if column.is_pk == '1' %}
+      {%- elif column.is_list and column.list_index is not none and column.html_type == 'datetime' %}
+      <el-table-column label="{{ comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ java_field }}" width="180">
         <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-view"
-            @click="handleView(scope.row)"
-            v-hasPermi="['{{ table.module_name }}:{{ table.business_name }}:query']"
-          >{{ column.column_comment }}</el-button>
+          <span>{{ "{{ parseTime(scope.row." }}{{ java_field }}{{ ", '{y}-{m}-{d}') }}" }}</span>
         </template>
       </el-table-column>
-  {%- elif column.html_type == 'imageUpload' %}
-      <el-table-column label="{{ column.column_comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ column.java_field }}" width="100">
+      {%- elif column.is_list and column.list_index is not none and column.html_type == 'imageUpload' %}
+      <el-table-column label="{{ comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ java_field }}" width="100">
         <template slot-scope="scope">
-          <image-preview :src="scope.row.{{ underscore(column.java_field) }}" :width="50" :height="50"/>
+          <image-preview :src="scope.row.{{ java_field }}" :width="50" :height="50"/>
         </template>
       </el-table-column>
-  {%- elif column.dict_type != '' %}
-      <el-table-column label="{{ column.column_comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ column.java_field }}">
+      {%- elif column.is_list and column.list_index is not none and column.html_type == 'fileUpload' %}
+      <el-table-column label="{{ comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ java_field }}" width="100">
         <template slot-scope="scope">
-          <dict-tag :options="dict.type.{{ column.dict_type }}" :value="scope.row.{{ column.java_field }}" />
+          <div v-if="scope.row.{{ underscore(java_field) }}">
+            <el-tooltip placement="top" effect="light">
+              <div slot="content">
+                <div v-for="(file,index) in scope.row.{{ java_field }}.split(',')"
+                     :key="index"
+                     style="text-align: left;padding: 5px;">
+                  <el-link
+                      :download="getFileName(file)"
+                      :href="getFilePath(file)"
+                      :underline="false"
+                      target="_blank"
+                      style="font-size: 14px"
+                  >
+                    <span style="cursor: pointer;"> {{ "{{ getFileName(file) }}" }} </span>
+                  </el-link>
+                </div>
+              </div>
+              <span style="cursor: pointer; color: #409EFF;">查看文件</span>
+            </el-tooltip>
+          </div>
+          <div v-else>
+            -
+          </div>
         </template>
       </el-table-column>
-  {%- elif column.html_type == 'datetime' %}
-      <el-table-column label="{{ column.column_comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ column.java_field }}" width="180">
+      {%- elif column.is_list and column.list_index is not none and column.dict_type and column.dict_type != '' %}
+      <el-table-column label="{{ comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ java_field }}">
         <template slot-scope="scope">
-          <span>{{ "{{ scope.row." }}{{ column.java_field }}{{ " }}" }}</span>
+          {%- if column.html_type == 'checkbox' %}
+          <dict-tag :options="dict.type.{{ column.dict_type }}" :value="scope.row.{{ java_field }} ? scope.row.{{ java_field }}.split(',') : []"/>
+          {%- else %}
+          <dict-tag :options="dict.type.{{ column.dict_type }}" :value="scope.row.{{ java_field }}"/>
+          {%- endif %}
         </template>
       </el-table-column>
-  {%- else %}
-      <el-table-column label="{{ column.column_comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ column.java_field }}" />
-  {%- endif %}
-{%- endif %}
-{%- endfor %}
+      {%- elif column.is_list and column.list_index is not none and java_field %}
+      {%- if column.list_index == 0 %}
+      <el-table-column label="{{ comment }}" :show-overflow-tooltip="true" v-if="columns[{{ column.list_index }}].visible" prop="{{ java_field }}" />
+      {%- else %}
+      <el-table-column label="{{ comment }}" align="center" :show-overflow-tooltip="true" v-if="columns[{{ column.list_index }}].visible" prop="{{ java_field }}" />
+      {%- endif %}
+      {%- endif %}
+      {%- endfor %}
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -420,7 +452,11 @@ export default {
     reset() {
       this.form = {
 {%- for column in table.columns %}
+{%- if column.html_type == 'checkbox' %}
+        {{ column.java_field }}: []{% if not loop.last %},{% endif %}
+{%- else %}
         {{ column.java_field }}: null{% if not loop.last %},{% endif %}
+{%- endif %}
 {%- endfor %}
       };
       this.resetForm("form");
@@ -459,6 +495,15 @@ export default {
       const {{ table.pk_column.java_field if table.pk_column }} = row.{{ table.pk_column.java_field if table.pk_column }} || this.ids
       get{{ ApiName }}({{ table.pk_column.java_field if table.pk_column }}).then(response => {
         this.form = response.data;
+{%- for column in table.columns %}
+{%- if column.html_type == 'checkbox' %}
+        if (this.form.{{ column.java_field }}) {
+          this.form.{{ column.java_field }} = this.form.{{ column.java_field }}.split(",");
+        } else {
+          this.form.{{ column.java_field }} = [];
+        }
+{%- endif %}
+{%- endfor %}
         this.open = true;
         this.title = "修改{{ table.function_name }}";
       });
@@ -467,14 +512,15 @@ export default {
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
-          if (this.form.{{ table.pk_column.java_field if table.pk_column }} != null) {
-            update{{ ApiName }}(this.form).then(response => {
+          const submitData = this.buildSubmitData();
+          if (submitData.{{ table.pk_column.java_field if table.pk_column }} != null) {
+            update{{ ApiName }}(submitData).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
           } else {
-            add{{ ApiName }}(this.form).then(response => {
+            add{{ ApiName }}(submitData).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
@@ -521,6 +567,32 @@ export default {
       this.$refs.upload.clearFiles();
       this.$alert("<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.msg + "</div>", "导入结果", { dangerouslyUseHTMLString: true });
       this.getList();
+    },
+    buildSubmitData() {
+      const data = { ...this.form };
+{%- for column in table.columns %}
+{%- if column.html_type == 'checkbox' %}
+      if (Array.isArray(data.{{ column.java_field }})) {
+        data.{{ column.java_field }} = data.{{ column.java_field }}.join(",");
+      } else if (data.{{ column.java_field }}) {
+        data.{{ column.java_field }} = String(data.{{ column.java_field }});
+      }
+{%- endif %}
+{%- if column.java_type in ['Integer', 'Long', 'Short'] %}
+      if (data.{{ column.java_field }} !== null && data.{{ column.java_field }} !== undefined && data.{{ column.java_field }} !== "") {
+        data.{{ column.java_field }} = parseInt(data.{{ column.java_field }}, 10);
+      } else {
+        data.{{ column.java_field }} = null;
+      }
+{%- elif column.java_type in ['Float', 'Double', 'BigDecimal', 'Decimal'] %}
+      if (data.{{ column.java_field }} !== null && data.{{ column.java_field }} !== undefined && data.{{ column.java_field }} !== "") {
+        data.{{ column.java_field }} = parseFloat(data.{{ column.java_field }});
+      } else {
+        data.{{ column.java_field }} = null;
+      }
+{%- endif %}
+{%- endfor %}
+      return data;
     },
     // 提交上传文件
     submitFileForm() {
