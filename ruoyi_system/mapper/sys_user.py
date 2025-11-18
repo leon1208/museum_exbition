@@ -273,13 +273,16 @@ class SysUserMapper:
         """
         fields = {
             "user_id", "dept_id", "user_name", "nick_name", "email", "avatar",
-            "phonenumber", "sex", "password", "status", "create_by", "remark"
+            "phonenumber", "sex", "password", "status", "create_by", "remark",
+            "create_time", "update_time"
         }
         data = user.model_dump(
             include=fields,
             exclude_unset=True,
             exclude_none=True
         )
+        if user.password is not None:
+            data["password"] = user.password
         stmt = insert(SysUserPo).values(data)
         out = db.session.execute(stmt).inserted_primary_key
         return out[0] if out else 0
@@ -299,11 +302,13 @@ class SysUserMapper:
         fields = {
             "dept_id", "user_name", "nick_name", "email", "avatar", "login_ip",
             "phonenumber", "sex", "password", "login_date", "status", "update_by",
-            "remark"
+            "remark", "update_time"
         }
         data = user.model_dump(
             include=fields, exclude_unset=True, exclude_none=True
         )
+        if user.password is not None:
+            data["password"] = user.password
         stmt = update(SysUserPo) \
             .where(SysUserPo.user_id == user.user_id) \
             .values(data)

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Author  : YY
 
+from datetime import datetime
 from typing import List, Literal, Optional
 
 from ruoyi_common.constant import UserConstants
@@ -217,6 +218,11 @@ class SysUserService:
         Returns:
             bool: 操作结果
         """
+        user.password = cls._build_password(user.password)
+        if user.create_time is None:
+            now = datetime.now()
+            user.create_time = now
+            user.update_time = now
         last_pid = SysUserMapper.insert_user(user)
         user.user_id = last_pid
         cls.insert_user_post_by_user(user)
@@ -234,6 +240,9 @@ class SysUserService:
         Returns:
             bool: 操作结果
         """
+        user.password = cls._build_password(user.password)
+        if user.create_time is None:
+            user.create_time = datetime.now()
         flag = SysUserMapper.insert_user(user)
         return flag > 0
 
@@ -249,6 +258,7 @@ class SysUserService:
         Returns:
             bool: 操作结果
         """
+        user.update_time = datetime.now()
         # 删除用户角色关联
         SysRoleMapper.delete_user_role_by_user_id(user.user_id)
         # 新增用户和角色的关联
@@ -308,6 +318,7 @@ class SysUserService:
         Returns:
             bool: 操作结果
         """
+        user.update_time = datetime.now()
         return SysUserMapper.update_user(user) > 0
 
     @classmethod
@@ -321,6 +332,7 @@ class SysUserService:
         Returns:
             bool: 操作结果
         """
+        user.update_time = datetime.now()
         return SysUserMapper.update_user(user) > 0
 
     @classmethod
@@ -348,6 +360,8 @@ class SysUserService:
         Returns:
             bool: 操作结果
         """
+        user.password = cls._build_password(user.password)
+        user.update_time = datetime.now()
         return SysUserMapper.update_user(user) > 0
 
     @classmethod
@@ -458,7 +472,7 @@ class SysUserService:
             try:
                 dto = SysUserMapper.select_user_by_user_name(user.user_name)
                 if not dto:
-                    user.password = security_util.encrypt_password(default_password)
+                    user.password = cls._build_password(default_password)
                     user.create_by_user(security_util.get_user_id())
                     cls.insert_user(user)
                     success_count += 1
@@ -487,3 +501,25 @@ class SysUserService:
             success_msg = f"恭喜您，数据已全部导入成功！共 {success_count} 条，数据如下：" \
                           + success_msg
         return success_msg
+
+    @classmethod
+    def _build_password(cls, password: Optional[str]) -> str:
+        """
+        构建持久化密码，若为空使用初始化密码，若未加密则加密
+        """
+        if not password:
+            password = SysConfigService.select_config_by_key(
+                "sys.user.initPassword"
+            )
+        if not password:
+            raise ServiceException("初始化密码未配置")
+        if cls._is_encrypted(password):
+            return password
+        return security_util.encrypt_password(password)
+
+    @staticmethod
+    def _is_encrypted(password: Optional[str]) -> bool:
+        """
+        判断密码是否为bcrypt加密串
+        """
+        return bool(password and password.startswith("$2"))
