@@ -539,15 +539,28 @@ class OrderModel(VoModel):
     
     order_by_column: Annotated[Optional[List[str]],Field(default=None)]
     
-    is_asc: Annotated[Literal["asc", "desc"],Field(default="asc")]
+    is_asc: Annotated[
+        Literal["asc", "desc", "ascending", "descending"],
+        Field(default="asc")
+    ]
     
     @field_validator("order_by_column",mode="before")
-    def order_by_column_before_validation(cls, value:str, info:ValidationInfo) -> List[str]:
+    def order_by_column_before_validation(cls, value:str | None, info:ValidationInfo) -> Optional[List[str]]:
+        if value is None:
+            return None
         value = value.split(",")
         if info.context and isinstance(info.context,VoValidatorContext):
             for val in value:
                 if val not in info.context.include_sort_alias:
                     raise ValueError(f"排序字段{val},在禁止的模型字段范围内")
+        return value
+    
+    @field_validator("is_asc", mode="after")
+    def normalize_is_asc(cls, value:str) -> str:
+        if value == "ascending":
+            return "asc"
+        if value == "descending":
+            return "desc"
         return value
     
 

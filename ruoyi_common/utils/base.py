@@ -470,13 +470,18 @@ class IpUtil:
         Returns:
             str: ip
         '''
+        forwarded_for = request.headers.get('X-Forwarded-For')
         ip = None
-        if 'HTTP_X_FORWARDED_FOR' in request.headers:
-            ip = request.headers['HTTP_X_FORWARDED_FOR']
-        elif 'REMOTE_ADDR' in request.headers:
-            ip = request.headers['REMOTE_ADDR']
-        ip, _ = request.host.rsplit(':', 1)
-        ip = "127.0.0.1" if ip == "localhost" else ip
+        if forwarded_for:
+            ip = forwarded_for.split(',')[0].strip()
+        if not ip:
+            ip = request.headers.get('X-Real-IP')
+        if not ip:
+            ip = request.remote_addr
+        if not ip or ip == '::1':
+            ip = '127.0.0.1'
+        if ip == "localhost":
+            ip = "127.0.0.1"
         return ip
 
     @classmethod
@@ -515,9 +520,16 @@ class AddressUtil:
         Returns:
             str: 地址
         '''
-        # todo
-        address = None
-        return address
+        if not ip:
+            return "未知"
+        try:
+            parsed_ip = ipaddress.ip_address(ip)
+            if parsed_ip.is_loopback or parsed_ip.is_private:
+                return "内网IP"
+        except ValueError:
+            return "未知"
+        # TODO: 可在此集成第三方IP定位服务
+        return "未知"
 
 
 class UserAgentUtil:

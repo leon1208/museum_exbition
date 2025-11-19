@@ -161,13 +161,13 @@ class SysOperLog(BaseEntity):
     # 操作人员 
     oper_name: Annotated[
         Optional[str],
-        Field(default=None,exclude=True,vo=VoAccess(query=True))
+        Field(default=None,vo=VoAccess(query=True,sort=True))
     ]
     
     # 部门名称 
     dept_name: Annotated[
         Optional[str],
-        Field(default=None,exclude=True,vo=VoAccess(body=False))
+        Field(default=None,vo=VoAccess(body=False))
     ]
     
     # 请求url 
@@ -176,7 +176,7 @@ class SysOperLog(BaseEntity):
     # 操作地址 
     oper_ip: Annotated[
         Optional[str],
-        Field(default=None,exclude=True,vo=VoAccess(query=True))
+        Field(default=None,vo=VoAccess(query=True))
     ]
     
     # 操作地点 
@@ -194,7 +194,7 @@ class SysOperLog(BaseEntity):
     # 操作状态（0正常 1异常） 
     status: Annotated[
         Optional[int],
-        Field(default=None,exclude=True,vo=VoAccess(query=True))
+        Field(default=None,vo=VoAccess(query=True))
     ]
     
     # 错误消息 
@@ -204,7 +204,7 @@ class SysOperLog(BaseEntity):
     oper_time: Annotated[
         Optional[datetime],
         BeforeValidator(to_datetime()),
-        Field(default=None,vo=VoAccess())
+        Field(default=None,vo=VoAccess(query=True,sort=True))
     ]
     
     

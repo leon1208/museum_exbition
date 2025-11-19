@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Author  : YY
 
+import re
 from typing import List, Optional
 from flask import g
 from sqlalchemy import delete, insert, select
@@ -39,24 +40,20 @@ class SysOperLogMapper:
         Returns:
             List[SysOperLog]: 操作日志集合
         '''
+        criterions = []
         if oper:
-            criterions = []
             if oper.oper_ip:
-                criterions.append(SysOperLogPo.ipaddr.like(f'%{oper.oper_ip}%'))
-            if oper.status:
+                criterions.append(SysOperLogPo.oper_ip.like(f'%{oper.oper_ip}%'))
+            if oper.status is not None:
                 criterions.append(SysOperLogPo.status == oper.status)
             if oper.oper_name:
                 criterions.append(SysOperLogPo.oper_name.like(f'%{oper.oper_name}%'))
-            if "criterian_meta" in g and g.criterian_meta.extra:
-                extra:ExtraModel = g.criterian_meta.extra
-                if extra.start_time and extra.end_time:
-                    criterions.append(SysOperLogPo.oper_time >= extra.start_time)
-                    criterions.append(SysOperLogPo.oper_time <= extra.end_time)
-            stmt = select(*cls.default_columns) \
-                .where(*criterions)
-        else:
-            stmt = select(*cls.default_columns)
-            
+            cls._append_extra_criterions(criterions)
+        stmt = select(*cls.default_columns)
+        if criterions:
+            stmt = stmt.where(*criterions)
+        stmt = cls._apply_sorting(stmt)
+        
         if "criterian_meta" in g and g.criterian_meta.page:
             g.criterian_meta.page.stmt = stmt
         
@@ -86,6 +83,39 @@ class SysOperLogMapper:
         stmt = insert(SysOperLogPo).values(data)
         out = db.session.execute(stmt).inserted_primary_key
         return out[0] if out else 0
+
+    @classmethod
+    def _append_extra_criterions(cls, criterions:list):
+        if "criterian_meta" not in g or not g.criterian_meta.extra:
+            return
+        extra:ExtraModel = g.criterian_meta.extra
+        if getattr(extra, "begin_time", None):
+            criterions.append(SysOperLogPo.oper_time >= extra.begin_time)
+        if getattr(extra, "end_time", None):
+            criterions.append(SysOperLogPo.oper_time <= extra.end_time)
+
+    @classmethod
+    def _apply_sorting(cls, stmt):
+        sort = getattr(getattr(g, "criterian_meta", None), "sort", None)
+        order_columns = []
+        if sort and sort.order_by_column:
+            for alias in sort.order_by_column:
+                field_name = cls._camel_to_snake(alias)
+                column = getattr(SysOperLogPo, field_name, None)
+                if not column:
+                    continue
+                if sort.is_asc == "asc":
+                    order_columns.append(column.asc())
+                else:
+                    order_columns.append(column.desc())
+        if not order_columns:
+            order_columns.append(SysOperLogPo.oper_time.desc())
+        return stmt.order_by(*order_columns)
+
+    @staticmethod
+    def _camel_to_snake(value:str) -> str:
+        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', value)
+        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
     
     @classmethod
     @Transactional(db.session)
