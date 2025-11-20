@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Author  : YY
 
+import re
 from typing import List
 from flask import g
 from sqlalchemy import delete, insert, select
@@ -74,11 +75,35 @@ class SysLogininforMapper:
                 criterions.append(SysLogininforPo.create_time <= extra.end_time)
         stmt = select(*cls.default_columns) \
             .where(*criterions)
+        stmt = cls._apply_sorting(stmt)
         if "criterian_meta" in g and g.criterian_meta.page:
             g.criterian_meta.page.stmt = stmt
         
         rows = db.session.execute(stmt).all()
         return [cls.default_columns.cast(row, SysLogininfor) for row in rows]
+
+    @classmethod
+    def _apply_sorting(cls, stmt):
+        sort = getattr(getattr(g, "criterian_meta", None), "sort", None)
+        order_columns = []
+        if sort and sort.order_by_column:
+            for alias in sort.order_by_column:
+                field_name = cls._camel_to_snake(alias)
+                column = getattr(SysLogininforPo, field_name, None)
+                if not column:
+                    continue
+                if sort.is_asc == "asc":
+                    order_columns.append(column.asc())
+                else:
+                    order_columns.append(column.desc())
+        if not order_columns:
+            order_columns.append(SysLogininforPo.login_time.desc())
+        return stmt.order_by(*order_columns)
+
+    @staticmethod
+    def _camel_to_snake(value:str) -> str:
+        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', value)
+        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
     @classmethod
     @Transactional(db.session)

@@ -253,7 +253,7 @@ class SysLogininfor(AuditEntity):
     # 用户账号
     user_name: Annotated[
         Optional[str],
-        Field(default=None,vo=VoAccess(query=True))
+        Field(default=None,vo=VoAccess(query=True,sort=True))
     ]
     
     # 登录状态（0成功 1失败）
@@ -278,7 +278,11 @@ class SysLogininfor(AuditEntity):
     os: Optional[str] = None
     
     # 登录时间
-    login_time: Annotated[Optional[datetime],Field(default_factory=datetime.now)] = None
+    login_time: Annotated[
+        Optional[datetime],
+        BeforeValidator(to_datetime()),
+        Field(default=None,vo=VoAccess(query=True,sort=True))
+    ]
     
     # 提示消息
     msg: Optional[str] = None
