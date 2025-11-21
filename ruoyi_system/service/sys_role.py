@@ -11,6 +11,7 @@ from ruoyi_common.utils import security_util as SecurityUtil
 from ruoyi_system.domain.entity import SysRoleDept, SysRoleMenu, SysUserRole
 from ruoyi_system.mapper import SysRoleDeptMapper,SysRoleMenuMapper, \
                                 SysUserRoleMapper,SysRoleMapper
+from ruoyi_system.service.sys_dept import SysDeptService
 from ruoyi_framework.descriptor.datascope import DataScope
 from ruoyi_admin.ext import db
 
@@ -116,7 +117,8 @@ class SysRoleService:
         role = SysRoleMapper.select_role_by_id(role_id)
         if role:
             role.menu_ids = SysRoleMenuMapper.select_menu_ids_by_role_id(role_id)
-            role.dept_ids = SysRoleDeptMapper.select_dept_ids_by_role_id(role_id)
+            role.dept_ids = list(SysDeptService.select_dept_list_by_role_id(role_id)) \
+                if role.data_scope == "2" else []
         return role
     
     @classmethod
@@ -242,7 +244,7 @@ class SysRoleService:
 
     @classmethod
     @Transactional(db.session)
-    def auth_data_scope(cls, role:SysRole):
+    def auth_data_scope(cls, role:SysRole) -> bool:
         """
         修改数据权限信息
 
@@ -250,11 +252,19 @@ class SysRoleService:
             role(SysRole): 角色信息
         
         Returns:
-            bool: 修改结果
+            bool: 修改结果（True 表示成功）
         """
+        # 1. 先更新角色本身的数据范围等信息
         SysRoleMapper.update_role(role)
+        # 2. 清理原有角色-部门关联
         SysRoleDeptMapper.delete_role_dept_by_role_id(role.role_id)
-        return cls.insert_role_dept(role)
+        # 3. 只有“自定义数据权限”(通常为 '2') 时才维护角色-部门表
+        # 其他类型的数据范围（全部、本部门、本部门及以下、仅本人）都不需要 sys_role_dept 记录
+        if role.data_scope == "2" and role.dept_ids:
+            num = cls.insert_role_dept(role)
+            return num > 0
+        # 非自定义范围，即使没有部门记录也视为成功
+        return True
     
     @classmethod
     @Transactional(db.session)

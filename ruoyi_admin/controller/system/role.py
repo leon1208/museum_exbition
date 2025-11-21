@@ -109,9 +109,14 @@ def system_data_scope_update(dto:SysRole):
     '''
         修改数据权限
     '''
+    # 校验是否允许操作该角色、以及当前用户是否有该角色的数据权限
     SysRoleService.check_role_allowed(dto)
     SysRoleService.check_role_data_scope(dto.role_id)
-    return AjaxResponse.from_success()
+    # 记录操作人
+    dto.update_by_user(SecurityUtil.get_username())
+    # 保存数据范围与角色-部门关联
+    flag = SysRoleService.auth_data_scope(dto)
+    return AjaxResponse.from_success() if flag else AjaxResponse.from_error()
 
 
 @reg.api.route("/system/role/changeStatus", methods=["PUT"])
