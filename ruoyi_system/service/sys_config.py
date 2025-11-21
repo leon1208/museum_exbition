@@ -163,7 +163,9 @@ class SysConfigService:
         清除配置缓存
         """
         keys = redis_cache.keys(Constants.SYS_CONFIG_KEY + "*")
-        redis_cache.delete(keys)
+        # redis-py 的 delete 需要 *names 形式的参数，不能直接传 list
+        if keys:
+            redis_cache.delete(*keys)
 
     @classmethod
     def reset_config_cache(cls):

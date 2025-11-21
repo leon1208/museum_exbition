@@ -19,9 +19,14 @@ class SysConfigMapper:
     配置数据访问层
     """
     
+    # 默认查询字段（接口返回的字段）
     default_fields = {
-        'config_id', 'config_key', 'config_name', 'config_value', 
-        'config_type', 'create_time', 'update_time'
+        'config_id', 'config_key', 'config_name', 'config_value',
+        'config_type',
+        # 审计字段
+        'create_by', 'create_time', 'update_by', 'update_time',
+        # 备注
+        'remark',
     }
     
     default_columns = ColumnEntityList(SysConfigPo, default_fields, False)
