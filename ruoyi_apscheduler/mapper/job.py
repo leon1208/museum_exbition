@@ -94,8 +94,15 @@ class SysJobMapper:
         data = job.model_dump(
             include=fields,exclude_unset=True,exclude_none=True
         )
+        # 如果未指定 job_id，则交由数据库自增
+        if not data.get("job_id"):
+            data.pop("job_id", None)
         stmt = insert(SysJobPo).values(data)
-        return db.session.execute(stmt).scalar_one_or_none()
+        result = db.session.execute(stmt)
+        pk_values = result.inserted_primary_key
+        if pk_values:
+            return pk_values[0]
+        return data.get("job_id")
     
     @classmethod
     def update_job(cls, job:SysJob) -> int:

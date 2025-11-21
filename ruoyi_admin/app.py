@@ -2,6 +2,7 @@
 
 import os
 from flask import Flask
+from ruoyi_common.base.signal import app_completed
 from ruoyi_common.ruoyi.extension import FlaskRuoYi
 from ruoyi_common.config import RuoYiConfig
 
@@ -33,6 +34,9 @@ def create_app():
         print("Test module registered successfully")
     except ImportError:
         print("测试模块未找到或未正确配置")
+
+    # 所有扩展和模块完成初始化后，发送应用完成信号
+    app_completed.send(app)
 
     return app
 

@@ -7,7 +7,7 @@ from pydantic import BeforeValidator, Field
 from typing_extensions import Annotated
 
 from ruoyi_common.base.model import BaseEntity, AuditEntity
-from ruoyi_common.base.transformer import str_to_int, to_datetime
+from ruoyi_common.base.transformer import int_to_str, str_to_int, to_datetime
 from ruoyi_common.base.schema_vo import VoAccess
 from ruoyi_common.utils.base import DateUtil
 from ruoyi_apscheduler.constant import DATETIME_FORMAT
@@ -38,9 +38,15 @@ class SysJob(AuditEntity):
     
     cron_expression: Optional[str] = None
     
-    misfire_policy: Optional[str] = None
+    misfire_policy: Annotated[
+        Optional[str],
+        BeforeValidator(int_to_str)
+    ] = None
     
-    concurrent: Optional[str] = None
+    concurrent: Annotated[
+        Optional[str],
+        BeforeValidator(int_to_str)
+    ] = None
     
     status: Annotated[
         Optional[str],
