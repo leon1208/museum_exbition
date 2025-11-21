@@ -117,7 +117,7 @@ class SysJobService:
         Returns:
             int: 删除的任务数量
         """
-        num = SysJobMapper.delete_job(job.job_id)
+        num = SysJobMapper.delete_job_by_id(job.job_id)
         if num > 0:
             scheduler.remove_job(job.job_key)
         return num
@@ -134,7 +134,7 @@ class SysJobService:
         for job_id in job_ids:
             job = cls.select_job_by_id(job_id)
             if job:
-                cls.delete_job(job)
+                cls.delete_job_by_id(job)
     
     @classmethod
     @Transactional(db.session)

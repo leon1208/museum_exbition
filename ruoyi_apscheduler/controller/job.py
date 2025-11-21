@@ -184,6 +184,7 @@ def common_job_run(dto:SysJob) -> AjaxResponse:
     return AjaxResponse.from_success()
 
 
+@reg.api.route("/monitor/job/<ids>", methods=["DELETE"])
 @reg.api.route("/monitor/job/remove", methods=["DELETE"])
 @PathValidator()
 @PreAuthorize(HasPerm('monitor:job:remove'))
