@@ -296,6 +296,7 @@ class SysUserService:
         cls.insert_user_role(user_id, role_ids)
 
     @classmethod
+    @Transactional(db.session)
     def delete_users_by_id(cls, id: int) -> bool:
         """
         根据用户ID，删除用户
@@ -306,9 +307,12 @@ class SysUserService:
         Returns:
             bool: 操作结果
         """
+        SysUserRoleMapper.delete_user_role_by_user_id(id)
+        SysUserPostMapper.delete_user_post_by_user_id(id)
         return SysUserMapper.delete_user_by_id(id) > 0
 
     @classmethod
+    @Transactional(db.session)
     def delete_users_by_ids(cls, ids: List[int]) -> bool:
         """
         根据用户ID列表，批量删除用户
@@ -319,6 +323,10 @@ class SysUserService:
         Returns:
             bool: 操作结果
         """
+        if not ids:
+            return False
+        SysUserRoleMapper.delete_user_role_by_user_ids(ids)
+        SysUserPostMapper.delete_user_post(ids)
         return SysUserMapper.delete_user_by_ids(ids) > 0
 
     @classmethod

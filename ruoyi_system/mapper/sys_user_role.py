@@ -30,6 +30,23 @@ class SysUserRoleMapper:
         """
         stmt = delete(SysUserRolePo).where(SysUserRolePo.user_id==user_id)
         return db.session.execute(stmt).rowcount
+    
+    @classmethod
+    @Transactional(db.session)
+    def delete_user_role_by_user_ids(cls, user_ids: List[int]) -> int:
+        """
+        批量通过用户ID删除用户和角色关联
+
+        Args:
+            user_ids (List[int]): 用户ID列表
+
+        Returns:
+            int: 影响的行数
+        """
+        if not user_ids:
+            return 0
+        stmt = delete(SysUserRolePo).where(SysUserRolePo.user_id.in_(user_ids))
+        return db.session.execute(stmt).rowcount
 
     @classmethod
     @Transactional(db.session)
