@@ -7,16 +7,28 @@
 	<a href="https://gitee.com/shaw-lee/ruoyi-vue-flask/blob/5139e50de7a5d97e0a512019e87a0961768ec9aa/LICENSE"><img src="https://img.shields.io/github/license/mashape/apistatus.svg"></a>
 </p>
 
+
 ## 平台简介
 
 Ruoyi-Vue-Flask是一套全部开源的快速开发平台，给个人及企业免费使用。
 
 * 前端采用Vue、Element UI。
+
 * 后端采用Flask、SQLAlchemy、Pydantic、Redis & Jwt，与Ruoyi-Vue后端主要接口保持一致。
+
 * 权限认证使用Jwt，支持多终端认证系统。
+
 * 支持加载动态权限菜单，多方式轻松权限控制。
+
 * 高效率开发，使用代码生成器可以一键生成前后端代码（计划中）。
-* 特别鸣谢： [Ruoyi-Vue (V3.8.1)](https://gitee.com/y_project/RuoYi-Vue)
+
+* 特别鸣谢： [Ruoyi-Vue (V3.8.1)](https://gitee.com/y_project/RuoYi-Vue) https://gitee.com/shaw-lee/ruoyi-vue-flask
+
+  
+
+![1](assets/1.png)
+
+![2](assets/2.png)
 
 ## 内置功能
 
@@ -39,7 +51,7 @@ Ruoyi-Vue-Flask是一套全部开源的快速开发平台，给个人及企业�
 17. 连接池监视：（待定，python版本不支持druid连接池）
 18. Swagger文档：（计划中）
 19. 国际化：（计划中）
-20. 代码生成：（计划中）
+20. 代码生成：生成基本的CURD
 
 ## 安装部署
 
@@ -55,11 +67,7 @@ node版本：v20.17.0
 
 ### mysql数据库
 ```text
-数据名： ry-vue-py
-
-执行sql语句
-1. sql/ry_20230706.sql
-2. sql/ruoyi2ruoyi.sql
+运行sql文件夹下文件即可
 ```
 ### 后端快速启动（开发环境:windows）
 
