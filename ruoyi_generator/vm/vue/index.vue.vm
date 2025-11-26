@@ -114,8 +114,7 @@
       {%- set comment = comment.split('（')[0] %}
       {%- endif %}
       {%- endif %}
-      {%- if column.is_pk == '1' %}
-      {%- elif column.is_list and column.list_index is not none and column.html_type == 'datetime' %}
+      {%- if column.is_list and column.list_index is not none and column.html_type == 'datetime' %}
       <el-table-column label="{{ comment }}" align="center" v-if="columns[{{ column.list_index }}].visible" prop="{{ java_field }}" width="180">
         <template slot-scope="scope">
           <span>{{ "{{ parseTime(scope.row." }}{{ java_field }}{{ ", '{y}-{m}-{d}') }}" }}</span>
