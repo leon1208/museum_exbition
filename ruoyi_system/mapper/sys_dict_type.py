@@ -162,7 +162,7 @@ class SysDictTypeMapper:
             "dict_name","dict_type","status","create_by","create_time","remark"
         }
         data = dictype.model_dump(
-            include=fields,include_none=True,exclude_unset=True
+            include=fields,exclude_unset=True
         )
         stmt = insert(SysDictTypePo).values(data)
         out = db.session.execute(stmt).inserted_primary_key
