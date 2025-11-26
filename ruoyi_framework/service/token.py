@@ -18,6 +18,8 @@ except Exception:
 
 
 class TokenService:
+
+    refresh_threshold_minutes = 20
     
     @classmethod
     def create_token(cls, user:LoginUser) -> str:
@@ -61,7 +63,11 @@ class TokenService:
         '''
         expire_time = user.expire_time
         current_time = datetime.now()
-        if (expire_time - current_time).min < 20:
+        if not expire_time:
+            cls.refresh_token(user)
+            return
+        remaining = (expire_time - current_time).total_seconds() / 60
+        if remaining <= cls.refresh_threshold_minutes:
             cls.refresh_token(user)
         
     @classmethod
@@ -77,8 +83,8 @@ class TokenService:
         user.expire_time = user.login_time + expire_delta
         expire_seconds = TokenConfig.expire_seconds()
         usertoken_key = cls.get_token_key(user.token.hex)
-        user_json = user.model_dump_json()
         if redis_cache:
+            user_json = user.model_dump_json()
             redis_cache.set(usertoken_key, user_json, ex=expire_seconds)
         
     @classmethod
@@ -148,6 +154,8 @@ class TokenService:
                 return None
             login_user = LoginUser.model_validate_json(jsoned_user)
             if login_user:
+                # 根据剩余有效期选择性刷新TTL，避免每次请求都重写缓存
+                cls.verify_token(login_user)
                 return login_user
             else:
                 raise ServiceException("Token信息不存在")
