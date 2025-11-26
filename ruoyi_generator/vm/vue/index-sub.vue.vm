@@ -507,10 +507,12 @@ export default {
         "导入结果",
         { dangerouslyUseHTMLString: true }
       );
+      this.$modal.closeLoading()
       this.getList();
     },
     // 提交上传文件
     submitFileForm() {
+      this.$modal.loading("导入中请稍后")
       this.$refs.upload.submit();
     },
     /** 提交按钮 */
