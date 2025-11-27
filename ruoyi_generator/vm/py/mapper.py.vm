@@ -31,12 +31,38 @@ class {{ underscore(table.class_name) }}_mapper:
             # 构建查询条件
             stmt = select({{ underscore(table.class_name) }}_po)
 {% for column in table.columns %}
-{% if column.is_query and column.query_type == 'EQ' %}
-            if {{ underscore(table.business_name) }}.{{ underscore(column.java_field) }} is not None:
-                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ underscore(column.java_field) }} == {{ underscore(table.business_name) }}.{{ underscore(column.java_field) }})
-{% elif column.is_query and column.query_type == 'LIKE' %}
-            if {{ underscore(table.business_name) }}.{{ underscore(column.java_field) }}:
-                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ underscore(column.java_field) }}.like("%" + str({{ underscore(table.business_name) }}.{{ underscore(column.java_field) }}) + "%"))
+{% if column.is_query %}
+{%- set field_name = underscore(column.java_field) %}
+{%- if column.query_type == 'EQ' %}
+            if {{ underscore(table.business_name) }}.{{ field_name }} is not None:
+                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }} == {{ underscore(table.business_name) }}.{{ field_name }})
+{%- elif column.query_type == 'NE' %}
+            if {{ underscore(table.business_name) }}.{{ field_name }} is not None:
+                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }} != {{ underscore(table.business_name) }}.{{ field_name }})
+{%- elif column.query_type == 'GT' %}
+            if {{ underscore(table.business_name) }}.{{ field_name }} is not None:
+                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }} > {{ underscore(table.business_name) }}.{{ field_name }})
+{%- elif column.query_type == 'GTE' %}
+            if {{ underscore(table.business_name) }}.{{ field_name }} is not None:
+                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }} >= {{ underscore(table.business_name) }}.{{ field_name }})
+{%- elif column.query_type == 'LT' %}
+            if {{ underscore(table.business_name) }}.{{ field_name }} is not None:
+                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }} < {{ underscore(table.business_name) }}.{{ field_name }})
+{%- elif column.query_type == 'LTE' %}
+            if {{ underscore(table.business_name) }}.{{ field_name }} is not None:
+                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }} <= {{ underscore(table.business_name) }}.{{ field_name }})
+{%- elif column.query_type == 'LIKE' %}
+            if {{ underscore(table.business_name) }}.{{ field_name }}:
+                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }}.like("%" + str({{ underscore(table.business_name) }}.{{ field_name }}) + "%"))
+{%- elif column.query_type == 'BETWEEN' %}
+            _params = getattr({{ underscore(table.business_name) }}, "params", {}) or {}
+            begin_val = _params.get("begin{{ capitalize_first(column.java_field) }}")
+            end_val = _params.get("end{{ capitalize_first(column.java_field) }}")
+            if begin_val is not None:
+                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }} >= begin_val)
+            if end_val is not None:
+                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }} <= end_val)
+{%- endif %}
 {% endif %}
 {% endfor %}
             if "criterian_meta" in g and g.criterian_meta.page:
