@@ -3,6 +3,7 @@
 
 from ruoyi_common.base.model import AjaxResponse
 from ruoyi_common.descriptor.serializer import JsonSerializer
+from ruoyi_common.descriptor.validator import BodyValidator
 from ruoyi_common.domain.vo import RegisterBody
 from ruoyi_system.service import SysConfigService
 from ruoyi_framework.service.sys_register import RegisterService
@@ -10,8 +11,9 @@ from ... import reg
 
 
 @reg.api.route("/register", methods=["POST"])
+@BodyValidator()
 @JsonSerializer()
-def index_register(dto:RegisterBody):
+def index_register(dto: RegisterBody):
     '''
     注册接口
     '''

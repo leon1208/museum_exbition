@@ -36,14 +36,13 @@ del _update_exceptions
 
 
 class HttpException(HTTPException):
-
     code: int | None = None
     description: str | None = None
 
     def __init__(
-        self,
-        description: str | None = None,
-        response: Response | None = None,
+            self,
+            description: str | None = None,
+            response: Response | None = None,
     ) -> None:
         super().__init__()
         if description is not None:
@@ -51,7 +50,7 @@ class HttpException(HTTPException):
         self.response = response
 
     @classmethod
-    def from_http_exception(cls, exc: HTTPException) -> "HttpException": 
+    def from_http_exception(cls, exc: HTTPException) -> "HttpException":
         """
         从HTTPException转换为HttpException
 
@@ -64,12 +63,12 @@ class HttpException(HTTPException):
         error = cls(description=exc.description, response=exc.response)
         error.code = exc.code
         return error
-    
+
     @property
     def name(self) -> str:
         """
         状态名称
-        
+
         Returns:
             str: 状态名称
         """
@@ -78,13 +77,13 @@ class HttpException(HTTPException):
         return HTTP_STATUS_CODES.get(self.code, "Unknown Error")  # type: ignore
 
     def get_description(
-        self,
-        environ: WSGIEnvironment | None = None,
-        scope: dict[str, t.Any] | None = None,
+            self,
+            environ: WSGIEnvironment | None = None,
+            scope: dict[str, t.Any] | None = None,
     ) -> str:
         """
         异常描述
-        
+
         Args:
             environ (WSGIEnvironment, optional): 环境变量. Defaults to None.
             scope (dict[str, t.Any], optional): 作用域. Defaults to None.
@@ -95,13 +94,13 @@ class HttpException(HTTPException):
         return self.description or ""
 
     def get_body(
-        self,
-        environ: WSGIEnvironment | None = None,
-        scope: dict[str, t.Any] | None = None,
+            self,
+            environ: WSGIEnvironment | None = None,
+            scope: dict[str, t.Any] | None = None,
     ) -> str:
         """
         异常响应体
-        
+
         Args:
             environ (WSGIEnvironment, optional): 环境变量. Defaults to None.
             scope (dict[str, t.Any], optional): 作用域. Defaults to None.
@@ -112,18 +111,18 @@ class HttpException(HTTPException):
         ajax_resposne = AjaxResponse.from_error(msg=self.description)
         ajax_resposne.code = self.code
         return ajax_resposne.model_dump_json(
-            exclude_unset = True,
-            exclude_none = True,
+            exclude_unset=True,
+            exclude_none=True,
         )
 
     def get_headers(
-        self,
-        environ: WSGIEnvironment | None = None,
-        scope: dict[str, t.Any] | None = None,
+            self,
+            environ: WSGIEnvironment | None = None,
+            scope: dict[str, t.Any] | None = None,
     ) -> list[tuple[str, str]]:
         """
         异常请求头
-        
+
         Args:
             environ (WSGIEnvironment, optional): 环境变量. Defaults to None.
             scope (dict[str, t.Any], optional): 作用域. Defaults to None.
@@ -145,11 +144,11 @@ def json_default(obj):
         _type_: 可序列化对象
     """
     if isinstance(obj, date):
-        return http_date(obj) 
+        return http_date(obj)
 
     if isinstance(obj, decimal.Decimal):
         return str(obj)
-    
+
     if isinstance(obj, uuid.UUID):
         return obj.hex
 
@@ -172,11 +171,11 @@ class JsonProvider(DefaultJSONProvider):
     Args:
         DefaultJSONProvider: 默认flask的json序列化
     """
-    
+
     default = staticmethod(json_default)
 
 
-def handle_http_exception(error:HTTPException) -> Response:
+def handle_http_exception(error: HTTPException) -> Response:
     """
     处理http异常
 
@@ -191,9 +190,11 @@ def handle_http_exception(error:HTTPException) -> Response:
     return error.get_response()
 
 
-def handle_util_exception(error:UtilException) -> Response:
+def handle_util_exception(error: UtilException) -> Response:
     """
     处理业务工具类异常，保持和若依Java版一致的json结构
+    注意：HTTP状态码始终返回200，业务状态码放在响应体的code字段中
+    这样前端可以正确读取msg字段，而不是显示"接口XXX异常"
     """
     status = getattr(error, "status", HttpStatus.ERROR)
     ajax_response = AjaxResponse.from_error(msg=str(error))
@@ -203,7 +204,7 @@ def handle_util_exception(error:UtilException) -> Response:
             exclude_unset=True,
             exclude_none=True,
         ),
-        status=status,
+        status=HttpStatus.SUCCESS,  # HTTP状态码始终返回200，业务状态码在响应体的code中
         mimetype="application/json"
     )
     return response
