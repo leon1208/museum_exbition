@@ -68,7 +68,11 @@ class {{ class_name_pascal }}(BaseEntity):
 {%- if column.is_query == '1' %}
 {%- set _ = metadata.append('VoField(query=True)') %}
 {%- endif %}
-{%- set _ = metadata.append('ExcelField(name="' ~ excel_name ~ '")') %}
+{%- set excel_field_params = ['name="' ~ excel_name ~ '"'] %}
+{%- if column.dict_type and column.dict_type != '' %}
+{%- set _ = excel_field_params.append('dict_type="' ~ column.dict_type ~ '"') %}
+{%- endif %}
+{%- set _ = metadata.append('ExcelField(' ~ excel_field_params | join(', ') ~ ')') %}
     # {{ display_comment }}
     {{ attr_name }}: Annotated[
         {{ py_type }},
