@@ -471,17 +471,21 @@ class GenUtils:
                             query_cols = None
                             required_cols = None
                         
+                        # 预计算双驼峰命名的类名，避免模板中重复调用
+                        class_name_pascal = to_camel_case(table.class_name)
+                        
                         context = {
                             'table': table,
                             'datetime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                             'underscore': to_underscore,  # 下划线命名工具
                             'capitalize_first': capitalize_first,  # 首字母大写工具
-                            'to_camel_case': to_camel_case,  # 新增：驼峰命名工具
+                            'to_camel_case': to_camel_case,  # 保留用于其他场景
                             'get_import_path': GenUtils.get_import_path,  # 导入路径生成函数
                             'get_tree_column_index': get_tree_column_index,  # 树表列索引计算函数
                             'list_cols': list_cols,  # 树表的列表列
                             'query_cols': query_cols,  # 树表的查询列
-                            'required_cols': required_cols  # 树表的必填列
+                            'required_cols': required_cols,  # 树表的必填列
+                            'class_name_pascal': class_name_pascal  # 预计算的双驼峰类名
                         }
                         
                         # 使用Jinja2渲染模板
@@ -531,14 +535,16 @@ class GenUtils:
                             # 根据文件类型确定导入的类名
                             if '/entity/' in output_file_name and '.py' in output_file_name:
                                 # Entity 文件在 domain/entity/ 目录下
-                                dir_files[dir_path].append(('entity', table.class_name, table))
+                                dir_files[dir_path].append(('entity', to_camel_case(table.class_name), table))
                             elif '/po/' in output_file_name and '_po.py' in output_file_name:
-                                # PO 文件在 domain/po/ 目录下
-                                dir_files[dir_path].append(('po', f"{to_underscore(table.class_name)}_po", table))
+                                # PO 文件在 domain/po/ 目录下，类名使用双驼峰，文件名使用下划线
+                                dir_files[dir_path].append(('po', (f"{to_underscore(table.class_name)}_po", f"{table.class_name}Po"), table))
                             elif '_service.py' in output_file_name:
-                                dir_files[dir_path].append(('service', f"{to_underscore(table.class_name)}_service", table))
+                                # Service 文件，类名使用双驼峰，文件名使用下划线
+                                dir_files[dir_path].append(('service', (f"{to_underscore(table.class_name)}_service", f"{table.class_name}Service"), table))
                             elif '_mapper.py' in output_file_name:
-                                dir_files[dir_path].append(('mapper', f"{to_underscore(table.class_name)}_mapper", table))
+                                # Mapper 文件，类名使用双驼峰，文件名使用下划线
+                                dir_files[dir_path].append(('mapper', (f"{to_underscore(table.class_name)}_mapper", f"{table.class_name}Mapper"), table))
                             elif '_controller.py' in output_file_name:
                                 dir_files[dir_path].append(('controller', 'gen', table))
                         
@@ -594,19 +600,23 @@ class GenUtils:
                     # 其他目录正常生成导入语句
                     if dir_path in dir_files:
                         imports = []
-                        for file_type, class_name, table_info in dir_files[dir_path]:
+                        for file_type, class_name_info, table_info in dir_files[dir_path]:
                             if file_type == 'entity':
                                 # Entity 文件在 domain/entity/ 目录下，导入时使用文件名
-                                entity_file_name = to_underscore(class_name)
-                                imports.append(f"from .{entity_file_name} import {class_name}")
+                                entity_file_name = to_underscore(class_name_info)
+                                imports.append(f"from .{entity_file_name} import {class_name_info}")
                             elif file_type == 'po':
-                                # PO 文件在 domain/po/ 目录下，导入时使用文件名
-                                po_file_name = class_name  # class_name 已经是 address_info_po
-                                imports.append(f"from .{po_file_name} import {class_name}")
+                                # PO 文件在 domain/po/ 目录下，文件名和类名分开处理
+                                file_name, class_name = class_name_info
+                                imports.append(f"from .{file_name} import {class_name}")
                             elif file_type == 'service':
-                                imports.append(f"from .{class_name} import {class_name}")
+                                # Service 文件，文件名和类名分开处理
+                                file_name, class_name = class_name_info
+                                imports.append(f"from .{file_name} import {class_name}")
                             elif file_type == 'mapper':
-                                imports.append(f"from .{class_name} import {class_name}")
+                                # Mapper 文件，文件名和类名分开处理
+                                file_name, class_name = class_name_info
+                                imports.append(f"from .{file_name} import {class_name}")
                         
                         if imports:
                             init_lines.extend(sorted(set(imports)))
@@ -767,16 +777,20 @@ class GenUtils:
                                 query_cols = None
                                 required_cols = None
                             
+                            # 预计算双驼峰命名的类名，避免模板中重复调用
+                            class_name_pascal = to_camel_case(table.class_name)
+                            
                             context = {
                                 'table': table,
                                 'datetime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                                 'underscore': to_underscore,  # 下划线命名工具
                                 'capitalize_first': capitalize_first,  # 首字母大写工具
-                                'to_camel_case': to_camel_case,  # 新增：驼峰命名工具
+                                'to_camel_case': to_camel_case,  # 保留用于其他场景
                                 'get_import_path': GenUtils.get_import_path,  # 导入路径生成函数
                                 'list_cols': list_cols,  # 树表的列表列
                                 'query_cols': query_cols,  # 树表的查询列
-                                'required_cols': required_cols  # 树表的必填列
+                                'required_cols': required_cols,  # 树表的必填列
+                                'class_name_pascal': class_name_pascal  # 预计算的双驼峰类名
                             }
                             
                             # 使用Jinja2渲染模板
@@ -819,14 +833,16 @@ class GenUtils:
                                 # 根据文件类型确定导入的类名
                                 if '/entity/' in output_file_name and '.py' in output_file_name:
                                     # Entity 文件在 domain/entity/ 目录下
-                                    dir_files[dir_path].append(('entity', table.class_name, table))
+                                    dir_files[dir_path].append(('entity', to_camel_case(table.class_name), table))
                                 elif '/po/' in output_file_name and '_po.py' in output_file_name:
-                                    # PO 文件在 domain/po/ 目录下
-                                    dir_files[dir_path].append(('po', f"{to_underscore(table.class_name)}_po", table))
+                                    # PO 文件在 domain/po/ 目录下，类名使用双驼峰，文件名使用下划线
+                                    dir_files[dir_path].append(('po', (f"{to_underscore(table.class_name)}_po", f"{to_camel_case(table.class_name)}Po"), table))
                                 elif '_service.py' in output_file_name:
-                                    dir_files[dir_path].append(('service', f"{to_underscore(table.class_name)}_service", table))
+                                    # Service 文件，类名使用双驼峰，文件名使用下划线
+                                    dir_files[dir_path].append(('service', (f"{to_underscore(table.class_name)}_service", f"{to_camel_case(table.class_name)}Service"), table))
                                 elif '_mapper.py' in output_file_name:
-                                    dir_files[dir_path].append(('mapper', f"{to_underscore(table.class_name)}_mapper", table))
+                                    # Mapper 文件，类名使用双驼峰，文件名使用下划线
+                                    dir_files[dir_path].append(('mapper', (f"{to_underscore(table.class_name)}_mapper", f"{to_camel_case(table.class_name)}Mapper"), table))
                                 elif '_controller.py' in output_file_name:
                                     dir_files[dir_path].append(('controller', 'gen', table))
                             
@@ -894,19 +910,23 @@ class GenUtils:
                     # 其他目录正常生成导入语句
                     if dir_path in dir_files:
                         imports = []
-                        for file_type, class_name, table_info in dir_files[dir_path]:
+                        for file_type, class_name_info, table_info in dir_files[dir_path]:
                             if file_type == 'entity':
                                 # Entity 文件在 domain/entity/ 目录下，导入时使用文件名
-                                entity_file_name = to_underscore(class_name)
-                                imports.append(f"from .{entity_file_name} import {class_name}")
+                                entity_file_name = to_underscore(class_name_info)
+                                imports.append(f"from .{entity_file_name} import {class_name_info}")
                             elif file_type == 'po':
-                                # PO 文件在 domain/po/ 目录下，导入时使用文件名
-                                po_file_name = class_name  # class_name 已经是 address_info_po
-                                imports.append(f"from .{po_file_name} import {class_name}")
+                                # PO 文件在 domain/po/ 目录下，文件名和类名分开处理
+                                file_name, class_name = class_name_info
+                                imports.append(f"from .{file_name} import {class_name}")
                             elif file_type == 'service':
-                                imports.append(f"from .{class_name} import {class_name}")
+                                # Service 文件，文件名和类名分开处理
+                                file_name, class_name = class_name_info
+                                imports.append(f"from .{file_name} import {class_name}")
                             elif file_type == 'mapper':
-                                imports.append(f"from .{class_name} import {class_name}")
+                                # Mapper 文件，文件名和类名分开处理
+                                file_name, class_name = class_name_info
+                                imports.append(f"from .{file_name} import {class_name}")
                         
                         if imports:
                             init_lines.extend(sorted(set(imports)))
@@ -1041,17 +1061,21 @@ class GenUtils:
                         query_cols = None
                         required_cols = None
                     
-                    context = {
-                        'table': table,
-                        'datetime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                        'underscore': to_underscore,  # 下划线命名工具
-                        'capitalize_first': capitalize_first,  # 首字母大写工具
-                        'to_camel_case': to_camel_case,  # 新增：驼峰命名工具
-                        'get_import_path': GenUtils.get_import_path,  # 导入路径生成函数
-                        'list_cols': list_cols,  # 树表的列表列
-                        'query_cols': query_cols,  # 树表的查询列
-                        'required_cols': required_cols  # 树表的必填列
-                    }
+                        # 预计算双驼峰命名的类名，避免模板中重复调用
+                        class_name_pascal = to_camel_case(table.class_name)
+                        
+                        context = {
+                            'table': table,
+                            'datetime': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                            'underscore': to_underscore,  # 下划线命名工具
+                            'capitalize_first': capitalize_first,  # 首字母大写工具
+                            'to_camel_case': to_camel_case,  # 保留用于其他场景
+                            'get_import_path': GenUtils.get_import_path,  # 导入路径生成函数
+                            'list_cols': list_cols,  # 树表的列表列
+                            'query_cols': query_cols,  # 树表的查询列
+                            'required_cols': required_cols,  # 树表的必填列
+                            'class_name_pascal': class_name_pascal  # 预计算的双驼峰类名
+                        }
                     
                     # 使用Jinja2渲染模板
                     template = Template(template_content)

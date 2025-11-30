@@ -369,7 +369,7 @@
 </template>
 
 <script>
-{% set apiName = to_camel_case(table.class_name, False) %}
+{% set apiName = to_camel_case(table.business_name, False) %}
 {% set ApiName = capitalize_first(apiName) %}
 import { list{{ ApiName }}, get{{ ApiName }}, del{{ ApiName }}, add{{ ApiName }}, update{{ ApiName }}} from "@/api/{{ table.module_name }}/{{ table.business_name }}";
 import Treeselect from "@riophae/vue-treeselect";
@@ -383,7 +383,7 @@ import { getToken } from "@/utils/auth";
 {%- set tree_name_field = to_camel_case(raw_tree_name, False) %}
 
 export default {
-  name: "{{ table.class_name }}",
+  name: "{{ ApiName }}",
 {%- set dicts_list = [] %}
 {%- for column in table.columns %}
 {%- if column.dict_type and column.dict_type != '' %}

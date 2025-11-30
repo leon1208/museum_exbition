@@ -36,7 +36,7 @@ from ruoyi_common.base.schema_vo import VoField
 {%- endif %}
 
 
-class {{ table.class_name }}(BaseEntity):
+class {{ class_name_pascal }}(BaseEntity):
     """
     {{ table.table_comment }}对象
     """

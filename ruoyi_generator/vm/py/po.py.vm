@@ -11,7 +11,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from ruoyi_admin.ext import db
 
-class {{ underscore(table.class_name) }}_po(db.Model):
+class {{ class_name_pascal }}Po(db.Model):
     """
     {{ table.table_comment }}PO对象
     """

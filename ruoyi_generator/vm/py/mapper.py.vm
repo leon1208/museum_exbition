@@ -10,14 +10,14 @@ from flask import g
 from sqlalchemy import select, update, delete
 
 from ruoyi_admin.ext import db
-from {{ get_import_path(table.package_name, table.module_name, 'domain') }} import {{ table.class_name }}
-from {{ get_import_path(table.package_name, table.module_name, 'domain', table.class_name) }} import {{ underscore(table.class_name) }}_po
+from {{ get_import_path(table.package_name, table.module_name, 'domain') }} import {{ class_name_pascal }}
+from {{ get_import_path(table.package_name, table.module_name, 'domain', table.class_name) }} import {{ class_name_pascal }}Po
 
-class {{ underscore(table.class_name) }}_mapper:
+class {{ class_name_pascal }}Mapper:
     """{{ table.function_name }}Mapper"""
 
     @staticmethod
-    def select_{{ underscore(table.class_name) }}_list({{ underscore(table.business_name) }}: {{ table.class_name }}) -> List[{{ table.class_name }}]:
+    def select_{{ underscore(table.class_name) }}_list({{ underscore(table.business_name) }}: {{ class_name_pascal }}) -> List[{{ class_name_pascal }}]:
         """
         查询{{ table.function_name }}列表
 
@@ -29,39 +29,39 @@ class {{ underscore(table.class_name) }}_mapper:
         """
         try:
             # 构建查询条件
-            stmt = select({{ underscore(table.class_name) }}_po)
+            stmt = select({{ class_name_pascal }}Po)
 {% for column in table.columns %}
 {% if column.is_query %}
 {%- set field_name = underscore(column.java_field) %}
 {%- if column.query_type == 'EQ' %}
             if {{ underscore(table.business_name) }}.{{ field_name }} is not None:
-                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }} == {{ underscore(table.business_name) }}.{{ field_name }})
+                stmt = stmt.where({{ class_name_pascal }}Po.{{ field_name }} == {{ underscore(table.business_name) }}.{{ field_name }})
 {%- elif column.query_type == 'NE' %}
             if {{ underscore(table.business_name) }}.{{ field_name }} is not None:
-                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }} != {{ underscore(table.business_name) }}.{{ field_name }})
+                stmt = stmt.where({{ class_name_pascal }}Po.{{ field_name }} != {{ underscore(table.business_name) }}.{{ field_name }})
 {%- elif column.query_type == 'GT' %}
             if {{ underscore(table.business_name) }}.{{ field_name }} is not None:
-                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }} > {{ underscore(table.business_name) }}.{{ field_name }})
+                stmt = stmt.where({{ class_name_pascal }}Po.{{ field_name }} > {{ underscore(table.business_name) }}.{{ field_name }})
 {%- elif column.query_type == 'GTE' %}
             if {{ underscore(table.business_name) }}.{{ field_name }} is not None:
-                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }} >= {{ underscore(table.business_name) }}.{{ field_name }})
+                stmt = stmt.where({{ class_name_pascal }}Po.{{ field_name }} >= {{ underscore(table.business_name) }}.{{ field_name }})
 {%- elif column.query_type == 'LT' %}
             if {{ underscore(table.business_name) }}.{{ field_name }} is not None:
-                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }} < {{ underscore(table.business_name) }}.{{ field_name }})
+                stmt = stmt.where({{ class_name_pascal }}Po.{{ field_name }} < {{ underscore(table.business_name) }}.{{ field_name }})
 {%- elif column.query_type == 'LTE' %}
             if {{ underscore(table.business_name) }}.{{ field_name }} is not None:
-                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }} <= {{ underscore(table.business_name) }}.{{ field_name }})
+                stmt = stmt.where({{ class_name_pascal }}Po.{{ field_name }} <= {{ underscore(table.business_name) }}.{{ field_name }})
 {%- elif column.query_type == 'LIKE' %}
             if {{ underscore(table.business_name) }}.{{ field_name }}:
-                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }}.like("%" + str({{ underscore(table.business_name) }}.{{ field_name }}) + "%"))
+                stmt = stmt.where({{ class_name_pascal }}Po.{{ field_name }}.like("%" + str({{ underscore(table.business_name) }}.{{ field_name }}) + "%"))
 {%- elif column.query_type == 'BETWEEN' %}
             _params = getattr({{ underscore(table.business_name) }}, "params", {}) or {}
             begin_val = _params.get("begin{{ capitalize_first(column.java_field) }}")
             end_val = _params.get("end{{ capitalize_first(column.java_field) }}")
             if begin_val is not None:
-                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }} >= begin_val)
+                stmt = stmt.where({{ class_name_pascal }}Po.{{ field_name }} >= begin_val)
             if end_val is not None:
-                stmt = stmt.where({{ underscore(table.class_name) }}_po.{{ field_name }} <= end_val)
+                stmt = stmt.where({{ class_name_pascal }}Po.{{ field_name }} <= end_val)
 {%- endif %}
 {% endif %}
 {% endfor %}
@@ -69,14 +69,14 @@ class {{ underscore(table.class_name) }}_mapper:
                 g.criterian_meta.page.stmt = stmt
 
             result = db.session.execute(stmt).scalars().all()
-            return [{{ table.class_name }}.model_validate(item) for item in result] if result else []
+            return [{{ class_name_pascal }}.model_validate(item) for item in result] if result else []
         except Exception as e:
             print(f"查询{{ table.function_name }}列表出错: {e}")
             return []
 
     {% if table.pk_column %}
     @staticmethod
-    def select_{{ underscore(table.class_name) }}_by_id({{ underscore(table.pk_column.java_field) }}: int) -> {{ table.class_name }}:
+    def select_{{ underscore(table.class_name) }}_by_id({{ underscore(table.pk_column.java_field) }}: int) -> {{ class_name_pascal }}:
         """
         根据ID查询{{ table.function_name }}
 
@@ -87,15 +87,15 @@ class {{ underscore(table.class_name) }}_mapper:
             {{ table.class_name }}: {{ table.function_name }}对象
         """
         try:
-            result = db.session.get({{ underscore(table.class_name) }}_po, {{ underscore(table.pk_column.java_field) }})
-            return {{ table.class_name }}.model_validate(result) if result else None
+            result = db.session.get({{ class_name_pascal }}Po, {{ underscore(table.pk_column.java_field) }})
+            return {{ class_name_pascal }}.model_validate(result) if result else None
         except Exception as e:
             print(f"根据ID查询{{ table.function_name }}出错: {e}")
             return None
     {% endif %}
 
     @staticmethod
-    def insert_{{ underscore(table.class_name) }}({{ underscore(table.business_name) }}: {{ table.class_name }}) -> int:
+    def insert_{{ underscore(table.class_name) }}({{ underscore(table.business_name) }}: {{ class_name_pascal }}) -> int:
         """
         新增{{ table.function_name }}
 
@@ -107,7 +107,7 @@ class {{ underscore(table.class_name) }}_mapper:
         """
         try:
             now = datetime.now()
-            new_po = {{ underscore(table.class_name) }}_po()
+            new_po = {{ class_name_pascal }}Po()
 {%- for column in table.columns %}
 {%- set attr = underscore(column.java_field) %}
 {%- if column.column_name in ['create_time', 'update_time'] %}
@@ -129,7 +129,7 @@ class {{ underscore(table.class_name) }}_mapper:
 
     {% if table.pk_column %}
     @staticmethod
-    def update_{{ underscore(table.class_name) }}({{ underscore(table.business_name) }}: {{ table.class_name }}) -> int:
+    def update_{{ underscore(table.class_name) }}({{ underscore(table.business_name) }}: {{ class_name_pascal }}) -> int:
         """
         修改{{ table.function_name }}
 
@@ -141,7 +141,7 @@ class {{ underscore(table.class_name) }}_mapper:
         """
         try:
             {% if table.pk_column %}
-            existing = db.session.get({{ underscore(table.class_name) }}_po, {{ underscore(table.business_name) }}.{{ underscore(table.pk_column.java_field) }})
+            existing = db.session.get({{ class_name_pascal }}Po, {{ underscore(table.business_name) }}.{{ underscore(table.pk_column.java_field) }})
             if not existing:
                 return 0
             now = datetime.now()
@@ -179,7 +179,7 @@ class {{ underscore(table.class_name) }}_mapper:
             int: 删除的记录数
         """
         try:
-            stmt = delete({{ underscore(table.class_name) }}_po).where({{ underscore(table.class_name) }}_po.{{ underscore(table.pk_column.java_field) }}.in_(ids))
+            stmt = delete({{ class_name_pascal }}Po).where({{ class_name_pascal }}Po.{{ underscore(table.pk_column.java_field) }}.in_(ids))
             result = db.session.execute(stmt)
             db.session.commit()
             return result.rowcount
