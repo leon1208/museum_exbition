@@ -1,12 +1,14 @@
 # @Author  : YY
+import sys, os
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, PROJECT_ROOT)
 
-import os
 from flask import Flask
 from ruoyi_common.base.signal import app_completed
 from ruoyi_common.ruoyi.extension import FlaskRuoYi
 from ruoyi_common.config import RuoYiConfig
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 ruoyi = FlaskRuoYi()
 
 

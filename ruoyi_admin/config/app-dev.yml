@@ -3,13 +3,13 @@ flask:
   debug: false
   testing: true
   CORS_ORIGINS: '*'
-  SQLALCHEMY_DATABASE_URI: 'mysql+pymysql://root:yy0908..@127.0.0.1/gyy_ry_python_flask'
+  SQLALCHEMY_DATABASE_URI: 'mysql+pymysql://root:infini_rag_flow@127.0.0.1:5455/ry_vue_dev'
   SQLALCHEMY_TRACK_MODIFICATIONS: true
   SQLALCHEMY_ECHO: false
   SQLALCHEMY_POOL_SIZE: 5
   SQLALCHEMY_POOL_TIMEOUT: 10
   SQLALCHEMY_POOL_RECYCLE: 500
-  REDIS_URL: "redis://127.0.0.1?db=1"
+  REDIS_URL: "redis://:infini_rag_flow@127.0.0.1:6379/10"
 
 log:
   level: DEBUG

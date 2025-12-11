@@ -5,10 +5,10 @@
   "author": "若依",
   "license": "MIT",
   "scripts": {
-    "dev": "set NODE_OPTIONS=--openssl-legacy-provider & vue-cli-service serve",
-    "build:prod": "vue-cli-service build",
-    "build:stage": "vue-cli-service build --mode staging",
-    "preview": "node build/index.js --preview",
+    "dev": "NODE_OPTIONS=--openssl-legacy-provider vue-cli-service serve",
+    "build:prod": "NODE_OPTIONS=--openssl-legacy-provider vue-cli-service build",
+    "build:stage": "NODE_OPTIONS=--openssl-legacy-provider vue-cli-service build --mode staging",
+    "preview": "NODE_OPTIONS=--openssl-legacy-provider node build/index.js --preview",
     "lint": "eslint --ext .js,.vue src"
   },
   "husky": {
@@ -86,5 +86,8 @@
   "browserslist": [
     "> 1%",
     "last 2 versions"
-  ]
+  ],
+  "volta": {
+    "node": "20.17.0"
+  }
 }
