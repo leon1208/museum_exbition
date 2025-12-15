@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# @Author  : YY
 
 import sys
 from types import ModuleType
@@ -21,6 +20,5 @@ def import_hook(module:ModuleType, registry:RuoYiModuleRegistry):
         module: 模块对象
         module_register: 模块注册器
     """
-    # print("__name__: {} sys.modules[__name__]: {}".format(__name__,sys.modules[__name__]))
     global reg
     reg = registry
