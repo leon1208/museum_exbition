@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  # 前端Nginx服务
+  frontend:
+    build:
+      context: .
+      target: frontend-nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - ruoyi-network
+
+  # 后端Flask服务
+  backend:
+    build:
+      context: .
+      target: backend-runtime
+    ports:
+      - "9000:9000"
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=mysql+pymysql://root:password@db:3306/ry-vue
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    restart: always
+    networks:
+      - ruoyi-network
+
+networks:
+  ruoyi-network:
+    driver: bridge
