@@ -18,7 +18,7 @@ services:
     ports:
       - "9080:9000"
     environment:
-      - FLASK_ENV=prod
+      - RUOYI_ENV=prod
     restart: always
     networks:
       - ruoyi-network
