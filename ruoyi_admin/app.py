@@ -45,4 +45,9 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(debug=True)
+
+    from ruoyi_common.ruoyi.config import CONFIG_CACHE
+    # 从配置缓存获取host和port，提供默认值
+    host = CONFIG_CACHE.get("ruoyi.host", "127.0.0.1")
+    port = CONFIG_CACHE.get("ruoyi.port", 9000)
+    app.run(debug=True, host=host, port=port)

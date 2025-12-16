@@ -80,8 +80,8 @@ class RuoYiConfigLoader(object):
         """
         config = self._raw_data.get("flask",{})
         ruoyi_config = self._raw_data.get("ruoyi",{})
-        host = ruoyi_config.get("host","127.0.0.1")
-        port = ruoyi_config.get("port",9000)
-        config.update({"SERVER_NAME":f"{host}:{port}"})
+        # host = ruoyi_config.get("host","127.0.0.1")
+        # port = ruoyi_config.get("port",9000)
+        # config.update({"SERVER_NAME":f"{host}:{port}"})
         config = DictUtil.upper_key(config)
         app.config.update(config)

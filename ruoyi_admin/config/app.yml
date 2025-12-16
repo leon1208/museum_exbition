@@ -2,7 +2,7 @@ ruoyi:
   name: 'ruoyi-vue-flask'
   version: '1.0.0'
   author: 'shaw'
-  host: 'localhost'
+  host: '0.0.0.0'
   port: 9000
   api:
     version: '/'
