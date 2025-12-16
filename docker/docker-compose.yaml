@@ -3,11 +3,9 @@ version: '3.8'
 services:
   # 前端Nginx服务
   frontend:
-    build:
-      context: .
-      target: frontend-nginx
+    image: museum_exhibition_web:0.0.1
     ports:
-      - "80:80"
+      - "8088:80"
     depends_on:
       - backend
     restart: always
@@ -16,18 +14,13 @@ services:
 
   # 后端Flask服务
   backend:
-    build:
-      context: .
-      target: backend-runtime
+    image: museum_exhibition_app:0.0.1
     ports:
-      - "9000:9000"
+      - "9002:9000"
     environment:
-      - FLASK_ENV=production
-      - DATABASE_URL=mysql+pymysql://root:password@db:3306/ry-vue
-      - REDIS_URL=redis://redis:6379/0
-    depends_on:
-      - db
-      - redis
+      # - FLASK_ENV=production
+      # - DATABASE_URL=mysql+pymysql://root:password@db:3306/ry-vue
+      - REDIS_URL1=redis://redis:6379/0
     restart: always
     networks:
       - ruoyi-network

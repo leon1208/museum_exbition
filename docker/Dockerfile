@@ -25,53 +25,38 @@ COPY --from=frontend-builder /app/dist /usr/share/nginx/html
 EXPOSE 80
 
 # ====================== 后端Flask镜像构建 ======================
-FROM python:3.13-alpine AS backend-builder
+FROM python:3.13-slim AS backend-builder
 WORKDIR /app
 
-# 安装系统依赖
-RUN apk add --no-cache \
-    gcc \
-    g++ \
-    musl-dev \
-    mariadb-dev \
-    libffi-dev \
-    openssl-dev \
-    make \
-    git
+# 安装 uv（官方二进制，非常快）
+RUN pip install --no-cache-dir uv -i https://mirrors.aliyun.com/pypi/simple
+#
+# # 只复制依赖描述文件（最大化缓存）
+COPY pyproject.toml uv.lock ./
+#
+# # 安装依赖到系统环境（不创建 venv）
+RUN uv sync --frozen --no-dev --index https://mirrors.aliyun.com/pypi/simple
 
-# 安装uv
-RUN pip install --upgrade pip && pip install uv
-
-# 复制项目文件
-COPY . /app
-
-# 使用uv安装依赖
-RUN uv install -r bin/requirements.txt
 
 # 后端运行镜像
-FROM python:3.13-alpine AS backend-runtime
+FROM python:3.13-slim AS backend-runtime
 WORKDIR /app
 
-# 安装系统依赖
-RUN apk add --no-cache \
-    mariadb-connector-c \
-    openssl \
-    redis
-
-# 安装uv
-RUN pip install --upgrade pip && pip install uv
+# 从 builder 拷贝已安装的 site-packages
+# COPY --from=backend-builder /usr/local/lib/python3.13 /usr/local/lib/python3.13
+# COPY --from=backend-builder /usr/local/bin /usr/local/bin
+COPY --from=backend-builder /app/.venv /app/.venv
 
 # 复制后端代码
-COPY --from=backend-builder /app /app
-COPY --from=backend-builder /root/.cache/uv /root/.cache/uv
+COPY . /app
 
 # 设置环境变量
-ENV PYTHONPATH=/app
-ENV FLASK_APP=ruoyi_admin/app.py
-ENV FLASK_ENV=production
+#ENV PYTHONPATH=/app
+#ENV FLASK_APP=ruoyi_admin/app.py
+#ENV FLASK_ENV=production
 
 # 暴露端口
 EXPOSE 9000
 
 # 运行应用
-CMD ["python", "ruoyi_admin/app.py"]
+CMD [".venv/bin/python", "ruoyi_admin/app.py"]
