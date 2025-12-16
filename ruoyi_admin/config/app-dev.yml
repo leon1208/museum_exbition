@@ -13,9 +13,8 @@ flask:
 
 aicrawl:
   chromium:
-    # ws_endpoint: "ws://127.0.0.1:3000/"
-    # ws_endpoint: "ws://127.0.0.1:3000/"
-    ws_endpoint: "ws://127.0.0.1:3001/"
+    ws_endpoint: "ws://127.0.0.1:3000/"
+    # ws_endpoint: "ws://127.0.0.1:3001/"
 
 log:
   level: DEBUG

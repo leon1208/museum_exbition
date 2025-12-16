@@ -16,11 +16,9 @@ services:
   backend:
     image: museum_exhibition_app:0.0.1
     ports:
-      - "9002:9000"
+      - "9080:9000"
     environment:
-      # - FLASK_ENV=production
-      # - DATABASE_URL=mysql+pymysql://root:password@db:3306/ry-vue
-      - REDIS_URL1=redis://redis:6379/0
+      - FLASK_ENV=prod
     restart: always
     networks:
       - ruoyi-network

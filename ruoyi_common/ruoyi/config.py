@@ -29,7 +29,12 @@ class RuoYiConfigLoader(object):
         '''
         从缓存配置env配置中加载配置
         '''
-        env = self.cache.get("ruoyi.env")
+        # 优先从环境变量获取 ruoyi.env
+        env = os.environ.get("RUOYI_ENV")
+        # 如果环境变量不存在，则从配置缓存中获取
+        if env is None:
+            env = self.cache.get("ruoyi.env")
+        
         if env is not None:
             config_file = os.path.join(self._root, self.pname, self.name_tmpl.format(env))
             if not os.path.exists(config_file):
