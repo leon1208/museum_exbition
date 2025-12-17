@@ -4,6 +4,10 @@ services:
   # 前端Nginx服务
   frontend:
     image: museum_exhibition_web:0.0.1
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: frontend-nginx
     ports:
       - "8088:80"
     depends_on:
@@ -15,6 +19,10 @@ services:
   # 后端Flask服务
   backend:
     image: museum_exhibition_app:0.0.1
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: backend-runtime
     ports:
       - "9080:9000"
     environment:
