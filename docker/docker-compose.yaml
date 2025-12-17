@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # 前端Nginx服务
   frontend:
-    image: museum_exhibition_web:0.0.1
+    image: museum_exhibition_web:${APP_VERSION}
     build:
       context: ..
       dockerfile: docker/Dockerfile
@@ -18,7 +18,7 @@ services:
 
   # 后端Flask服务
   backend:
-    image: museum_exhibition_app:0.0.1
+    image: museum_exhibition_app:${APP_VERSION}
     build:
       context: ..
       dockerfile: docker/Dockerfile

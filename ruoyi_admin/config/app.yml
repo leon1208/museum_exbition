@@ -1,7 +1,7 @@
 ruoyi:
-  name: 'ruoyi-vue-flask'
+  name: 'museum_exhibition'
   version: '1.0.0'
-  author: 'shaw'
+  author: 'leeon'
   host: '0.0.0.0'
   port: 9000
   api:

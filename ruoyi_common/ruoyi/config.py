@@ -65,6 +65,12 @@ class RuoYiConfigLoader(object):
         flatten_data = DictUtil.flatten(data)
         formated_data = DictUtil.format_value(flatten_data)
         CONFIG_CACHE.update(formated_data)
+        
+        ## 读取根目录下VERSION中的版本号，覆盖CONFIG_CACHE中的ruoyi.version
+        version_file = os.path.join(self._root, "..", "VERSION")
+        if os.path.exists(version_file):
+            with open(version_file, 'r') as f:
+                CONFIG_CACHE.update({'ruoyi.version': f.read().strip()})
 
     @property
     def cache(self) -> Dict:
