@@ -58,5 +58,6 @@ COPY . /app
 # 暴露端口
 EXPOSE 9000
 
-# 运行应用
-CMD [".venv/bin/python", "ruoyi_admin/app.py"]
+# 运行脚本迁移，再启动应用
+# CMD [".venv/bin/python", "ruoyi_admin/app.py"]
+CMD ["/bin/sh", "-c", ".venv/bin/alembic upgrade head && .venv/bin/python ruoyi_admin/app.py"]

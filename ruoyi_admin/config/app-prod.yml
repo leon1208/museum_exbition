@@ -3,7 +3,7 @@ flask:
   debug: false
   testing: true
   CORS_ORIGINS: '*'
-  SQLALCHEMY_DATABASE_URI: 'mysql+pymysql://root:infini_rag_flow@127.0.0.1:5455/ry_vue_dev'
+  SQLALCHEMY_DATABASE_URI: 'mysql+pymysql://root:infini_rag_flow@127.0.0.1:5455/museum_exhibition'
   SQLALCHEMY_TRACK_MODIFICATIONS: true
   SQLALCHEMY_ECHO: false
   SQLALCHEMY_POOL_SIZE: 5
