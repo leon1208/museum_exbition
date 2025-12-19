@@ -8,9 +8,7 @@ Create Date: 2025-12-19 09:13:43.332591
 from typing import Sequence, Union
 
 from alembic import op
-import sqlalchemy as sa
 from sqlalchemy.dialects.mysql import insert
-from ruoyi_system.domain.po import SysMenuPo
 
 
 # revision identifiers, used by Alembic.
@@ -23,6 +21,7 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     """Upgrade schema."""
     # 使用SQLAlchemy Core的table对象
+    from ruoyi_system.domain.po import SysMenuPo
     menu_table = SysMenuPo.__table__
     
     # 插入AI实验主菜单（Upsert操作）
@@ -162,6 +161,7 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Downgrade schema."""
     # 使用SQLAlchemy ORM删除插入的菜单数据
+    from ruoyi_system.domain.po import SysMenuPo
     menu_table = SysMenuPo.__table__
     
     # 删除子菜单

@@ -104,7 +104,7 @@ class WebScraper:
             
             async with async_playwright() as p:
                 # 创建浏览器和页面对象
-                browser, context, page = await self._create_browser_and_page(p, timeout, headless=True)
+                browser, context, page = await self._create_browser_and_page(p, timeout)
 
                 # 设置超时
                 page.set_default_timeout(timeout)
@@ -149,38 +149,37 @@ class WebScraper:
         Returns:
             dict: 包含状态和提取结果的字典
         """
-
+        try:
         # 首先抓取并转换网页
-        scrape_result = await self.scrape_and_convert(url, timeout, headless=True)
-        
-        if scrape_result['status'] != 'success':
-            return scrape_result
-        
-        # 将导入移到函数内部以避免循环导入
-        from ai_processor import get_ai_processor
-        
-        # 获取AI处理器
-        ai_processor = get_ai_processor()
-        
-        # 使用AI提取指定栏目下的内容
-        extract_result = ai_processor.extract_markdown_section(
-            scrape_result['markdown'], 
-            section_title,
-            keywords  # 传递关键词参数
-        )
-        
-        if extract_result['status'] == 'success':
-            return {
-                'status': 'success',
-                'title': scrape_result['title'],
-                'url': scrape_result['url'],
-                'section_data': extract_result['data']
-            }
-        else:
-            return {
-                'status': 'error',
-                'message': f'提取栏目内容失败: {extract_result["message"]}'
-            }
+            scrape_result = await self.scrape_and_convert(url, timeout)
+            # 将导入移到函数内部以避免循环导入
+            from .ai_processor import get_ai_processor
+            
+            # 获取AI处理器
+            ai_processor = get_ai_processor()
+            
+            # 使用AI提取指定栏目下的内容
+            extract_result = ai_processor.extract_markdown_section(
+                scrape_result['markdown'], 
+                section_title,
+                keywords  # 传递关键词参数
+            )
+            
+            if extract_result['status'] == 'success':
+                return {
+                    'title': scrape_result['title'],
+                    'url': scrape_result['url'],
+                    'section_data': extract_result['data']
+                }
+            else:
+                return {
+                    'message': f'提取栏目内容失败: {extract_result["message"]}'
+                }
+        except Exception as e:
+            logger.error(f"提取信息时发生错误: {str(e)}")
+            # import traceback
+            # logger.error(f"异常堆栈信息:\n{traceback.format_exc()}")
+            raise e
     
     async def auto_scroll(self, page, step=1000, delay=1.5):
         """自动往下滚动，并等待加载"""

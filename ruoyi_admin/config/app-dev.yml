@@ -12,6 +12,10 @@ flask:
   REDIS_URL: "redis://:infini_rag_flow@127.0.0.1:6379/10"
 
 aicrawl:
+  qwen:
+    api_key: "sk-12345678"
+    base_url: "https://dashscope.aliyuncs.com/api/v1"
+    model_name: "qwen3-max"
   chromium:
     ws_endpoint: "ws://127.0.0.1:3000/"
     # ws_endpoint: "ws://127.0.0.1:3001/"
