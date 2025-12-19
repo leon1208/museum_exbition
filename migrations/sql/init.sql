@@ -147,7 +147,6 @@ INSERT INTO `sys_dept` VALUES (106, 101, '0,100,101', '财务部门', 4, '若依
 INSERT INTO `sys_dept` VALUES (107, 101, '0,100,101', '运维部门', 5, '若依', '15888888888', 'ry@qq.com', '0', '0', 'admin', '2025-10-22 23:22:58', '', NULL);
 INSERT INTO `sys_dept` VALUES (108, 102, '0,100,102', '市场部门', 1, '若依', '15888888888', 'ry@qq.com', '0', '0', 'admin', '2025-10-22 23:22:58', '', NULL);
 INSERT INTO `sys_dept` VALUES (109, 102, '0,100,102', '财务部门', 2, '若依', '15888888888', 'ry@qq.com', '0', '0', 'admin', '2025-10-22 23:22:58', '', NULL);
-INSERT INTO `sys_dept` VALUES (200, 101, '0,100,101', '111', 1, NULL, NULL, NULL, '0', '2', 'admin', '2025-11-11 17:33:21', '', NULL);
 
 -- ----------------------------
 -- Table structure for sys_dict_data
@@ -475,14 +474,6 @@ CREATE TABLE `sys_oper_log`  (
   INDEX `idx_sys_oper_log_ot`(`oper_time` ASC) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 305 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '操作日志记录' ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Records of sys_oper_log
--- ----------------------------
-INSERT INTO `sys_oper_log` VALUES (300, '操作日志', 9, 'ruoyi_admin.controller.monitor.operlog.monitor_operlog_clean', 'DELETE', 1, 'admin', '研发部门', '/monitor/operlog/clean', '127.0.0.1', '内网IP', '', '{\"code\":200,\"msg\":\"操作成功\",\"data\":\"\"}', 0, '', '2025-11-21 16:07:56', 0);
-INSERT INTO `sys_oper_log` VALUES (301, '登录日志', 9, 'ruoyi_admin.controller.monitor.logininfo.monitor_logininfo_clean', 'DELETE', 1, 'admin', '研发部门', '/monitor/logininfor/clean', '127.0.0.1', '内网IP', '', '{\"code\":200,\"msg\":\"操作成功\",\"data\":\"\"}', 0, '', '2025-11-21 16:08:00', 0);
-INSERT INTO `sys_oper_log` VALUES (302, '定时任务', 2, 'ruoyi_apscheduler.controller.job.common_job_edit', 'PUT', 1, 'admin', '研发部门', '/monitor/job', '127.0.0.1', '内网IP', '{\"createBy\":\"admin\",\"createTime\":\"2025-11-21 14:56:56\",\"updateBy\":null,\"updateTime\":null,\"remark\":\"\",\"jobId\":101,\"jobName\":\"测试\",\"jobGroup\":\"DEFAULT\",\"invokeTarget\":\"ruoyi_apscheduler.task.ruoyi_task.no_args()\",\"cronExpression\":\"0/10 * * * * ?\",\"misfirePolicy\":\"3\",\"concurrent\":\"1\",\"status\":\"1\"}', '{\"code\":200,\"msg\":\"操作成功\",\"data\":\"\"}', 0, '', '2025-11-21 16:08:24', 0);
-INSERT INTO `sys_oper_log` VALUES (303, '定时任务', 3, 'ruoyi_apscheduler.controller.job.common_job_remove', 'DELETE', 1, 'admin', '研发部门', '/monitor/job/101', '127.0.0.1', '内网IP', '', '{\"code\":200,\"msg\":\"操作成功\",\"data\":\"\"}', 0, '', '2025-11-21 16:11:48', 0);
-INSERT INTO `sys_oper_log` VALUES (304, '字典类型', 2, 'ruoyi_admin.controller.system.dict_type.system_dict_type_update', 'PUT', 1, 'admin', '研发部门', '/system/dict/type', '127.0.0.1', '内网IP', '{\"createBy\":\"admin\",\"createTime\":\"2025-10-22 23:23:09\",\"updateBy\":\"admin\",\"updateTime\":\"2025-11-21 15:20:16\",\"remark\":\"性别\",\"dictId\":1,\"dictName\":\"用户性别\",\"dictType\":\"sys_user_sex\",\"status\":\"0\"}', '{\"code\":200,\"msg\":\"操作成功\",\"data\":\"\"}', 0, '', '2025-11-21 16:12:33', 0);
 
 -- ----------------------------
 -- Table structure for sys_post
@@ -537,8 +528,6 @@ CREATE TABLE `sys_role`  (
 -- ----------------------------
 INSERT INTO `sys_role` VALUES (1, '超级管理员', 'admin', 1, '1', 1, 1, '0', '0', 'admin', '2025-10-22 23:22:59', '', NULL, '超级管理员');
 INSERT INTO `sys_role` VALUES (2, '普通角色', 'common', 2, '2', 1, 1, '0', '0', 'admin', '2025-10-22 23:22:59', '', NULL, '普通角色');
-INSERT INTO `sys_role` VALUES (100, 'test', 'test', 10, '2', 1, 1, '0', '2', 'admin', '2025-11-12 16:34:09', 'admin', '2025-11-21 15:56:29', NULL);
-INSERT INTO `sys_role` VALUES (101, 't', 't', 0, '1', 1, 1, '0', '2', 'admin', '2025-11-18 16:43:27', '', NULL, NULL);
 
 -- ----------------------------
 -- Table structure for sys_role_dept
@@ -688,21 +677,6 @@ CREATE TABLE `sys_user`  (
 -- ----------------------------
 INSERT INTO `sys_user` VALUES (1, 103, 'admin', '若依', '00', 'ry@163.com', '15888888888', '1', '', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '0', '0', '127.0.0.1', '2025-11-21 15:55:43', 'admin', '2025-10-22 23:22:58', '', '2025-11-21 15:55:43', '管理员');
 INSERT INTO `sys_user` VALUES (2, 105, 'ry', '若依', '00', 'ry@qq.com', '15666666666', '1', '', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2', '0', '0', '127.0.0.1', '2025-10-22 23:22:58', 'admin', '2025-10-22 23:22:58', '', NULL, '测试员');
-INSERT INTO `sys_user` VALUES (100, 101, '321', '321', '00', '', '', '0', '', '', '0', '2', '', NULL, 'admin', NULL, '', NULL, NULL);
-INSERT INTO `sys_user` VALUES (101, NULL, 'test', 'test', '00', '', '', '0', '', '', '0', '2', '', NULL, 'admin', NULL, '', NULL, NULL);
-INSERT INTO `sys_user` VALUES (102, NULL, 'test1', 'test1', '00', '', '', '0', '', '', '0', '2', '', NULL, 'admin', NULL, '', NULL, NULL);
-INSERT INTO `sys_user` VALUES (103, NULL, 'test2', 'test2', '00', '', '', '0', '', '', '0', '2', '', NULL, 'admin', NULL, '', NULL, NULL);
-INSERT INTO `sys_user` VALUES (104, 108, 'test01', '1', '00', '', '18585595238', '0', '', '', '1', '2', '', NULL, 'admin', NULL, 'admin', '2025-11-20 18:56:35', '312');
-INSERT INTO `sys_user` VALUES (105, 103, 'test22', 'test22', '00', '', '', '0', '', '', '0', '2', '', NULL, 'admin', NULL, 'admin', NULL, NULL);
-INSERT INTO `sys_user` VALUES (106, NULL, 'test333', 'test333', '00', '', '', '0', '', '', '0', '2', '', NULL, 'admin', NULL, '', NULL, NULL);
-INSERT INTO `sys_user` VALUES (107, NULL, 'test44', 'test44', '00', '', '', '0', '', '', '0', '2', '', NULL, 'admin', NULL, '', NULL, NULL);
-INSERT INTO `sys_user` VALUES (108, 109, 'test1118', 'test1118', '00', '', '', '0', '', '', '0', '2', '127.0.0.1', '2025-11-18 15:28:51', 'admin', NULL, 'admin', '2025-11-18 15:58:42', '312');
-INSERT INTO `sys_user` VALUES (109, 109, 'test11182', 'test11182', '00', '', '', '0', '', '', '0', '2', '', NULL, 'admin', NULL, '', NULL, NULL);
-INSERT INTO `sys_user` VALUES (110, 109, 'test11183', 'test11183', '00', '', '', '0', '', '$2b$12$0.p8CcPThWgK8h1wZhDJYeuGsBtawErRLJ2dhpo8f0jjsBKvvMZYC', '0', '2', '127.0.0.1', '2025-11-18 15:44:24', 'admin', NULL, 'admin', NULL, NULL);
-INSERT INTO `sys_user` VALUES (111, 105, 'test11184', 'test11184', '00', '3217778348@qq.com', '18585595248', '0', '', '$2b$12$vNKe3DfPHtTDFiEczZUtaOtULNzNyX3ClEfoOY9lUHfwLl7zPNW.C', '0', '2', '127.0.0.1', '2025-11-21 15:57:12', 'admin', NULL, 'admin', '2025-11-21 15:57:12', NULL);
-INSERT INTO `sys_user` VALUES (112, 100, 'test11185', 'test11185', '00', '', '', '0', '', '', '0', '2', '', NULL, 'admin', NULL, 'admin', '2025-11-18 15:58:50', NULL);
-INSERT INTO `sys_user` VALUES (113, 108, 'test11186', 'test11186', '00', '', '', '0', '', '', '0', '2', '', NULL, 'admin', NULL, 'admin', '2025-11-18 15:53:16', '321312');
-INSERT INTO `sys_user` VALUES (114, NULL, 'test11187', 'test11187', '00', '', '', '0', '', '$2b$12$MSDYq9cm.xMR2uzJUSCS0uCqBUETV0Sz5bedPrldyIz21TiDOjuTW', '0', '2', '', NULL, 'admin', '2025-11-18 15:53:39', '', NULL, NULL);
 
 -- ----------------------------
 -- Table structure for sys_user_post
