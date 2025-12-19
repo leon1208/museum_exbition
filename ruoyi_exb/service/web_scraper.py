@@ -106,25 +106,6 @@ class WebScraper:
                 # 创建浏览器和页面对象
                 browser, context, page = await self._create_browser_and_page(p, timeout, headless=True)
 
-                # 记录请求/响应（更详细）
-                # def on_request(request):
-                #     print("[REQ] ->", request.method, request.url)
-                # def on_response(response):
-                #     status = response.status
-                #     if status >= 400:
-                #         try:
-                #             body_snippet = response.text()[:1000]
-                #         except Exception:
-                #             body_snippet = "<no-body-or-binary>"
-                #         print(f"[RESP ERROR] {status} {response.url}\n--- body snippet ---\n{body_snippet}\n--- end snippet ---")
-                #     else:
-                #         print(f"[RESP] {status} {response.url}")
-                # page.on("request", on_request)
-                # page.on("response", on_response)
-                # page.on("console", lambda msg: print(f"[PAGE console] {msg.type}: {msg.text}"))
-                # page.on("pageerror", lambda err: print(f"[PAGE error] {err}"))
-                # page.on("requestfailed", lambda req: print(f"[REQ failed] {req.url} -> {req.failure}"))
-
                 # 设置超时
                 page.set_default_timeout(timeout)
                 
@@ -134,7 +115,6 @@ class WebScraper:
                 
                 # 获取页面标题
                 title = await page.title()
-                print(f"页面标题: {title}")
                 
                 # 获取页面内容
                 html_content = await page.content()
@@ -143,29 +123,18 @@ class WebScraper:
                 await browser.close()
                 
                 # 将HTML转换为Markdown
-                logger.info("正在将HTML转换为Markdown...")
                 markdown_content = md(html_content)
                 
                 return {
-                    'status': 'success',
                     'title': title,
                     'markdown': markdown_content,
                     'url': url
-                }
-                
-        except asyncio.TimeoutError:
-            return {
-                'status': 'error',
-                'message': '页面加载超时，请检查网络连接或稍后重试'
-            }
+                }             
         except Exception as e:
             logger.error(f"抓取网页时发生错误: {str(e)}")
-            import traceback
-            logger.error(f"异常堆栈信息:\n{traceback.format_exc()}")
-            return {
-                'status': 'error',
-                'message': f'抓取网页时发生错误: {str(e)}'
-            }
+            # import traceback
+            # logger.error(f"异常堆栈信息:\n{traceback.format_exc()}")
+            raise e
     
     async def scrape_and_extract_section(self, url: str, section_title: str, keywords: list[str] = None, timeout: int = 30000) -> dict:
         """
