@@ -308,7 +308,7 @@ class DictUtil:
         Returns:
             dict: 格式化后的字典
         '''
-        pattern = re.compile("\{(.*?)\}")
+        pattern = re.compile(r"\{(.*?)\}")
         new_dict = {}
         for k,v in dict_obj.items():
             if isinstance(v,str) and re.match(pattern,v):
