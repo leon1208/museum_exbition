@@ -29,13 +29,13 @@ FROM python:3.13-slim AS backend-builder
 WORKDIR /app
 
 # 安装 uv（官方二进制，非常快）
-RUN pip install --no-cache-dir uv -i https://mirrors.aliyun.com/pypi/simple
+RUN pip install --no-cache-dir uv -i https://pypi.tuna.tsinghua.edu.cn/simple
 #
 # # 只复制依赖描述文件（最大化缓存）
 COPY pyproject.toml uv.lock ./
 #
 # # 安装依赖到系统环境（不创建 venv）
-RUN uv sync --frozen --no-dev --index https://mirrors.aliyun.com/pypi/simple
+RUN uv sync --frozen --no-dev --index https://pypi.tuna.tsinghua.edu.cn/simple
 
 
 # 后端运行镜像
