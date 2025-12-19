@@ -45,4 +45,8 @@ dependencies = [
     "pandas>=2.3.3",
     "python-calamine>=0.6.1",
     "alembic>=1.17.2",
+    "dashscope>=1.25.5",
 ]
+
+[[tool.uv.index]]
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
