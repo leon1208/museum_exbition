@@ -17,7 +17,7 @@ def create_app():
     app.config.from_object(RuoYiConfig)
 
     # 初始化 ruoyi
-    ruoyi.init_app(app, PROJECT_ROOT)
+    ruoyi.init_app(app, PROJECT_ROOT, module_prefix=["ruoyi_", "exb_"])
 
     # 初始化其他扩展
     from ruoyi_admin.ext import cors, fredis, lm, db

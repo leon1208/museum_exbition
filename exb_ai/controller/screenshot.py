@@ -7,7 +7,7 @@ from ruoyi_common.base.model import AjaxResponse, TableResponse
 from ruoyi_common.descriptor.serializer import JsonSerializer
 
 from .. import reg
-from ruoyi_exb.service.web_scraper import take_website_screenshot, scrape_url_to_markdown, scrape_and_extract_section
+from exb_ai.service.web_scraper import take_website_screenshot, scrape_url_to_markdown, scrape_and_extract_section
 
 
 @reg.api.route("/aicrawl/hello", methods=["GET"])

@@ -18,7 +18,7 @@ class FlaskRuoYi(object):
                 proot = app.root_path
             self.init_app(app,proot)
         
-    def init_app(self,app,proot=None):
+    def init_app(self, app, proot=None, module_prefix:list=['ruoyi_']):
         """
         初始化插件
         
@@ -34,7 +34,7 @@ class FlaskRuoYi(object):
         config_loader = RuoYiConfigLoader(app.root_path)
         config_loader.set_app(app)
         
-        module_reg = RuoYiModuleRegistry(app,proot)
+        module_reg = RuoYiModuleRegistry(app,proot,module_prefix)
         module_reg.register_modules()
         
         log_handler = RuoYiLog.generate_handler_from_config(config_loader.cache)

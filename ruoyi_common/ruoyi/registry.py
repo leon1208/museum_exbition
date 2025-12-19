@@ -33,13 +33,14 @@ def path_to_module(file_path:str, root_path:str) -> str:
 
 class RuoYiModuleRegistry(object):
     
-    module_prefix = "ruoyi_"
+    module_prefix = ["ruoyi_"]
     controller_name = "controller"
     exclude_modules = ["ruoyi_ui"]
     
-    def __init__(self, app:Flask=None, proot:str=None):
+    def __init__(self, app:Flask=None, proot:str=None, module_prefix:list=['ruoyi_']):
         self.app = app
         self.proot = proot
+        self.module_prefix = module_prefix
         url_prefix = CONFIG_CACHE["ruoyi.api.version"]
         if not url_prefix.startswith("/"):
             raise ValueError("url_prefix must start with /")
@@ -61,7 +62,7 @@ class RuoYiModuleRegistry(object):
         导入所有模块
         '''
         for modname in os.listdir(self.proot):
-            if not modname.startswith(self.module_prefix):
+            if not any(modname.startswith(prefix) for prefix in self.module_prefix):
                 continue
             if modname in self.exclude_modules:
                 continue
@@ -112,7 +113,7 @@ class RuoYiModuleRegistry(object):
         '''
         for modname in os.listdir(self.proot):
             
-            if not modname.startswith(self.module_prefix):
+            if not any(modname.startswith(prefix) for prefix in self.module_prefix):
                 continue
             if modname in self.exclude_modules:
                 continue
