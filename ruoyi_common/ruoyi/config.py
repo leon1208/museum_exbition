@@ -7,7 +7,7 @@ from flask import Flask
 import yaml
 
 from ..utils.base import DictUtil
-
+from dotenv import load_dotenv
 
 CONFIG_CACHE = dict()
 
@@ -21,6 +21,10 @@ class RuoYiConfigLoader(object):
     def __init__(self, root):
         self._root = root
         self._raw_data = {}
+        
+        # 加载环境变量
+        load_dotenv(os.path.join(self._root, self.pname, ".env"))
+        
         config_file = self._generate_main_config()
         self.load_config(config_file)
         self.load_config_from_cache()
@@ -60,6 +64,7 @@ class RuoYiConfigLoader(object):
         '''
         with open(file, 'r') as f:
             config_obj = yaml.load(f, Loader=yaml.FullLoader)
+            config_obj = self.resolve_config(config_obj)
         self._raw_data.update(config_obj)
         data = DictUtil.recurive_key(config_obj)
         flatten_data = DictUtil.flatten(data)
@@ -90,9 +95,32 @@ class RuoYiConfigLoader(object):
             app (Flask):  flask应用
         """
         config = self._raw_data.get("flask",{})
-        ruoyi_config = self._raw_data.get("ruoyi",{})
+        # ruoyi_config = self._raw_data.get("ruoyi",{})
         # host = ruoyi_config.get("host","127.0.0.1")
         # port = ruoyi_config.get("port",9000)
         # config.update({"SERVER_NAME":f"{host}:{port}"})
         config = DictUtil.upper_key(config)
         app.config.update(config)
+
+    def resolve_env(self, value: str):
+        import re
+        pattern = re.compile(r"\$\{([^}]+)\}")
+        def replacer(match):
+            expr = match.group(1)
+
+            # 支持默认值 VAR:-default
+            if ":-" in expr:
+                key, default = expr.split(":-", 1)
+                return os.getenv(key, default)
+            return os.getenv(expr, "")
+
+        return pattern.sub(replacer, value)
+
+    def resolve_config(self, obj):
+        if isinstance(obj, dict):
+            return {k: self.resolve_config(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [self.resolve_config(i) for i in obj]
+        if isinstance(obj, str):
+            return self.resolve_env(obj)
+        return obj

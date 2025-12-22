@@ -46,6 +46,7 @@ dependencies = [
     "python-calamine>=0.6.1",
     "alembic>=1.17.2",
     "dashscope>=1.25.5",
+    "python-dotenv>=1.2.1",
 ]
 
 [[tool.uv.index]]

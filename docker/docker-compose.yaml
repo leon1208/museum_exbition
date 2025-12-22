@@ -25,6 +25,8 @@ services:
       target: backend-runtime
     ports:
       - "9080:9000"
+    env_file:
+      - ../ruoyi_admin/config/.env
     environment:
       - RUOYI_ENV=prod
     restart: always
