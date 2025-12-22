@@ -17,7 +17,7 @@ aicrawl:
     base_url: "https://dashscope.aliyuncs.com/api/v1"
     model_name: "qwen3-max"
   chromium:
-    ws_endpoint: "ws://127.0.0.1:3001/"
+    ws_endpoint: "${WS_ENDPOINT}"
 
 log:
   level: DEBUG
