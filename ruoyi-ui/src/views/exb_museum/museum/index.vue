@@ -249,7 +249,7 @@
             <div class="media-preview">
               <!-- 图片预览 -->
               <img v-if="scope.row.mediaType === 1" 
-                  :src="'/minio' + scope.row.mediaUrl" 
+                  :src="minioBase + scope.row.mediaUrl" 
                   class="preview-image" 
                   @click="previewImage(scope.row.mediaUrl)" 
                   alt="图片预览" />
@@ -381,6 +381,7 @@ export default {
         ]
       },
       // 媒体上传相关
+      minioBase: process.env.VUE_APP_MINIO_BASE_URL,
       mediaDialogVisible: false,
       mediaList: [],
       currentMuseumId: null,
@@ -606,7 +607,7 @@ export default {
 
     /** 预览图片 */
     previewImage(url) {
-      this.$alert('<img src="' + '/minio' + url + '" style="max-width: 100%;" />', '图片预览', {
+      this.$alert('<img src="' + this.minioBase + url + '" style="max-width: 100%;" />', '图片预览', {
         dangerouslyUseHTMLString: true,
         customClass: 'preview-image-dialog'
       });
