@@ -1,0 +1,185 @@
+# -*- coding: utf-8 -*-
+# @Author  : leeon
+# @FileName: museum_mapper.py
+# @Time    : 2025-12-23 09:24:49
+
+from typing import List
+from datetime import datetime
+
+from flask import g
+from sqlalchemy import select, update, delete
+
+from ruoyi_admin.ext import db
+from exb_museum.domain.entity import Museum
+from exb_museum.domain.po import MuseumPo
+
+class MuseumMapper:
+    """博物馆信息表Mapper"""
+
+    @staticmethod
+    def select_museum_list(museum: Museum) -> List[Museum]:
+        """
+        查询博物馆信息表列表
+
+        Args:
+            museum (museum): 博物馆信息表对象
+
+        Returns:
+            List[museum]: 博物馆信息表列表
+        """
+        try:
+            # 构建查询条件
+            stmt = select(MuseumPo)
+
+
+
+
+            if museum.museum_name:
+                stmt = stmt.where(MuseumPo.museum_name.like("%" + str(museum.museum_name) + "%"))
+
+
+
+            if museum.address:
+                stmt = stmt.where(MuseumPo.address.like("%" + str(museum.address) + "%"))
+
+
+
+
+
+            if museum.status is not None:
+                stmt = stmt.where(MuseumPo.status == museum.status)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            if "criterian_meta" in g and g.criterian_meta.page:
+                g.criterian_meta.page.stmt = stmt
+
+            result = db.session.execute(stmt).scalars().all()
+            return [Museum.model_validate(item) for item in result] if result else []
+        except Exception as e:
+            print(f"查询博物馆信息表列表出错: {e}")
+            return []
+
+    
+    @staticmethod
+    def select_museum_by_id(museum_id: int) -> Museum:
+        """
+        根据ID查询博物馆信息表
+
+        Args:
+            museum_id (int): 博物馆ID
+
+        Returns:
+            museum: 博物馆信息表对象
+        """
+        try:
+            result = db.session.get(MuseumPo, museum_id)
+            return Museum.model_validate(result) if result else None
+        except Exception as e:
+            print(f"根据ID查询博物馆信息表出错: {e}")
+            return None
+    
+
+    @staticmethod
+    def insert_museum(museum: Museum) -> int:
+        """
+        新增博物馆信息表
+
+        Args:
+            museum (museum): 博物馆信息表对象
+
+        Returns:
+            int: 插入的记录数
+        """
+        try:
+            now = datetime.now()
+            new_po = MuseumPo()
+            new_po.museum_id = museum.museum_id
+            new_po.museum_name = museum.museum_name
+            new_po.address = museum.address
+            new_po.description = museum.description
+            new_po.status = museum.status
+            new_po.del_flag = museum.del_flag or 0
+            new_po.create_by = museum.create_by
+            new_po.create_time = museum.create_time or now
+            new_po.update_by = museum.update_by
+            new_po.update_time = museum.update_time or now
+            new_po.remark = museum.remark
+            db.session.add(new_po)
+            db.session.commit()
+            museum.museum_id = new_po.museum_id
+            return 1
+        except Exception as e:
+            db.session.rollback()
+            print(f"新增博物馆信息表出错: {e}")
+            return 0
+
+    
+    @staticmethod
+    def update_museum(museum: Museum) -> int:
+        """
+        修改博物馆信息表
+
+        Args:
+            museum (museum): 博物馆信息表对象
+
+        Returns:
+            int: 更新的记录数
+        """
+        try:
+            
+            existing = db.session.get(MuseumPo, museum.museum_id)
+            if not existing:
+                return 0
+            now = datetime.now()
+            # 主键不参与更新
+            existing.museum_name = museum.museum_name
+            existing.address = museum.address
+            existing.description = museum.description
+            existing.status = museum.status
+            existing.del_flag = museum.del_flag
+            existing.create_by = museum.create_by
+            existing.create_time = museum.create_time
+            existing.update_by = museum.update_by
+            existing.update_time = museum.update_time or now
+            existing.remark = museum.remark
+            db.session.commit()
+            return 1
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"修改博物馆信息表出错: {e}")
+            return 0
+
+    @staticmethod
+    def delete_museum_by_ids(ids: List[int]) -> int:
+        """
+        批量删除博物馆信息表
+
+        Args:
+            ids (List[int]): ID列表
+
+        Returns:
+            int: 删除的记录数
+        """
+        try:
+            stmt = delete(MuseumPo).where(MuseumPo.museum_id.in_(ids))
+            result = db.session.execute(stmt)
+            db.session.commit()
+            return result.rowcount
+        except Exception as e:
+            db.session.rollback()
+            print(f"批量删除博物馆信息表出错: {e}")
+            return 0
+    

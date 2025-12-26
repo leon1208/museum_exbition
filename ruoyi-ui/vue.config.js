@@ -40,6 +40,14 @@ module.exports = {
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''
         }
+      },
+      // 代理10.196.22.78的minio服务
+      '/minio': {
+        target: 'http://ragflow1.local:9000/ruoyi-dev',
+        changeOrigin: true,
+        pathRewrite: {
+          ['^/minio']: ''
+        }
       }
     },
     disableHostCheck: true

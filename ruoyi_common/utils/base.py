@@ -776,7 +776,50 @@ class FileUploadUtil:
     DEFAULT_FILE_NAME_LENGTH = 100
 
     @classmethod
-    def upload(cls, file:FileStorage, base_path:str) -> str:
+    def upload_minio(cls, file: FileStorage, base_path: str = 'upload') -> str:
+        """
+        上传文件到 MinIO
+        """
+        if not file or not file.filename:
+            raise Exception("文件不能为空")
+
+        fn_len = len(file.filename)
+        if fn_len > cls.DEFAULT_FILE_NAME_LENGTH:
+            raise Exception("文件名长度超过限制")
+
+        cls.check_allowed(file, MimeTypeUtil.DEFAULT_ALLOWED_EXTENSION)
+
+        # 原始文件后缀
+        suffix = os.path.splitext(file.filename)[1]
+
+        # 生成对象名（模拟原 profile/upload/yyyy/MM/dd 结构）
+        object_name = cls.build_object_name(suffix, base_path)
+
+        # 上传到 MinIO
+        from .minio_util import MinioUtil
+        stat = MinioUtil.upload_file(
+            object_name=object_name,
+            file_stream=file.stream,
+            content_type=file.mimetype
+        )
+
+        # 返回访问路径（保持 RuoYi 语义）
+        # 例如：/upload/2025/12/24/xxx.jpg
+        return object_name, stat
+
+    @classmethod
+    def build_object_name(cls, suffix: str, base_path: str = None) -> str:
+        """
+        upload/2025/12/24/uuid.jpg
+        """
+        from datetime import datetime
+        import uuid
+        date_path = datetime.now().strftime("%Y/%m/%d")
+        filename = f"{uuid.uuid4().hex}{suffix}"
+        return f"{base_path}/{date_path}/{filename}"
+
+    @classmethod
+    def upload(cls, file:FileStorage, base_path:str = None) -> str:
         '''
         上传文件
 
@@ -788,6 +831,8 @@ class FileUploadUtil:
             str: 资源路径
         '''
         fn_len = len(file.filename)
+        from ruoyi_common.config import RuoYiConfig
+        base_path = base_path or RuoYiConfig.profile
         if fn_len > cls.DEFAULT_FILE_NAME_LENGTH:
             raise Exception("文件名长度超过限制")
         cls.check_allowed(file, MimeTypeUtil.DEFAULT_ALLOWED_EXTENSION)
@@ -801,7 +846,6 @@ class FileUploadUtil:
         # 将物理路径转换为相对于 profile 的路径，生成浏览器可访问的 URL：
         # /profile/upload/2025/11/18/xxx.jpg
         # 为避免 utils.base 与 config 之间的循环依赖，这里在函数内部延迟导入 RuoYiConfig
-        from ruoyi_common.config import RuoYiConfig
         relpath = os.path.relpath(filepath, RuoYiConfig.profile)
         relpath = relpath.replace(os.sep, "/")
         resource_path = Constants.RESOURCE_PREFIX + "/" + relpath

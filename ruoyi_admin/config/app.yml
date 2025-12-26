@@ -7,7 +7,7 @@ ruoyi:
   api:
     version: '/'
   env: 'dev'
-  profile: 'G:/ruoyi/uploadPath'
+  profile: '/tmp/ruoyi/upload'
 
 token:
   header: 'Authorization'

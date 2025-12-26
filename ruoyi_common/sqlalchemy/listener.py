@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 from typing import Any, Tuple
 from flask import Flask, g, has_app_context
 import sqlalchemy as sa
@@ -18,7 +18,7 @@ def init_listener(engine: sa.engine.Engine) -> None:
     sa_event.listen(engine, "before_execute", before_execute_listening, retval=True)
     
 
-def before_execute_listening(engine, clauseelement, multiparams,params) -> Tuple[Any,Any,Any]:
+def before_execute_listening(engine, clauseelement, multiparams, params, execution_options) -> Tuple[Any,Any,Any]:
     """
     SQL执行前的监听器
 
@@ -27,6 +27,7 @@ def before_execute_listening(engine, clauseelement, multiparams,params) -> Tuple
         clauseelement (sa.sql.ClauseElement): SQL语句
         multiparams (Any): 多参数
         params (Any): 参数
+        execution_options (Any): 执行选项
 
     Returns:
         Tuple[Any,Any,Any]: 新的SQL语句，多参数，参数
