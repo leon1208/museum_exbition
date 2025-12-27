@@ -38,7 +38,7 @@ class GenTablePo(db.Model):
 
 class GenTableColumnPo(db.Model):
     __tablename__ = 'gen_table_column'
-    __table_args__ = {'comment': '代码生成业务列'}
+    __table_args__ = {'comment': '代码生成业务表字段'}
 
     column_id: Mapped[int] = mapped_column(BIGINT(20), primary_key=True, comment='编号')
     table_id: Mapped[Optional[int]] = mapped_column(BIGINT(20), comment='归属表编号')

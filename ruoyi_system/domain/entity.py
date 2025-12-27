@@ -207,6 +207,11 @@ class SysOperLog(BaseEntity):
         Field(default=None,vo=VoAccess(query=True,sort=True))
     ]
     
+    # 消耗时间 
+    cost_time: Annotated[
+        Optional[int],
+        Field(default=None,vo=VoAccess(query=True))
+    ]
     
 class SysNotice(AuditEntity):
 

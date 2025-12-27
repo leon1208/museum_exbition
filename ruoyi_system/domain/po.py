@@ -86,7 +86,11 @@ class SysDictTypePo(db.Model):
 
 class SysLogininforPo(db.Model):
     __tablename__ = 'sys_logininfor'
-    __table_args__ = {'comment': '系统访问记录'}
+    __table_args__ = (
+        Index('idx_sys_logininfor_s', 'status'),
+        Index('idx_sys_logininfor_lt', 'login_time'),
+        {'comment': '系统访问记录'}
+    )
 
     info_id: Mapped[int] = mapped_column(BIGINT(20), primary_key=True, comment='访问ID')
     user_name: Mapped[Optional[str]] = mapped_column(String(50), server_default=text("''"), comment='用户账号')
@@ -142,7 +146,12 @@ class SysNoticePo(db.Model):
 
 class SysOperLogPo(db.Model):
     __tablename__ = 'sys_oper_log'
-    __table_args__ = {'comment': '操作日志记录'}
+    __table_args__ = (
+        Index('idx_sys_oper_log_bt', 'business_type'), 
+        Index('idx_sys_oper_log_ot', 'oper_time'), 
+        Index('idx_sys_oper_log_s', 'status'), 
+        {'comment': '操作日志记录'}
+    )
 
     oper_id: Mapped[int] = mapped_column(BIGINT(20), primary_key=True, comment='日志主键')
     title: Mapped[Optional[str]] = mapped_column(String(50), server_default=text("''"), comment='模块标题')
@@ -160,6 +169,7 @@ class SysOperLogPo(db.Model):
     status: Mapped[Optional[int]] = mapped_column(INTEGER(1), server_default=text("'0'"), comment='操作状态（0正常 1异常）')
     error_msg: Mapped[Optional[str]] = mapped_column(String(2000), server_default=text("''"), comment='错误消息')
     oper_time: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime, comment='操作时间')
+    cost_time: Mapped[Optional[int]] = mapped_column(BIGINT(20), server_default=text("'0'"), comment='消耗时间')
 
 
 class SysPostPo(db.Model):
