@@ -16,7 +16,7 @@ FROM nginx:alpine AS frontend-nginx
 WORKDIR /usr/share/nginx/html
 
 # 复制Nginx配置文件
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker/nginx.conf /etc/nginx/nginx.conf
 
 # 复制前端构建产物到Nginx
 COPY --from=frontend-builder /app/dist /usr/share/nginx/html

@@ -1,4 +1,4 @@
-version: '3.8'
+# version: '3.8'
 
 services:
   # 前端Nginx服务
@@ -10,11 +10,13 @@ services:
       target: frontend-nginx
     ports:
       - "8088:80"
+    env_file:
+      - ../ruoyi_admin/config/.env
     depends_on:
       - backend
     restart: always
     networks:
-      - ruoyi-network
+      - ragflow
 
   # 后端Flask服务
   backend:
@@ -31,8 +33,8 @@ services:
       - RUOYI_ENV=prod
     restart: always
     networks:
-      - ruoyi-network
+      - ragflow
 
 networks:
-  ruoyi-network:
+  ragflow:
     driver: bridge
