@@ -19,6 +19,7 @@ from ruoyi_common.ruoyi.config import RuoYiConfigLoader
 from ruoyi_system.domain.po import *
 from ruoyi_generator.domain.po import *
 from ruoyi_apscheduler.domain.po import *
+from exb_museum.domain.po import *
 
 # 创建 Flask 应用实例
 app = Flask(__name__)
