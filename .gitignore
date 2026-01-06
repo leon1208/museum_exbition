@@ -55,3 +55,4 @@ package-lock.json
 yarn.lock
 
 .env
+exb-wx/config/env.local.dev.js
