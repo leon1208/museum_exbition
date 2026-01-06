@@ -1,6 +1,6 @@
 export default {
-  BASE_URL: 'http://10.196.20.233:9000',
-  STATIC_URL: 'http://10.196.22.78:9000',
+  BASE_URL: 'https://mp1.peddy.top/wx/',
+  STATIC_URL: 'https://mp1.peddy.top/minio/',
   TIMEOUT: 10000,
-  DEBUG: true
+  DEBUG: false
 }
