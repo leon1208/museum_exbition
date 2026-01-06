@@ -6,7 +6,7 @@
 from typing import Optional
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Boolean, Date, DateTime, Float, Integer, JSON, LargeBinary, Numeric, String, Text, Time
+from sqlalchemy import BigInteger, Boolean, Date, DateTime, Float, Integer, JSON, LargeBinary, Numeric, String, Text, Time, Index
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ruoyi_admin.ext import db
@@ -16,7 +16,11 @@ class MuseumMediaPo(db.Model):
     博物馆多媒体表PO对象
     """
     __tablename__ = 'exb_museum_media'
-    __table_args__ = {'comment': '博物馆多媒体表'}
+    __table_args__ = (
+        Index('idx_museum_media_type', 'museum_id', 'media_type'), 
+        Index('idx_museum_id', 'museum_id'), 
+        {'comment': '博物馆多媒体表'})
+    
     media_id: Mapped[int] = mapped_column(
         'media_id',
         BigInteger,

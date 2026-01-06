@@ -26,7 +26,20 @@ class MuseumService:
         """
         return MuseumMapper.select_museum_list(museum)
 
+
+    def select_museum_by_app_id(self, app_id: str) -> Museum:
+        """
+        根据小程序AppID查询博物馆信息表
+
+        Args:
+            app_id (str): 小程序AppID
+
+        Returns:
+            museum: 博物馆信息表对象
+        """
+        return MuseumMapper.select_museum_by_app_id(app_id)
     
+
     def select_museum_by_id(self, museum_id: int) -> Museum:
         """
         根据ID查询博物馆信息表

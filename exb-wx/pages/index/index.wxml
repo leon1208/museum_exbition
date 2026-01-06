@@ -1,0 +1,135 @@
+<view class="page">
+
+<!-- 顶部封面 -->
+<view class="hero">
+  <image class="hero-bg"
+    src="{{static_url}}{{museum.bgImage}}"
+    mode="aspectFill"
+  />
+  <view class="hero-mask" />
+
+  <!-- 顶部按钮 -->
+  <!-- <view class="hero-top">
+    <button class="icon-btn">🔍</button>
+    <view class="right">
+      <button class="icon-btn">🔔</button>
+    </view>
+  </view> -->
+
+  <!-- 标题 -->
+  <view class="hero-bottom">
+    <view class="status">
+      <text class="tag">{{museum.openStatus || '今日开放'}}</text>
+      <text class="time">{{museum.openTime || '09:00 - 17:00'}}</text>
+    </view>
+    <view class="title">{{museum.name || '国家历史博物馆'}}</view>
+    <view class="desc">
+      {{museum.description || '探索数千年的人类文化遗产，从古代珍贵文物到现代艺术杰作，尽在其中。'}}
+    </view>
+  </view>
+</view>
+
+<!-- 馆藏精选 -->
+<view class="section">
+  <view class="section-header">
+    <text class="section-title">馆藏精选</text>
+    <text class="more">查看更多 ></text>
+  </view>
+
+  <scroll-view scroll-x class="h-scroll">
+    <view class="card" wx:for="{{collections}}" wx:key="title">
+      <image class="card-img" src="{{static_url}}{{item.img}}" mode="aspectFill" />
+      <view class="card-title">{{item.title}}</view>
+      <view class="card-sub">{{item.period}}</view>
+    </view>
+  </scroll-view>
+</view>
+
+<!-- ===== 展览 ===== -->
+<view class="section">
+    <view class="section-header">
+      <text class="section-title">精彩展览</text>
+      <text class="more">查看更多 ></text>
+    </view>
+
+    <scroll-view scroll-x class="h-scroll">
+      <view
+        class="exhibit-card"
+        wx:for="{{exhibitions}}"
+        wx:key="title"
+      >
+        <view class="exhibit-img-wrap">
+          <image class="exhibit-img" src="{{static_url}}{{item.img}}" mode="aspectFill" />
+          <view class="badge {{item.status}}">
+            {{item.statusText}}
+          </view>
+          <view class="exhibit-mask" />
+          <view class="exhibit-info">
+            <text>{{item.date}}</text>
+            <text>{{item.place}}</text>
+          </view>
+        </view>
+        <view class="exhibit-title">{{item.title}}</view>
+        <view class="exhibit-desc">{{item.desc}}</view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- ===== 教育活动 ===== -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">教育活动</text>
+      <text class="more">查看更多 ></text>
+    </view>
+
+    <scroll-view scroll-x class="h-scroll">
+      <view
+        class="edu-card"
+        wx:for="{{educations}}"
+        wx:key="title"
+      >
+        <image class="edu-img" src="{{static_url}}{{item.img}}" mode="aspectFill" />
+        <view class="edu-content">
+          <text class="edu-type">{{item.type}}</text>
+          <text class="edu-title">{{item.title}}</text>
+          <text class="edu-time">{{item.time}}</text>
+        </view>
+        <!-- <button class="add-btn">+</button> -->
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 占位，防止被 TabBar 挡住 -->
+  <view style="height:140rpx" />
+
+  <!-- ===== 底部 TabBar（自定义） ===== -->
+  <view class="tabbar">
+    <view
+      class="tab-item {{tabIndex === 0 ? 'active' : ''}}"
+      bindtap="switchTab"
+      data-index="0"
+    >
+      <mp-icon type="field" icon="home" color="gray" size="{{30}}"></mp-icon>
+      <text>首页</text>
+    </view>
+
+    <!-- <view
+      class="tab-item {{tabIndex === 1 ? 'active' : ''}}"
+      bindtap="switchTab"
+      data-index="1"
+    >
+      <text class="icon">🎫</text>
+      <text>参观</text>
+    </view> -->
+
+    <view
+      class="tab-item {{tabIndex === 2 ? 'active' : ''}}"
+      bindtap="switchTab"
+      data-index="2"
+    >
+      <mp-icon type="field" icon="me" color="gray" size="{{30}}"></mp-icon>
+      <text>我的</text>
+    </view>
+  </view>
+
+</view>
