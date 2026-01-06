@@ -30,37 +30,14 @@ class MuseumMapper:
         try:
             # 构建查询条件
             stmt = select(MuseumPo)
-
-
-
-
             if museum.museum_name:
                 stmt = stmt.where(MuseumPo.museum_name.like("%" + str(museum.museum_name) + "%"))
-
-
-
             if museum.address:
                 stmt = stmt.where(MuseumPo.address.like("%" + str(museum.address) + "%"))
-
-
-
-
-
             if museum.status is not None:
                 stmt = stmt.where(MuseumPo.status == museum.status)
-
-
-
-
-
-
-
-
-
-
-
-
-
+            if museum.app_id:
+                stmt = stmt.where(MuseumPo.app_id == museum.app_id)
 
             if "criterian_meta" in g and g.criterian_meta.page:
                 g.criterian_meta.page.stmt = stmt
@@ -89,7 +66,28 @@ class MuseumMapper:
         except Exception as e:
             print(f"根据ID查询博物馆信息表出错: {e}")
             return None
-    
+
+
+    @staticmethod
+    def select_museum_by_app_id(app_id: str) -> Museum:
+        """
+        根据小程序AppID查询博物馆信息表
+
+        Args:
+            app_id (str): 小程序AppID
+
+        Returns:
+            Museum: 博物馆信息表对象
+        """
+        try:
+            result = db.session.execute(
+                select(MuseumPo).where(MuseumPo.app_id == app_id)
+            ).scalar_one_or_none()
+            return Museum.model_validate(result) if result else None
+        except Exception as e:
+            print(f"根据AppID查询博物馆信息表出错: {e}")
+            return None
+
 
     @staticmethod
     def insert_museum(museum: Museum) -> int:
@@ -116,6 +114,7 @@ class MuseumMapper:
             new_po.update_by = museum.update_by
             new_po.update_time = museum.update_time or now
             new_po.remark = museum.remark
+            new_po.app_id = museum.app_id
             db.session.add(new_po)
             db.session.commit()
             museum.museum_id = new_po.museum_id
@@ -149,11 +148,10 @@ class MuseumMapper:
             existing.description = museum.description
             existing.status = museum.status
             existing.del_flag = museum.del_flag
-            existing.create_by = museum.create_by
-            existing.create_time = museum.create_time
             existing.update_by = museum.update_by
             existing.update_time = museum.update_time or now
             existing.remark = museum.remark
+            existing.app_id = museum.app_id
             db.session.commit()
             return 1
             
@@ -182,4 +180,3 @@ class MuseumMapper:
             db.session.rollback()
             print(f"批量删除博物馆信息表出错: {e}")
             return 0
-    

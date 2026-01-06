@@ -90,6 +90,13 @@ class Museum(BaseEntity):
         Field(default=None, description="备注"),
         ExcelField(name="备注")
     ]
+    # 小程序AppID
+    app_id: Annotated[
+        Optional[str],
+        Field(default=None, description="小程序AppID"),
+        VoField(query=True),
+        ExcelField(name="小程序AppID")
+    ]
 
     # 页码
     page_num: Optional[int] = Field(default=1, description="页码")
