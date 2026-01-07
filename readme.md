@@ -1,8 +1,8 @@
 <p align="center">
-	<img alt="logo" src="https://oscimg.oschina.net/oscnet/up-d3d0a9303e11d522a06cd263f3079027715.png">
+	<!-- <img alt="logo" src="https://oscimg.oschina.net/oscnet/up-d3d0a9303e11d522a06cd263f3079027715.png"> -->
 </p>
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">RuoYi-Vue-Flask</h1>
-<h4 align="center">基于Flask+Vue前后端分离的快速开发框架</h4>
+<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">展慧博物馆管理系统</h1>
+<h4 align="center"></h4>
 <p align="center">
 	<a href="https://gitee.com/shaw-lee/ruoyi-vue-flask/blob/5139e50de7a5d97e0a512019e87a0961768ec9aa/LICENSE"><img src="https://img.shields.io/github/license/mashape/apistatus.svg"></a>
 </p>
@@ -10,88 +10,69 @@
 
 ## 平台简介
 
-Ruoyi-Vue-Flask是一套全部开源的快速开发平台，给个人及企业免费使用。
+本项目基于若依的Flask+Vue前后端分离的版本进行开发，给个人及企业免费使用。因为我个人接的一些项目实现了博物馆和展览中一些常用的功能，所以我想把这些功能集成到一起，形成一个简单的产品。
 
-* 前端采用Vue、Element UI。
-
-* 后端采用Flask、SQLAlchemy、Pydantic、Redis & Jwt，与Ruoyi-Vue后端主要接口保持一致。
-
-* 权限认证使用Jwt，支持多终端认证系统。
-
-* 支持加载动态权限菜单，多方式轻松权限控制。
-
-* 高效率开发，使用代码生成器可以一键生成前后端代码（计划中）。
-
+* 前端后端的技术栈沿用若依的Flask+Vue
+  * 后端增加了对alembic的迁移脚本管理框架的支持，参考migrations文件夹下的readme文件。
+  * 后端增加了对容器化部署的支持，参考docker文件夹。
+  * 后端增加了对minio的支持。
+  * 前端增加了对小程序的支持。
+* 环境管理，后端调整为uv进行环境管理，前端使用volta和pnpm进行依赖管理。
 * 特别鸣谢： [Ruoyi-Vue (V3.8.1)](https://gitee.com/y_project/RuoYi-Vue) https://gitee.com/shaw-lee/ruoyi-vue-flask
 
 
-## 内置功能
+## 主要功能
 
-1.  用户管理：用户是系统操作者，该功能主要完成系统用户配置。
-2.  部门管理：配置系统组织机构（公司、部门、小组），树结构展现支持数据权限。
-3.  岗位管理：配置系统用户所属担任职务。
-4.  菜单管理：配置系统菜单，操作权限，按钮权限标识等。
-5.  角色管理：角色菜单权限分配、设置角色按机构进行数据范围权限划分。
-6.  字典管理：对系统中经常使用的一些较为固定的数据进行维护。
-7.  参数管理：对系统动态配置常用参数。
-8.  通知公告：系统通知公告信息发布维护。
-9.  操作日志：系统正常操作日志记录和查询；系统异常信息日志记录和查询。
-10. 登录日志：系统登录日志记录查询包含登录异常。
-11. 在线用户：当前系统中活跃用户状态监控。
-12. 定时任务：在线（添加、修改、删除）任务调度包含执行结果日志。
-13. 系统接口：根据业务代码自动生成相关的api接口文档。
-14. 服务监控：监视当前系统CPU、内存、磁盘、堆栈等相关信息。
-15. 缓存监控：对系统的缓存信息查询，命令统计等。
-16. 在线构建器：拖动表单元素生成相应的HTML代码。
-17. 连接池监视：（待定，python版本不支持druid连接池）
-18. Swagger文档：（计划中）
-19. 国际化：（计划中）
-20. 代码生成：生成基本的CURD
+若依框架原有的功能全部保留，和博物馆展览相关的功能如下，我将陆续实现，也可能在实现过程中对进行调整：
+1.  博物馆管理：博物馆是系统操作者，该功能主要完成博物馆的基本配置和展厅的配置。
+2.  展览管理：展览是博物馆的一个子模块，主要完成展览的配置，包括展览的时间、地点、展览的藏品等。
+3.  藏品管理：藏品是展览的一个子模块，主要完成展览中的藏品的配置，包括藏品的名称、描述、图片等。
+4.  展览导览：根据展览的藏品生成文字和语音讲解，为观众提供小程序端的导览服务。
+5.  教育活动：配置博物馆的公共教育活动，提供活动一些周边物料管理、预约报名功能。
+
+其他功能设想：
+* 展览大纲设计：根据展览的主题、藏品等信息，通过AI辅助展览大纲的编写。
+* 展览活动宣传：根据展览或者活动的已经录入的信息，通过AI辅助生成宣传用的图片和文字。
+* 自动语音导览：配合蓝牙室内定位，根据用户的位置和导览路径，自动播放导览语音。
+* 在线展览：可将展览的720全景应用上传至平台，用户可在小程序端查看和播放，实现永不落幕的展览。
 
 ## 安装部署
 
 ### 软件版本
 
 ```text
-os版本：windows 和 linux
-python版本：3.10+
-mysql版本：5.7+
-redis版本：5.0+
+本项目python和node的版本管理使用uv和volta，分别管理python和node的版本。
+python版本：3.13+
+mysql版本：8+
+redis版本：8+
 node版本：v20.17.0
+
+工程的版本号在根目录下文件：./VERSION
 ```
 
 ### mysql数据库
 ```text
-运行sql文件夹下文件即可
+可参考migrations文件夹下的readme文件进行数据库迁移。
 ```
-### 后端快速启动（开发环境:windows）
+### 后端快速启动
 
 ```cmd
-# 创建虚拟环境
-python3 -m venv venv
+# 安装uv
+pipx install uv
+
+# 进入项目目录，创建虚拟环境
+uv sync
 
 # 激活虚拟环境
-.\.venv\Scripts\activate
-
-# 安装依赖
-pip3 install -r ./bin/requirements.txt 
+source ./.venv/bin/activate
 ```
 
 ```text
-# 后端配置
-./ruoyi_admin/config/app.yml
-  ......
-  env: 'dev'
-  profile: D:/ruoyi/uploadPath
-  ......
+# 后端配置，注意不要提交.env文件
+cp ./ruoyi_admin/config/env.example ./ruoyi_admin/config/.env
 
-
-./ruoyi_admin/config/app-dev.yml
-  ......
-  SQLALCHEMY_DATABASE_URI: 'mysql+pymysql://root:123456@127.0.0.1/ry-vue-py'
-  ......
-  REDIS_URL: "redis://127.0.0.1?db=1"
-  ......
+# 调整.env文件，根据实际情况修改数据库连接信息、redis连接信息等。
+# 也可以根据项目情况调整app.yml文件，例如修改上传文件的路径等。
 ```
 
 ```cmd
@@ -99,19 +80,35 @@ pip3 install -r ./bin/requirements.txt
 python ruoyi_admin/app.py
 ```
 
-### 前端快速启动（开发环境:windows）
+### 前端快速启动
 
 ```cmd
-# 安装依赖
+# 安装依赖, 推荐使用volta, 安装node版本为v20.17.0
+volta install node@20.17.0
+volta install pnpm
+
 cd ruoyi-ui
-npm install
+pnpm install
 
 # 启动服务
-npm run dev
+pnpm run dev
 ```
 
 ### 浏览器访问
 ```text
-地址: http://localhost:80
+地址: http://localhost:1024
 用户名/密码: admin/admin123
+```
+
+### 容器化部署
+```text
+# 1.自行部署mysql、redis、minio等服务。
+# 2.修改./ruoyi_admin/config/.env文件，根据部署实际部署修改数据库连接信息、redis连接信息等。该文件在开发、测试和生产环境中都需要修改，不建议在代码仓库中提交该文件。
+# 3.利用./docker/runbuild.sh中的命令编译镜像
+
+## 编译,在项目根目录下执行
+APP_VERSION=$(cat VERSION) docker-compose -f docker/docker-compose.yaml build
+
+## 编译加启动,在项目根目录下执行
+APP_VERSION=$(cat VERSION) docker-compose -f docker/docker-compose.yaml up -d --build
 ```
