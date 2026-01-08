@@ -158,7 +158,9 @@
           </el-select>
         </el-form-item>
         <el-form-item label="年代" prop="age">
-          <el-input v-model="form.age" placeholder="请输入年代" />
+          <el-select v-model="form.age" placeholder="请选择年代" clearable>
+            <el-option v-for="dict in ageOptions" :key="dict.value" :label="dict.label" :value="dict.value"/>
+          </el-select>
         </el-form-item>
         <el-form-item label="作者" prop="author">
           <el-input v-model="form.author" placeholder="请输入作者" />
@@ -275,6 +277,22 @@ export default {
       ],
       // 材质选中值（用于多选控件）
       materialValues: [],
+      // 年代选项列表
+      ageOptions: [
+        { label: '史前时期', value: '史前时期' },
+        { label: '夏商周', value: '夏商周' },
+        { label: '春秋战国', value: '春秋战国' },
+        { label: '秦汉', value: '秦汉' },
+        { label: '魏晋南北朝', value: '魏晋南北朝' },
+        { label: '隋唐', value: '隋唐' },
+        { label: '五代十国', value: '五代十国' },
+        { label: '宋元', value: '宋元' },
+        { label: '明清', value: '明清' },
+        { label: '民国', value: '民国' },
+        { label: '现代', value: '现代' },
+        { label: '当代', value: '当代' },
+        { label: '其他', value: '其他' },
+      ],
       // 表格列信息
       columns: [
         { key: 0, label: '藏品名', visible: true },
