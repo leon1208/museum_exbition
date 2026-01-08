@@ -80,7 +80,7 @@ def upgrade() -> None:
         visible='0',
         status='0',
         perms='exb_museum:museum:list',
-        icon='#',
+        icon='list',
         create_by='admin',
         create_time=sa.func.sysdate(),
         update_by='',
