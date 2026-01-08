@@ -27,37 +27,37 @@ def _clear_page_context():
     if hasattr(g, "criterian_meta"):
         g.criterian_meta.page = None
 
-@reg.api.route('/exb_museum/exbition/list', methods=["GET"])
+@reg.api.route('/exb_museum/exhibition/list', methods=["GET"])
 @QueryValidator(is_page=True)
-@PreAuthorize(HasPerm('exb_museum:exbition:list'))
+@PreAuthorize(HasPerm('exb_museum:exhibition:list'))
 @JsonSerializer()
-def exbition_list(dto: Exhibition):
+def exhibition_list(dto: Exhibition):
     """查询展览信息表列表"""
     exhibition_entity = Exhibition()
     # 转换PO到Entity对象
     for attr in dto.model_fields.keys():
         if hasattr(exhibition_entity, attr):
             setattr(exhibition_entity, attr, getattr(dto, attr))
-    exbitions = exhibition_service.select_exhibition_list(exhibition_entity)
-    return TableResponse(code=HttpStatus.SUCCESS, msg='查询成功', rows=exbitions)
+    exhibitions = exhibition_service.select_exhibition_list(exhibition_entity)
+    return TableResponse(code=HttpStatus.SUCCESS, msg='查询成功', rows=exhibitions)
 
 
-@reg.api.route('/exb_museum/exbition/<int:exhibitionId>', methods=['GET'])
+@reg.api.route('/exb_museum/exhibition/<int:exhibitionId>', methods=['GET'])
 @PathValidator()
-@PreAuthorize(HasPerm('exb_museum:exbition:query'))
+@PreAuthorize(HasPerm('exb_museum:exhibition:query'))
 @JsonSerializer()
-def get_exbition(exhibition_id: int):
+def get_exhibition(exhibition_id: int):
     """获取展览信息表详细信息"""
     exhibition_entity = exhibition_service.select_exhibition_by_id(exhibition_id)
     return AjaxResponse.from_success(data=exhibition_entity)
 
 
-@reg.api.route('/exb_museum/exbition', methods=['POST'])
+@reg.api.route('/exb_museum/exhibition', methods=['POST'])
 @BodyValidator()
-@PreAuthorize(HasPerm('exb_museum:exbition:add'))
+@PreAuthorize(HasPerm('exb_museum:exhibition:add'))
 @Log(title='展览信息表管理', business_type=BusinessType.INSERT)
 @JsonSerializer()
-def add_exbition(dto: Exhibition):
+def add_exhibition(dto: Exhibition):
     """新增展览信息表"""
     exhibition_entity = Exhibition()
     # 转换PO到Entity对象
@@ -70,12 +70,12 @@ def add_exbition(dto: Exhibition):
     return AjaxResponse.from_error(code=HttpStatus.ERROR, msg='新增失败')
 
 
-@reg.api.route('/exb_museum/exbition', methods=['PUT'])
+@reg.api.route('/exb_museum/exhibition', methods=['PUT'])
 @BodyValidator()
-@PreAuthorize(HasPerm('exb_museum:exbition:edit'))
+@PreAuthorize(HasPerm('exb_museum:exhibition:edit'))
 @Log(title='展览信息表管理', business_type=BusinessType.UPDATE)
 @JsonSerializer()
-def update_exbition(dto: Exhibition):
+def update_exhibition(dto: Exhibition):
     """修改展览信息表"""
     exhibition_entity = Exhibition()
     # 转换PO到Entity对象
@@ -89,12 +89,12 @@ def update_exbition(dto: Exhibition):
 
 
 
-@reg.api.route('/exb_museum/exbition/<ids>', methods=['DELETE'])
+@reg.api.route('/exb_museum/exhibition/<ids>', methods=['DELETE'])
 @PathValidator()
-@PreAuthorize(HasPerm('exb_museum:exbition:remove'))
+@PreAuthorize(HasPerm('exb_museum:exhibition:remove'))
 @Log(title='展览信息表管理', business_type=BusinessType.DELETE)
 @JsonSerializer()
-def delete_exbition(ids: str):
+def delete_exhibition(ids: str):
     """删除展览信息表"""
     try:
         id_list = [int(id) for id in ids.split(',')]
@@ -106,12 +106,12 @@ def delete_exbition(ids: str):
         return AjaxResponse.from_error(msg=f'删除失败: {str(e)}')
 
 
-@reg.api.route('/exb_museum/exbition/export', methods=['POST'])
+@reg.api.route('/exb_museum/exhibition/export', methods=['POST'])
 @FileDownloadValidator()
-@PreAuthorize(HasPerm('exb_museum:exbition:export'))
+@PreAuthorize(HasPerm('exb_museum:exhibition:export'))
 @Log(title='展览信息表管理', business_type=BusinessType.EXPORT)
 @BaseSerializer()
-def export_exbition(dto: Exhibition):
+def export_exhibition(dto: Exhibition):
     """导出展览信息表列表"""
     exhibition_entity = Exhibition()
     # 转换PO到Entity对象
@@ -121,12 +121,12 @@ def export_exbition(dto: Exhibition):
     _clear_page_context()
     exhibition_entity.page_num = None
     exhibition_entity.page_size = None
-    exbitions = exhibition_service.select_exhibition_list(exhibition_entity)
+    exhibitions = exhibition_service.select_exhibition_list(exhibition_entity)
     # 使用ExcelUtil导出Excel文件
     excel_util = ExcelUtil(Exhibition)
-    return excel_util.export_response(exbitions, "展览信息表数据")
+    return excel_util.export_response(exhibitions, "展览信息表数据")
 
-@reg.api.route('/exb_museum/exbition/importTemplate', methods=['POST'])
+@reg.api.route('/exb_museum/exhibition/importTemplate', methods=['POST'])
 @login_required
 @BaseSerializer()
 def exhibition_import_template():
@@ -134,9 +134,9 @@ def exhibition_import_template():
     excel_util = ExcelUtil(Exhibition)
     return excel_util.import_template_response(sheetname="展览信息表数据")
 
-@reg.api.route('/exb_museum/exbition/importData', methods=['POST'])
+@reg.api.route('/exb_museum/exhibition/importData', methods=['POST'])
 @FileUploadValidator()
-@PreAuthorize(HasPerm('exb_museum:exbition:import'))
+@PreAuthorize(HasPerm('exb_museum:exhibition:import'))
 @Log(title='展览信息表管理', business_type=BusinessType.IMPORT)
 @JsonSerializer()
 def exhibition_import_data(
@@ -146,6 +146,6 @@ def exhibition_import_data(
     """导入展览信息表数据"""
     file = file[0]
     excel_util = ExcelUtil(Exhibition)
-    exbition_list = excel_util.import_file(file, sheetname="展览信息表数据")
-    msg = exhibition_service.import_exhibition(exbition_list, update_support)
+    exhibition_list = excel_util.import_file(file, sheetname="展览信息表数据")
+    msg = exhibition_service.import_exhibition(exhibition_list, update_support)
     return AjaxResponse.from_success(msg=msg)

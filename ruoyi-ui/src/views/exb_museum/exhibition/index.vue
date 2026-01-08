@@ -51,7 +51,7 @@
           icon="el-icon-plus"
           size="mini"
           @click="handleAdd"
-          v-hasPermi="['exb_museum:exbition:add']"
+          v-hasPermi="['exb_museum:exhibition:add']"
         >新增</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -62,7 +62,7 @@
           size="mini"
           :disabled="single"
           @click="handleUpdate"
-          v-hasPermi="['exb_museum:exbition:edit']"
+          v-hasPermi="['exb_museum:exhibition:edit']"
         >修改</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -73,7 +73,7 @@
           size="mini"
           :disabled="multiple"
           @click="handleDelete"
-          v-hasPermi="['exb_museum:exbition:remove']"
+          v-hasPermi="['exb_museum:exhibition:remove']"
         >删除</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -83,7 +83,7 @@
           icon="el-icon-download"
           size="mini"
           @click="handleExport"
-          v-hasPermi="['exb_museum:exbition:export']"
+          v-hasPermi="['exb_museum:exhibition:export']"
         >导出</el-button>
       </el-col>
       <el-col :span="1.5">
@@ -93,13 +93,13 @@
           icon="el-icon-upload2"
           size="mini"
           @click="handleImport"
-          v-hasPermi="['exb_museum:exbition:import']"
+          v-hasPermi="['exb_museum:exhibition:import']"
         >导入</el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
     </el-row>
 
-    <el-table :loading="loading" :data="exbitionList" @selection-change="handleSelectionChange">
+    <el-table :loading="loading" :data="exhibitionList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="展名" :show-overflow-tooltip="true" v-if="columns[0].visible" prop="exhibitionName" />
       <el-table-column label="所属博物馆" align="center" :show-overflow-tooltip="true" v-if="columns[1].visible" prop="museumName" :formatter="dict_museumId_format" />
@@ -125,14 +125,14 @@
             type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
-            v-hasPermi="['exb_museum:exbition:edit']"
+            v-hasPermi="['exb_museum:exhibition:edit']"
           >修改</el-button>
           <el-button
             size="mini"
             type="text"
             icon="el-icon-delete"
             @click="handleDelete(scope.row)"
-            v-hasPermi="['exb_museum:exbition:remove']"
+            v-hasPermi="['exb_museum:exhibition:remove']"
           >删除</el-button>
         </template>
       </el-table-column>
@@ -240,12 +240,12 @@
 </template>
 
 <script>
-import { listExbition, getExbition, delExbition, addExbition, updateExbition } from "@/api/exb_museum/exbition";
+import { listExhibition, getExhibition, delExhibition, addExhibition, updateExhibition } from "@/api/exb_museum/exhibition";
 import { listMuseum } from "@/api/exb_museum/museum"; // 导入博物馆API
 import { getToken } from "@/utils/auth";
 
 export default {
-  name: "Exbition",
+  name: "Exhibition",
   data() {
     return {
       // 遮罩层
@@ -261,7 +261,7 @@ export default {
       // 总条数
       total: 0,
       // 展览信息表表格数据
-      exbitionList: [],
+      exhibitionList: [],
       // 博物馆选项列表
       museumOptions: [],
       // 内容标签选项列表
@@ -344,7 +344,7 @@ export default {
         // 设置上传的请求头部
         headers: { Authorization: "Bearer " + getToken() },
         // 上传的地址
-        url: process.env.VUE_APP_BASE_API + "/exb_museum/exbition/importData"
+        url: process.env.VUE_APP_BASE_API + "/exb_museum/exhibition/importData"
       },
       // 表单校验
       rules: {
@@ -412,8 +412,8 @@ export default {
         this.queryParams.params["beginendTime"] = this.dateRangeEndTime[0];
         this.queryParams.params["endendTime"] = this.dateRangeEndTime[1];
       }
-      listExbition(this.queryParams).then(response => {
-        this.exbitionList = response.rows;
+      listExhibition(this.queryParams).then(response => {
+        this.exhibitionList = response.rows;
         this.total = response.total;
         this.loading = false;
       });
@@ -493,7 +493,7 @@ export default {
     handleUpdate(row) {
       this.reset();
       const exhibitionId = row.exhibitionId || this.ids
-      getExbition(exhibitionId).then(response => {
+      getExhibition(exhibitionId).then(response => {
         this.form = response.data;
         // 将内容标签字符串转换为数组
         if (this.form.contentTags) {
@@ -511,13 +511,13 @@ export default {
         if (valid) {
           const submitData = this.buildSubmitData();
           if (submitData.exhibitionId != null) {
-            updateExbition(submitData).then(response => {
+            updateExhibition(submitData).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
             });
           } else {
-            addExbition(submitData).then(response => {
+            addExhibition(submitData).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
@@ -528,9 +528,9 @@ export default {
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const exbitionIds = row.exhibitionId || this.ids;
-      this.$modal.confirm('是否确认删除展览信息表编号为"' + exbitionIds + '"的数据项？').then(function() {
-        return delExbition(exbitionIds);
+      const exhibitionIds = row.exhibitionId || this.ids;
+      this.$modal.confirm('是否确认删除展览信息表编号为"' + exhibitionIds + '"的数据项？').then(function() {
+        return delExhibition(exhibitionIds);
       }).then(() => {
         this.getList();
         this.$modal.msgSuccess("删除成功");
@@ -538,9 +538,9 @@ export default {
     },
     /** 导出按钮操作 */
     handleExport() {
-      this.download('exb_museum/exbition/export', {
+      this.download('exb_museum/exhibition/export', {
         ...this.queryParams
-      }, `exbition_${new Date().getTime()}.xlsx`)
+      }, `exhibition_${new Date().getTime()}.xlsx`)
     },
     /** 导入按钮操作 */
     handleImport() {
@@ -550,9 +550,9 @@ export default {
     /** 下载模板操作 */
     importTemplate() {
       this.download(
-        "exb_museum/exbition/importTemplate",
+        "exb_museum/exhibition/importTemplate",
         {},
-        "exbition_template_" + new Date().getTime() + ".xlsx"
+        "exhibition_template_" + new Date().getTime() + ".xlsx"
       );
     },
     // 文件上传中处理

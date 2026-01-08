@@ -13,17 +13,17 @@ from exb_museum.mapper.exhibition_mapper import ExhibitionMapper
 class ExhibitionService:
     """展览信息表服务类"""
 
-    def select_exhibition_list(self, exbition: Exhibition) -> List[Exhibition]:
+    def select_exhibition_list(self, exhibition: Exhibition) -> List[Exhibition]:
         """
         查询展览信息表列表
 
         Args:
-            exbition (exhibition): 展览信息表对象
+            exhibition (exhibition): 展览信息表对象
 
         Returns:
             List[exhibition]: 展览信息表列表
         """
-        return ExhibitionMapper.select_exhibition_list(exbition)
+        return ExhibitionMapper.select_exhibition_list(exhibition)
 
     
     def select_exhibition_by_id(self, exhibition_id: int) -> Exhibition:
@@ -39,30 +39,30 @@ class ExhibitionService:
         return ExhibitionMapper.select_exhibition_by_id(exhibition_id)
     
 
-    def insert_exhibition(self, exbition: Exhibition) -> int:
+    def insert_exhibition(self, exhibition: Exhibition) -> int:
         """
         新增展览信息表
 
         Args:
-            exbition (exhibition): 展览信息表对象
+            exhibition (exhibition): 展览信息表对象
 
         Returns:
             int: 插入的记录数
         """
-        return ExhibitionMapper.insert_exhibition(exbition)
+        return ExhibitionMapper.insert_exhibition(exhibition)
 
     
-    def update_exhibition(self, exbition: Exhibition) -> int:
+    def update_exhibition(self, exhibition: Exhibition) -> int:
         """
         修改展览信息表
 
         Args:
-            exbition (exhibition): 展览信息表对象
+            exhibition (exhibition): 展览信息表对象
 
         Returns:
             int: 更新的记录数
         """
-        return ExhibitionMapper.update_exhibition(exbition)
+        return ExhibitionMapper.update_exhibition(exhibition)
     
 
     
@@ -79,18 +79,18 @@ class ExhibitionService:
         return ExhibitionMapper.delete_exhibition_by_ids(ids)
     
 
-    def import_exhibition(self, exbition_list: List[Exhibition], is_update: bool = False) -> str:
+    def import_exhibition(self, exhibition_list: List[Exhibition], is_update: bool = False) -> str:
         """
         导入展览信息表数据
 
         Args:
-            exbition_list (List[exhibition]): 展览信息表列表
+            exhibition_list (List[exhibition]): 展览信息表列表
             is_update (bool): 是否更新已存在的数据
 
         Returns:
             str: 导入结果消息
         """
-        if not exbition_list:
+        if not exhibition_list:
             raise ServiceException("导入展览信息表数据不能为空")
 
         success_count = 0
@@ -98,23 +98,23 @@ class ExhibitionService:
         success_msg = ""
         fail_msg = ""
 
-        for exbition in exbition_list:
+        for exhibition in exhibition_list:
             try:
-                display_value = exbition
+                display_value = exhibition
                 
-                display_value = getattr(exbition, "exhibition_id", display_value)
+                display_value = getattr(exhibition, "exhibition_id", display_value)
                 existing = None
-                if exbition.exhibition_id is not None:
-                    existing = ExhibitionMapper.select_exhibition_by_id(exbition.exhibition_id)
+                if exhibition.exhibition_id is not None:
+                    existing = ExhibitionMapper.select_exhibition_by_id(exhibition.exhibition_id)
                 if existing:
                     if is_update:
-                        result = ExhibitionMapper.update_exhibition(exbition)
+                        result = ExhibitionMapper.update_exhibition(exhibition)
                     else:
                         fail_count += 1
                         fail_msg += f"<br/> 第{fail_count}条数据，已存在：{display_value}"
                         continue
                 else:
-                    result = ExhibitionMapper.insert_exhibition(exbition)
+                    result = ExhibitionMapper.insert_exhibition(exhibition)
                 
                 if result > 0:
                     success_count += 1

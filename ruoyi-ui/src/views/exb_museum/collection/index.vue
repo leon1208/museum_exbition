@@ -226,7 +226,7 @@
 <script>
 import { listCollection, getCollection, delCollection, addCollection, updateCollection } from "@/api/exb_museum/collection";
 import { listMuseum } from "@/api/exb_museum/museum"; // 导入博物馆API
-import { listExbition } from "@/api/exb_museum/exbition"; // 导入展览API
+import { listExhibition } from "@/api/exb_museum/exhibition"; // 导入展览API
 import { getToken } from "@/utils/auth";
 
 export default {
@@ -390,7 +390,7 @@ export default {
     },
     /** 获取展览列表 */
     getExhibitionList() {
-      listExbition().then(response => {
+      listExhibition().then(response => {
         this.exhibitionOptions = response.rows;
       });
     },

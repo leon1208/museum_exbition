@@ -27,7 +27,7 @@ def upgrade() -> None:
     
     # 插入藏品信息表子菜单（Upsert操作）
     insert_stmt = insert(menu_table).values(
-        menu_id=2043,
+        menu_id=2044,
         menu_name='藏品信息表',
         parent_id=2029,
         order_num=3,
@@ -71,7 +71,7 @@ def upgrade() -> None:
     
     # 插入藏品信息表查询按钮（Upsert操作）
     insert_stmt = insert(menu_table).values(
-        menu_id=2044,
+        menu_id=2045,
         menu_name='藏品信息表查询',
         parent_id=2043,
         order_num=1,
@@ -115,7 +115,7 @@ def upgrade() -> None:
     
     # 插入藏品信息表新增按钮（Upsert操作）
     insert_stmt = insert(menu_table).values(
-        menu_id=2045,
+        menu_id=2046,
         menu_name='藏品信息表新增',
         parent_id=2043,
         order_num=2,
@@ -159,7 +159,7 @@ def upgrade() -> None:
     
     # 插入藏品信息表修改按钮（Upsert操作）
     insert_stmt = insert(menu_table).values(
-        menu_id=2046,
+        menu_id=2047,
         menu_name='藏品信息表修改',
         parent_id=2043,
         order_num=3,
@@ -203,7 +203,7 @@ def upgrade() -> None:
     
     # 插入藏品信息表删除按钮（Upsert操作）
     insert_stmt = insert(menu_table).values(
-        menu_id=2047,
+        menu_id=2048,
         menu_name='藏品信息表删除',
         parent_id=2043,
         order_num=4,
@@ -247,7 +247,7 @@ def upgrade() -> None:
     
     # 插入藏品信息表导出按钮（Upsert操作）
     insert_stmt = insert(menu_table).values(
-        menu_id=2048,
+        menu_id=2049,
         menu_name='藏品信息表导出',
         parent_id=2043,
         order_num=5,
@@ -291,7 +291,7 @@ def upgrade() -> None:
     
     # 插入藏品信息表导入按钮（Upsert操作）
     insert_stmt = insert(menu_table).values(
-        menu_id=2049,
+        menu_id=2050,
         menu_name='藏品信息表导入',
         parent_id=2043,
         order_num=6,
@@ -341,7 +341,7 @@ def downgrade() -> None:
     menu_table = SysMenuPo.__table__
     
     # 删除按钮菜单
-    op.execute(menu_table.delete().where(menu_table.c.menu_id.in_([2044, 2045, 2046, 2047, 2048, 2049])))
+    op.execute(menu_table.delete().where(menu_table.c.menu_id.in_([2045, 2046, 2047, 2048, 2049, 2050])))
     
     # 删除子菜单
-    op.execute(menu_table.delete().where(menu_table.c.menu_id == 2043))
+    op.execute(menu_table.delete().where(menu_table.c.menu_id == 2044))

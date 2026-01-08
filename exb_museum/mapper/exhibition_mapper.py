@@ -17,12 +17,12 @@ class ExhibitionMapper:
     """展览信息表Mapper"""
 
     @staticmethod
-    def select_exhibition_list(exbition: Exhibition) -> List[Exhibition]:
+    def select_exhibition_list(exhibition: Exhibition) -> List[Exhibition]:
         """
         查询展览信息表列表
 
         Args:
-            exbition (exhibition): 展览信息表对象
+            exhibition (exhibition): 展览信息表对象
 
         Returns:
             List[exhibition]: 展览信息表列表
@@ -34,15 +34,15 @@ class ExhibitionMapper:
 
 
 
-            if exbition.exhibition_name:
-                stmt = stmt.where(ExhibitionPo.exhibition_name.like("%" + str(exbition.exhibition_name) + "%"))
+            if exhibition.exhibition_name:
+                stmt = stmt.where(ExhibitionPo.exhibition_name.like("%" + str(exhibition.exhibition_name) + "%"))
 
 
 
 
 
-            if exbition.museum_id is not None:
-                stmt = stmt.where(ExhibitionPo.museum_id == exbition.museum_id)
+            if exhibition.museum_id is not None:
+                stmt = stmt.where(ExhibitionPo.museum_id == exhibition.museum_id)
 
 
 
@@ -52,20 +52,20 @@ class ExhibitionMapper:
 
 
 
-            if exbition.organizer:
-                stmt = stmt.where(ExhibitionPo.organizer.like("%" + str(exbition.organizer) + "%"))
+            if exhibition.organizer:
+                stmt = stmt.where(ExhibitionPo.organizer.like("%" + str(exhibition.organizer) + "%"))
 
 
 
-            if exbition.exhibition_type is not None:
-                stmt = stmt.where(ExhibitionPo.exhibition_type == exbition.exhibition_type)
+            if exhibition.exhibition_type is not None:
+                stmt = stmt.where(ExhibitionPo.exhibition_type == exhibition.exhibition_type)
 
 
 
 
 
-            if exbition.status is not None:
-                stmt = stmt.where(ExhibitionPo.status == exbition.status)
+            if exhibition.status is not None:
+                stmt = stmt.where(ExhibitionPo.status == exhibition.status)
 
 
 
@@ -110,12 +110,12 @@ class ExhibitionMapper:
     
 
     @staticmethod
-    def insert_exhibition(exbition: Exhibition) -> int:
+    def insert_exhibition(exhibition: Exhibition) -> int:
         """
         新增展览信息表
 
         Args:
-            exbition (exhibition): 展览信息表对象
+            exhibition (exhibition): 展览信息表对象
 
         Returns:
             int: 插入的记录数
@@ -123,26 +123,26 @@ class ExhibitionMapper:
         try:
             now = datetime.now()
             new_po = ExhibitionPo()
-            new_po.exhibition_id = exbition.exhibition_id
-            new_po.exhibition_name = exbition.exhibition_name
-            new_po.description = exbition.description
-            new_po.museum_id = exbition.museum_id
-            new_po.hall = exbition.hall
-            new_po.start_time = exbition.start_time
-            new_po.end_time = exbition.end_time
-            new_po.organizer = exbition.organizer
-            new_po.exhibition_type = exbition.exhibition_type
-            new_po.content_tags = exbition.content_tags
-            new_po.status = exbition.status
-            new_po.del_flag = exbition.del_flag
-            new_po.create_by = exbition.create_by
-            new_po.create_time = exbition.create_time or now
-            new_po.update_by = exbition.update_by
-            new_po.update_time = exbition.update_time or now
-            new_po.remark = exbition.remark
+            new_po.exhibition_id = exhibition.exhibition_id
+            new_po.exhibition_name = exhibition.exhibition_name
+            new_po.description = exhibition.description
+            new_po.museum_id = exhibition.museum_id
+            new_po.hall = exhibition.hall
+            new_po.start_time = exhibition.start_time
+            new_po.end_time = exhibition.end_time
+            new_po.organizer = exhibition.organizer
+            new_po.exhibition_type = exhibition.exhibition_type
+            new_po.content_tags = exhibition.content_tags
+            new_po.status = exhibition.status
+            new_po.del_flag = exhibition.del_flag
+            new_po.create_by = exhibition.create_by
+            new_po.create_time = exhibition.create_time or now
+            new_po.update_by = exhibition.update_by
+            new_po.update_time = exhibition.update_time or now
+            new_po.remark = exhibition.remark
             db.session.add(new_po)
             db.session.commit()
-            exbition.exhibition_id = new_po.exhibition_id
+            exhibition.exhibition_id = new_po.exhibition_id
             return 1
         except Exception as e:
             db.session.rollback()
@@ -151,39 +151,39 @@ class ExhibitionMapper:
 
     
     @staticmethod
-    def update_exhibition(exbition: Exhibition) -> int:
+    def update_exhibition(exhibition: Exhibition) -> int:
         """
         修改展览信息表
 
         Args:
-            exbition (exhibition): 展览信息表对象
+            exhibition (exhibition): 展览信息表对象
 
         Returns:
             int: 更新的记录数
         """
         try:
             
-            existing = db.session.get(ExhibitionPo, exbition.exhibition_id)
+            existing = db.session.get(ExhibitionPo, exhibition.exhibition_id)
             if not existing:
                 return 0
             now = datetime.now()
             # 主键不参与更新
-            existing.exhibition_name = exbition.exhibition_name
-            existing.description = exbition.description
-            existing.museum_id = exbition.museum_id
-            existing.hall = exbition.hall
-            existing.start_time = exbition.start_time
-            existing.end_time = exbition.end_time
-            existing.organizer = exbition.organizer
-            existing.exhibition_type = exbition.exhibition_type
-            existing.content_tags = exbition.content_tags
-            existing.status = exbition.status
-            existing.del_flag = exbition.del_flag
-            existing.create_by = exbition.create_by
-            existing.create_time = exbition.create_time
-            existing.update_by = exbition.update_by
-            existing.update_time = exbition.update_time or now
-            existing.remark = exbition.remark
+            existing.exhibition_name = exhibition.exhibition_name
+            existing.description = exhibition.description
+            existing.museum_id = exhibition.museum_id
+            existing.hall = exhibition.hall
+            existing.start_time = exhibition.start_time
+            existing.end_time = exhibition.end_time
+            existing.organizer = exhibition.organizer
+            existing.exhibition_type = exhibition.exhibition_type
+            existing.content_tags = exhibition.content_tags
+            existing.status = exhibition.status
+            existing.del_flag = exhibition.del_flag
+            existing.create_by = exhibition.create_by
+            existing.create_time = exhibition.create_time
+            existing.update_by = exhibition.update_by
+            existing.update_time = exhibition.update_time or now
+            existing.remark = exhibition.remark
             db.session.commit()
             return 1
             
