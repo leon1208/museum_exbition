@@ -19,6 +19,6 @@
     "checkInvalidKey": true,
     "ignoreDevUnusedFiles": true
   },
-  "libVersion": "3.13.1",
+  "appid": "wx3af0e66d2952752a",
   "condition": {}
 }
