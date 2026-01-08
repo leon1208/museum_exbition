@@ -330,8 +330,8 @@ export default {
       ],
       // 状态（0正常 1停用）字典
       sys_yes_noOptions: [
-        { value: '0', label: '正常' },
-        { value: '1', label: '停用' },
+        { value: 0, label: '正常' },
+        { value: 1, label: '停用' },
       ],
       // 弹出层标题
       title: "",
