@@ -4,3 +4,4 @@
 from .museum import Museum
 from .museum_media import MuseumMedia
 from .exhibition import Exhibition
+from .collection import Collection
