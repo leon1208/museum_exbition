@@ -128,7 +128,7 @@ def export_museum(dto: Museum):
 @reg.api.route('/exb_museum/museum/importTemplate', methods=['POST'])
 @login_required
 @BaseSerializer()
-def import_template():
+def museum_import_template():
     """下载博物馆信息表导入模板"""
     excel_util = ExcelUtil(Museum)
     return excel_util.import_template_response(sheetname="博物馆信息表数据")
@@ -138,7 +138,7 @@ def import_template():
 @PreAuthorize(HasPerm('exb_museum:museum:import'))
 @Log(title='博物馆信息表管理', business_type=BusinessType.IMPORT)
 @JsonSerializer()
-def import_data(
+def museum_import_data(
     file: List[FileStorage],
     update_support: Annotated[bool, BeforeValidator(lambda x: x != "0")]
 ):
