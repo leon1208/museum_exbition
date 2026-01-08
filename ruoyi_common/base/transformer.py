@@ -70,8 +70,7 @@ def to_datetime(format=None) -> Callable[[str | NoneType, ValidationInfo], datet
     return validate_datetime
 
 
-def str_to_int(value: str | NoneType, info: ValidationInfo) \
-        -> int:
+def str_to_int(value: str | NoneType, info: ValidationInfo) -> int | NoneType:
     """
     验证str是否为整数，并转换为整数
 
@@ -85,13 +84,14 @@ def str_to_int(value: str | NoneType, info: ValidationInfo) \
     Returns:
         int: 整数
     """
-    if value:
+    if value is not None and value != "":
         if isinstance(value, str):
             if value.isdecimal():
                 return int(value)
             else:
                 raise ValueError(f"Invalid str format, cannot convert to int: {value}")
-    return value
+        return int(value)
+    return None
 
 
 def str_to_float(value: str | NoneType, info: ValidationInfo) -> float | NoneType:
