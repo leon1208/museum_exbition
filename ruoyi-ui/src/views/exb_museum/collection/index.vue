@@ -126,6 +126,13 @@
             @click="handleDelete(scope.row)"
             v-hasPermi="['exb_museum:collection:remove']"
           >删除</el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-picture-outline"
+            @click="openMediaDialog(scope.row)"
+            v-hasPermi="['exb_museum:media:add']"
+          >媒体管理</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -222,6 +229,13 @@
         <el-button @click="upload.open = false">取 消</el-button>
       </div>
     </el-dialog>
+
+    <!-- 媒体上传对话框 - 使用可复用组件 -->
+    <MediaUpload 
+      :objectType="'collection'"
+      :objectId="currentCollectionId"
+      :visible.sync="mediaDialogVisible"
+    />
   </div>
 </template>
 
@@ -230,9 +244,13 @@ import { listCollection, getCollection, delCollection, addCollection, updateColl
 import { listMuseum } from "@/api/exb_museum/museum"; // 导入博物馆API
 import { listExhibition } from "@/api/exb_museum/exhibition"; // 导入展览API
 import { getToken } from "@/utils/auth";
+import MediaUpload from "@/components/MediaUpload/index.vue";
 
 export default {
   name: "Collection",
+  components: {
+    MediaUpload,
+  },
   data() {
     return {
       // 遮罩层
@@ -392,6 +410,10 @@ export default {
         { value: '宗教用品', label: '宗教用品' },
         { value: '民俗用品', label: '民俗用品' },
       ],
+      
+      // 媒体上传相关
+      mediaDialogVisible: false,
+      currentCollectionId: null,
     };
   },
   created() {
@@ -641,7 +663,14 @@ export default {
     submitFileForm() {
       this.$modal.loading("导入中请稍后")
       this.$refs.upload.submit();
-    }
+    },
+
+    /** 打开媒体上传对话框 */
+    openMediaDialog(row) {
+      this.currentCollectionId = row.collectionId;
+      this.mediaDialogVisible = true;
+      this.loadMediaList();
+    },
   }
 };
 </script>

@@ -6,7 +6,7 @@
 from typing import Optional
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Boolean, Date, DateTime, Float, Integer, JSON, LargeBinary, Numeric, String, Text, Time, Index
+from sqlalchemy import BigInteger, Boolean, Date, DateTime, Float, Integer, JSON, LargeBinary, Numeric, String, Text, Time, Index, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
@@ -19,8 +19,7 @@ class MuseumMediaPo(db.Model):
     """
     __tablename__ = 'exb_museum_media'
     __table_args__ = (
-        Index('idx_museum_media_type', 'museum_id', 'media_type'), 
-        Index('idx_museum_id', 'museum_id'), 
+        Index('idx_object_type_id', 'object_type', 'object_id', unique=True),
         {'comment': '博物馆多媒体表'})
     
     media_id: Mapped[int] = mapped_column(
@@ -31,11 +30,17 @@ class MuseumMediaPo(db.Model):
         nullable=False,
         comment='多媒体ID'
     )
-    museum_id: Mapped[Optional[int]] = mapped_column(
-        'museum_id',
+    object_type: Mapped[Optional[str]] = mapped_column(
+        'object_type',
+        String(50),
+        nullable=False,
+        comment='对象类型（museum, exhibition, collection等）'
+    )
+    object_id: Mapped[Optional[int]] = mapped_column(
+        'object_id',
         BigInteger,
         nullable=False,
-        comment='博物馆ID'
+        comment='关联对象ID'
     )
     media_type: Mapped[Optional[int]] = mapped_column(
         'media_type',

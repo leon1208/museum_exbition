@@ -16,7 +16,7 @@ class MuseumMediaMapper:
     博物馆媒体表数据访问层
     """
     
-    def select_museum_media_list(self, museum_id: int = None, media_type: str = None) -> List[MuseumMedia]:
+    def select_museum_media_list(self, object_id: int = None, object_type: str = None, media_type: str = None) -> List[MuseumMedia]:
         """
         查询博物馆媒体列表
         
@@ -29,8 +29,8 @@ class MuseumMediaMapper:
         """
         query = db.session.query(MuseumMediaPo).filter(MuseumMediaPo.del_flag == 0)
         
-        if museum_id:
-            query = query.filter(MuseumMediaPo.museum_id == museum_id)
+        if object_id and object_type:
+            query = query.filter(and_(MuseumMediaPo.object_id == object_id, MuseumMediaPo.object_type == object_type))
         
         if media_type:
             query = query.filter(MuseumMediaPo.media_type == media_type)
@@ -87,9 +87,7 @@ class MuseumMediaMapper:
             'size': museum_media_po.size,
             'is_cover': museum_media_po.is_cover,
             'status': museum_media_po.status,
-            'del_flag': museum_media_po.del_flag,
-            'create_time': museum_media_po.create_time,
-            'update_time': museum_media_po.update_time or now
+            'del_flag': museum_media_po.del_flag
         })
     
     def delete_museum_media_by_id(self, media_id: int) -> int:
@@ -104,18 +102,4 @@ class MuseumMediaMapper:
         """
         return db.session.query(MuseumMediaPo).filter(
             MuseumMediaPo.media_id == media_id
-        ).delete()
-    
-    def delete_museum_media_by_museum_id(self, museum_id: int) -> int:
-        """
-        通过博物馆ID删除媒体
-        
-        Args:
-            museum_id (int): 博物馆ID
-            
-        Returns:
-            int: 影响行数
-        """
-        return db.session.query(MuseumMediaPo).filter(
-            MuseumMediaPo.museum_id == museum_id
         ).delete()

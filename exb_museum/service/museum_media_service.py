@@ -23,18 +23,19 @@ class MuseumMediaService:
     def __init__(self):
         self.museum_media_mapper = MuseumMediaMapper()
     
-    def select_museum_media_list(self, museum_id: int = None, media_type: str = None) -> List[MuseumMedia]:
+    def select_museum_media_list(self, object_id: int = None, object_type: str = None, media_type: str = None) -> List[MuseumMedia]:
         """
         查询博物馆媒体列表
         
         Args:
-            museum_id (int, optional): 博物馆ID
+            object_id (int, optional): 对象ID
+            object_type (str, optional): 对象类型
             media_type (str, optional): 媒体类型
             
         Returns:
             List[MuseumMedia]: 博物馆媒体列表
         """
-        return self.museum_media_mapper.select_museum_media_list(museum_id, media_type)
+        return self.museum_media_mapper.select_museum_media_list(object_id, object_type, media_type)
     
     def select_museum_media_by_id(self, media_id: int) -> MuseumMedia:
         """
@@ -49,12 +50,13 @@ class MuseumMediaService:
         return self.museum_media_mapper.select_museum_media_by_id(media_id)
     
     @Transactional(db.session)
-    def upload_museum_media(self, museum_id: int, file: FileStorage, media_type: str, description: str = None) -> MuseumMedia:
+    def upload_museum_media(self, object_id: int, object_type: str, file: FileStorage, media_type: str) -> MuseumMedia:
         """
         上传博物馆媒体
         
         Args:
-            museum_id (int): 博物馆ID
+            object_id (int): 对象ID
+            object_type (str): 对象类型
             file: 文件对象
             media_type (str): 媒体类型
             description (str, optional): 媒体描述
@@ -68,7 +70,8 @@ class MuseumMediaService:
         upload_result, stat = FileUploadUtil.upload_minio(file, base_path="/museum/media")
         # 创建媒体PO对象
         media_po = MuseumMediaPo()
-        media_po.museum_id = museum_id
+        media_po.object_id = object_id
+        media_po.object_type = object_type
         media_po.media_name = file.filename
         media_po.media_type = media_type
         media_po.media_url = upload_result

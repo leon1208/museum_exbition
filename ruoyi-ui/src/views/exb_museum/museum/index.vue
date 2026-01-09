@@ -208,86 +208,12 @@
       </div>
     </el-dialog>
 
-
-
-  <!-- 媒体上传对话框 -->
-  <el-dialog title="博物馆多媒体管理" :visible.sync="mediaDialogVisible" width="800px" append-to-body>
-    <div class="media-upload-section">
-      <el-form :model="mediaUpload" inline>
-        <el-form-item label="媒体类型">
-          <el-select v-model="mediaUpload.mediaType" placeholder="请选择媒体类型">
-            <el-option label="图片" value="1">图片</el-option>
-            <el-option label="视频" value="2">视频</el-option>
-            <el-option label="音频" value="3">音频</el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="描述">
-          <el-input v-model="mediaUpload.description" placeholder="请输入媒体描述" style="width: 200px;"></el-input>
-        </el-form-item>
-        <el-form-item>
-          <el-upload
-            class="upload-demo"
-            :headers="mediaUpload.headers"
-            :action="''"
-            :on-change="uploadMedia"
-            :before-upload="() => false"
-            :limit="1"
-            :disabled="mediaUpload.isUploading"
-            accept="image/*,video/*,audio/*"
-          >
-            <el-button size="small" type="primary">{{ mediaUpload.isUploading ? '上传中...' : '选择文件' }}</el-button>
-            <div slot="tip" class="el-upload__tip">支持图片、视频、音频文件上传</div>
-          </el-upload>
-        </el-form-item>
-      </el-form>
-    </div>
-    <div class="media-list-section" style="margin-top: 20px;">
-      <el-table :data="mediaList" border style="width: 100%">
-        <!-- 将媒体名称列改为预览图 -->
-        <el-table-column label="预览图" prop="mediaName" width="150">
-          <template slot-scope="scope">
-            <div class="media-preview">
-              <!-- 图片预览 -->
-              <img v-if="scope.row.mediaType === 1" 
-                  :src="minioBase + scope.row.mediaUrl" 
-                  class="preview-image" 
-                  @click="previewImage(scope.row.mediaUrl)" 
-                  alt="图片预览" />
-              <!-- 视频预览 -->
-              <div v-else-if="scope.row.mediaType === 2" class="preview-video" @click="previewVideo(scope.row.mediaUrl)">
-                <i class="el-icon-video-camera-solid"></i>
-                <span class="media-name">{{ scope.row.mediaName }}</span>
-              </div>
-              <!-- 音频预览 -->
-              <div v-else-if="scope.row.mediaType === 3" class="preview-audio" @click="previewAudio(scope.row.mediaUrl)">
-                <i class="el-icon-headset"></i>
-                <span class="media-name">{{ scope.row.mediaName }}</span>
-              </div>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="媒体类型" prop="mediaType" :formatter="(row) => {
-          return row.mediaType === 1 ? '图片' : (row.mediaType === 2 ? '视频' : '音频')
-        }" />
-        <el-table-column label="文件大小" align="right" prop="size">
-          <template slot-scope="scope">{{ (scope.row.size / 1024).toFixed(2) }} KB</template>
-        </el-table-column>
-        <el-table-column label="上传时间" prop="createTime" width="200" />
-        <el-table-column label="操作" align="center" width="150">
-          <template slot-scope="scope">
-            <el-button v-if="scope.row.mediaType === 1" size="mini" type="text" @click="previewImage(scope.row.mediaUrl)">预览</el-button>
-            <el-button v-else-if="scope.row.mediaType === 2" size="mini" type="text" @click="$alert(`<video src='${scope.row.mediaUrl}' controls style='max-width: 100%;'></video>`, '视频预览', { dangerouslyUseHTMLString: true })" >预览</el-button>
-            <el-button v-else-if="scope.row.mediaType === 3" size="mini" type="text" @click="$alert(`<audio src='${scope.row.mediaUrl}' controls style='max-width: 100%;'></audio>`, '音频预览', { dangerouslyUseHTMLString: true })" >播放</el-button>
-            <el-button size="mini" type="text" @click="deleteMedia(scope.row.mediaId)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
-    
-    <div slot="footer" class="dialog-footer">
-      <el-button @click="mediaDialogVisible = false">关闭</el-button>
-    </div>
-  </el-dialog>
+  <!-- 媒体上传对话框 - 使用可复用组件 -->
+  <MediaUpload 
+    :objectType="'museum'"
+    :objectId="currentMuseumId"
+    :visible.sync="mediaDialogVisible"
+  />
 
   </div>
 </template>
@@ -301,11 +227,14 @@ import {
   addMuseum,
   updateMuseum
 } from "@/api/exb_museum/museum";
-import { listMuseumMedia, uploadMuseumMedia, deleteMuseumMedia } from "@/api/exb_museum/museum_media";
 import { getToken } from "@/utils/auth";
+import MediaUpload from "@/components/MediaUpload/index.vue";
 
 export default {
   name: "Museum",
+  components: {
+    MediaUpload,
+  },
   data() {
     return {
       // 遮罩层
@@ -381,16 +310,8 @@ export default {
         ]
       },
       // 媒体上传相关
-      minioBase: process.env.VUE_APP_MINIO_BASE_URL,
       mediaDialogVisible: false,
-      mediaList: [],
       currentMuseumId: null,
-      mediaUpload: {
-        headers: { Authorization: "Bearer " + getToken() },
-        isUploading: false,
-        mediaType: '1', // image/video/audio
-        description: ''
-      }
     };
   },
   created() {
@@ -567,51 +488,6 @@ export default {
       this.loadMediaList();
     },
 
-    /** 加载媒体列表 */
-    loadMediaList() {
-      listMuseumMedia(this.currentMuseumId).then(response => {
-        this.mediaList = response.rows || response.data || [];
-      });
-    },
-
-    /** 上传媒体文件 */
-    uploadMedia(file) {
-      this.mediaUpload.isUploading = true;
-      const formData = new FormData();
-      formData.append('file', file.raw);
-      formData.append('museumId', this.currentMuseumId);
-      formData.append('mediaType', this.mediaUpload.mediaType);
-      formData.append('description', this.mediaUpload.description);
-      
-      uploadMuseumMedia(formData).then(response => {
-        this.$modal.msgSuccess("上传成功");
-        this.loadMediaList();
-        this.mediaUpload.isUploading = false;
-        this.mediaUpload.description = '';
-      }).catch(() => {
-        this.mediaUpload.isUploading = false;
-      });
-      
-      return false; // 阻止自动上传
-    },
-
-    /** 删除媒体文件 */
-    deleteMedia(mediaId) {
-      this.$modal.confirm('是否确认删除该媒体文件？').then(() => {
-        deleteMuseumMedia(mediaId).then(() => {
-          this.$modal.msgSuccess("删除成功");
-          this.loadMediaList();
-        });
-      }).catch(() => {});
-    },
-
-    /** 预览图片 */
-    previewImage(url) {
-      this.$alert('<img src="' + this.minioBase + url + '" style="max-width: 100%;" />', '图片预览', {
-        dangerouslyUseHTMLString: true,
-        customClass: 'preview-image-dialog'
-      });
-    }
   }
 }
 </script>

@@ -24,13 +24,20 @@ class MuseumMedia(BaseEntity):
         VoField(query=True),
         ExcelField(name="多媒体ID")
     ]
-    # 博物馆ID
-    museum_id: Annotated[
+    # 对象类型（museum, exhibition, collection等）
+    object_type: Annotated[
+        Optional[str],
+        Field(default=None, description="对象类型（museum, exhibition, collection等）"),
+        VoField(query=True),
+        ExcelField(name="对象类型")
+    ]
+    # 关联对象ID
+    object_id: Annotated[
         Optional[int],
         BeforeValidator(str_to_int),
-        Field(default=None, description="博物馆ID"),
+        Field(default=None, description="关联对象ID"),
         VoField(query=True),
-        ExcelField(name="博物馆ID")
+        ExcelField(name="关联对象ID")
     ]
     # 媒体类型（1图片 2视频 3音频）
     media_type: Annotated[

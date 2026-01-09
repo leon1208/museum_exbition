@@ -27,11 +27,12 @@ def list_museum_media():
     """
     查询博物馆媒体列表
     """
-    museum_id = request.args.get('museumId', type=int)
+    object_id = request.args.get('objectId', type=int)
+    object_type = request.args.get('objectType')
     media_type = request.args.get('mediaType')
     
     media_service = MuseumMediaService()
-    media_list = media_service.select_museum_media_list(museum_id, media_type)
+    media_list = media_service.select_museum_media_list(object_id, object_type, media_type)
     
     return TableResponse(code=HttpStatus.SUCCESS, msg='查询成功', rows=media_list)
 
@@ -59,18 +60,21 @@ def upload_museum_media(file: List[FileStorage]):
     上传博物馆媒体
     """
     try:
-        museum_id = request.form.get('museumId', type=int)
+        object_id = request.form.get('objectId', type=int)
+        object_type = request.form.get('objectType')
         media_type = request.form.get('mediaType', '1')  # image/video/audio
         file = file[0]
 
-        if not museum_id:
-            return AjaxResponse.error(msg='博物馆ID不能为空')
+        if not object_id:
+            return AjaxResponse.error(msg='关联对象ID不能为空')
+        if not object_type:
+            return AjaxResponse.error(msg='关联对象类型不能为空')        
         
         if not file:
             return AjaxResponse.error(msg='文件不能为空')
         
         media_service = MuseumMediaService()
-        media = media_service.upload_museum_media(museum_id, file, media_type)
+        media = media_service.upload_museum_media(object_id, object_type, file, media_type)
         
         return AjaxResponse.from_success(data=media, msg='上传成功')
     except Exception as e:

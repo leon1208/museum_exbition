@@ -1,11 +1,11 @@
 import request from '@/utils/request'
 
 // 查询博物馆媒体列表
-export function listMuseumMedia(museumId) {
+export function listMuseumMedia(params) {
   return request({
     url: '/exb_museum/museum/media/list',
     method: 'get',
-    params: { museumId }
+    params: params
   })
 }
 

@@ -134,6 +134,13 @@
             @click="handleDelete(scope.row)"
             v-hasPermi="['exb_museum:exhibition:remove']"
           >删除</el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-picture-outline"
+            @click="openMediaDialog(scope.row)"
+            v-hasPermi="['exb_museum:media:add']"
+          >媒体管理</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -236,6 +243,14 @@
         <el-button @click="upload.open = false">取 消</el-button>
       </div>
     </el-dialog>
+
+    <!-- 媒体上传对话框 - 使用可复用组件 -->
+    <MediaUpload 
+      :objectType="'exhibition'"
+      :objectId="currentExhibitionId"
+      :visible.sync="mediaDialogVisible"
+    />
+
   </div>
 </template>
 
@@ -243,9 +258,13 @@
 import { listExhibition, getExhibition, delExhibition, addExhibition, updateExhibition } from "@/api/exb_museum/exhibition";
 import { listMuseum } from "@/api/exb_museum/museum"; // 导入博物馆API
 import { getToken } from "@/utils/auth";
+import MediaUpload from "@/components/MediaUpload/index.vue";
 
 export default {
   name: "Exhibition",
+  components: {
+    MediaUpload,
+  },
   data() {
     return {
       // 遮罩层
@@ -386,6 +405,9 @@ export default {
         { value: 0, label: '长期' },
         { value: 1, label: '临时' },
       ],
+      // 媒体上传相关
+      mediaDialogVisible: false,
+      currentExhibitionId: null,
     };
   },
   created() {
@@ -608,7 +630,14 @@ export default {
     submitFileForm() {
       this.$modal.loading("导入中请稍后")
       this.$refs.upload.submit();
-    }
+    },
+
+    /** 打开媒体上传对话框 */
+    openMediaDialog(row) {
+      this.currentExhibitionId = row.exhibitionId;
+      this.mediaDialogVisible = true;
+      this.loadMediaList();
+    },
   }
 };
 </script>
