@@ -19,7 +19,7 @@ class MuseumMediaPo(db.Model):
     """
     __tablename__ = 'exb_museum_media'
     __table_args__ = (
-        Index('idx_object_type_id', 'object_type', 'object_id', unique=True),
+        Index('idx_object_type_id', 'object_type', 'object_id', unique=False),
         {'comment': '博物馆多媒体表'})
     
     media_id: Mapped[int] = mapped_column(
