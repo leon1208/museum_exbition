@@ -407,7 +407,7 @@ export default {
       ],
       // 媒体上传相关
       mediaDialogVisible: false,
-      currentExhibitionId: null,
+      currentExhibitionId: 0,
     };
   },
   created() {
@@ -636,7 +636,6 @@ export default {
     openMediaDialog(row) {
       this.currentExhibitionId = row.exhibitionId;
       this.mediaDialogVisible = true;
-      this.loadMediaList();
     },
   }
 };

@@ -311,7 +311,7 @@ export default {
       },
       // 媒体上传相关
       mediaDialogVisible: false,
-      currentMuseumId: null,
+      currentMuseumId: 0,
     };
   },
   created() {
@@ -485,7 +485,6 @@ export default {
     openMediaDialog(row) {
       this.currentMuseumId = row.museumId;
       this.mediaDialogVisible = true;
-      this.loadMediaList();
     },
 
   }

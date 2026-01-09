@@ -413,7 +413,7 @@ export default {
       
       // 媒体上传相关
       mediaDialogVisible: false,
-      currentCollectionId: null,
+      currentCollectionId: 0,
     };
   },
   created() {
@@ -669,7 +669,6 @@ export default {
     openMediaDialog(row) {
       this.currentCollectionId = row.collectionId;
       this.mediaDialogVisible = true;
-      this.loadMediaList();
     },
   }
 };
