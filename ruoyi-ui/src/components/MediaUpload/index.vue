@@ -187,11 +187,11 @@ export default {
       videoList: [],
       audioList: [],
       isProcessingBatchUpload: false, // 新增：标记是否正在处理批量上传
+      fileCount: 0,
       mediaUpload: {
         headers: { Authorization: "Bearer " + getToken() },
         isUploading: false,
         mediaType: '1', // image/video/audio
-        description: '' // 保留字段，但不再使用
       }
     };
   },
@@ -270,70 +270,12 @@ export default {
 
     /** 上传媒体文件 */
     uploadMedia(file, fileList) {
-      // 防止重复触发批量上传
-      if (this.isProcessingBatchUpload) {
-        return;
-      }
-      console.log(file, fileList)
-      // 如果是多文件上传，依次上传每个文件
-      if (fileList && fileList.length > 1) {
-        // 设置批量上传标志
-        this.isProcessingBatchUpload = true;
-        
-        // 过滤出未上传的文件
-        const newFiles = fileList.filter(f => !f.uid || !this.mediaList.some(m => m.mediaName === f.name));
-        this.uploadMultipleFilesSequentially(newFiles);
-      } else {
-        // 单文件上传
-        this.uploadSingleFile(file);
-      }
+      //多个文件上传为了不触发重复提交，暂停500ms
+      setTimeout(() => {
+        this.fileCount --
 
-    },
-
-    /** 依次上传多个文件 */
-    async uploadMultipleFilesSequentially(files) {
-      if (!files || files.length === 0) return;
-      
-      this.mediaUpload.isUploading = true;
-      
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        try {
-          await this.uploadSingleFileAsync(file);
-        } catch (error) {
-          console.error(`文件 ${file.name} 上传失败:`, error);
-          // 可以选择继续上传下一个文件或中断上传
-          // 这里我们继续上传其他文件
-        }
-      }
-      
-      this.isProcessingBatchUpload = true;
-      this.mediaUpload.isUploading = false;
-      this.$modal.msgSuccess("批量上传完成");
-      this.loadMediaList();
-    },
-    
-    /** 异步上传单个文件 */
-    uploadSingleFileAsync(file) {
-      return new Promise((resolve, reject) => {
-        const formData = new FormData();
-        formData.append('file', file.raw);
-        // 添加对象类型和ID参数
-        formData.append('objectId', this.objectId);
-        formData.append('objectType', this.objectType);
-        formData.append('mediaType', this.mediaUpload.mediaType);
-        formData.append('description', this.mediaUpload.description); // 仍传空字符串
-        
-        uploadMuseumMedia(formData)
-          .then(response => {
-            this.$modal.msgSuccess(`${file.name} 上传成功`);
-            resolve(response);
-          })
-          .catch(error => {
-            this.$modal.msgError(`${file.name} 上传失败`);
-            reject(error);
-          });
-      });
+        this.uploadSingleFile(file)
+      }, 1100*this.fileCount++);
     },
 
     /** 上传单个文件（保留原有同步方法供单文件上传使用） */
@@ -345,7 +287,6 @@ export default {
       formData.append('objectId', this.objectId);
       formData.append('objectType', this.objectType);
       formData.append('mediaType', this.mediaUpload.mediaType);
-      formData.append('description', this.mediaUpload.description); // 仍传空字符串
       
       uploadMuseumMedia(formData).then(response => {
         this.$modal.msgSuccess(`${file.name} 上传成功`);
