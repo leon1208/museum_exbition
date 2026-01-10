@@ -75,7 +75,7 @@
           @mouseenter="showVideoActions(video)"
           @mouseleave="hideVideoActions(video)"
         >
-          <div class="video-preview-wrapper">
+          <div class="video-preview">
             <i class="el-icon-video-camera-solid video-icon"></i>
             <span class="video-label">视频</span>
           </div>
@@ -185,16 +185,19 @@ export default {
         mediaType: '1', // image/video/audio
       },
       sortable: null,
+      videoSortable: null,
     };
   },
   mounted() {
     this.$nextTick(() => {
       this.initImageDragSort(); // 初始化图片拖拽排序
+      this.initVideoDragSort(); // 初始化视频拖拽排序
     });
   },
   updated() {
     this.$nextTick(() => {
-      this.initImageDragSort(); // 数据更新后重新初始化
+      this.initImageDragSort(); // 数据更新后重新初始化图片排序
+      this.initVideoDragSort(); // 数据更新后重新初始化视频排序
     })
   },
   computed: {
@@ -238,6 +241,7 @@ export default {
         this.loadMediaList();
         this.$nextTick(() => {
             this.initImageDragSort();
+            this.initVideoDragSort();
         });
       }
     },
@@ -440,12 +444,73 @@ export default {
         }
         this.sortable = null;
       }
-    }
+    },
+
+    /** 初始化视频拖拽排序功能 */
+    initVideoDragSort() {
+      this.$nextTick(() => {
+        const videoGallery = this.$refs.videoGallery;
+        if (videoGallery) {
+          // 如果已有Sortable实例且父元素相同，不需要重新创建
+          if (this.videoSortable && this.videoSortable.el === videoGallery) {
+            return;
+          }
+          
+          // 如果已有Sortable实例但父元素不同，先销毁
+          if (this.videoSortable) {
+            this.destroyVideoSortable();
+          }
+          
+          this.videoSortable = new Sortable(videoGallery, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            handle: '.video-preview', // 只能通过视频区域拖拽
+            onEnd: (evt) => {
+              // 拖拽结束后的回调
+              this.onVideoOrderChange(evt);
+            }
+          });
+        }
+      })
+    },
+    
+    /** 视频顺序改变处理 */
+    onVideoOrderChange(evt) {
+      const oldIndex = evt.oldIndex;
+      const newIndex = evt.newIndex;
+      
+      // 更新 videoList 数组顺序
+      const movedItem = this.videoList.splice(oldIndex, 1)[0];
+      this.videoList.splice(newIndex, 0, movedItem);
+      
+      // 触发更新，确保视图响应
+      this.$forceUpdate();
+      
+      // TODO: 如果需要保存排序信息到后端，可以在这里调用 API
+      console.log('视频顺序已更新:', this.videoList.map(vid => vid.mediaName));
+      // this.saveVideoOrder();
+    },
+
+    /** 销毁视频拖拽排序实例 */
+    destroyVideoSortable() {
+      if (this.videoSortable) {
+        try {
+          this.videoSortable.destroy();
+        } catch (error) {
+          console.warn('Error destroying sortable instance:', error);
+        }
+        this.videoSortable = null;
+      }
+    }    
+
   },
 
   beforeDestroy() {
-    // 组件销毁前销毁 sortable 实例
+    // 组件销毁前销毁 videoSortable 实例
     this.destroyImageSortable();
+    this.destroyVideoSortable();
   }
 };
 </script>
@@ -543,7 +608,7 @@ export default {
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
-.video-preview-wrapper {
+.video-preview {
   display: flex;
   flex-direction: column;
   align-items: center;
