@@ -21,6 +21,15 @@ export function uploadMuseumMedia(data) {
   })
 }
 
+// 更新博物馆媒体排序
+export function updateMediaSortOrder(data) {
+  return request({
+    url: '/exb_museum/museum/media/sort',
+    method: 'post',
+    data: data
+  })
+}
+
 // 删除博物馆媒体
 export function deleteMuseumMedia(mediaId) {
   return request({

@@ -80,6 +80,37 @@ def upload_museum_media(file: List[FileStorage]):
     except Exception as e:
         return AjaxResponse.from_error(msg=f'上传失败：{str(e)}')
 
+@reg.api.route('/exb_museum/museum/media/sort', methods=['POST'])
+@login_required
+@PreAuthorize(HasPerm('exb_museum:media:edit'))
+@JsonSerializer()
+def update_media_sort_order():
+    """
+    更新媒体排序
+    """
+    try:
+        data = request.get_json()
+        object_id = data.get('objectId')
+        object_type = data.get('objectType')
+        media_type = data.get('mediaType')
+        sorted_media_ids = data.get('sortedMediaIds', [])
+        
+        if not object_id:
+            return AjaxResponse.error(msg='关联对象ID不能为空')
+        if not object_type:
+            return AjaxResponse.error(msg='关联对象类型不能为空')
+        if not media_type:
+            return AjaxResponse.error(msg='媒体类型不能为空')
+        if not sorted_media_ids:
+            return AjaxResponse.error(msg='排序列表不能为空')
+        
+        media_service = MuseumMediaService()
+        result = media_service.update_media_sort_order(object_id, object_type, media_type, sorted_media_ids)
+        
+        return AjaxResponse.from_success(data={'updatedCount': result}, msg='排序更新成功')
+    except Exception as e:
+        return AjaxResponse.from_error(msg=f'排序更新失败：{str(e)}')
+
 @reg.api.route('/exb_museum/museum/media', methods=['PUT'])
 @login_required
 @PreAuthorize(HasPerm('exb_museum:media:edit'))

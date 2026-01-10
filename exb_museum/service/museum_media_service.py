@@ -76,7 +76,8 @@ class MuseumMediaService:
         media_po.media_type = media_type
         media_po.media_url = upload_result
         media_po.is_cover = 0
-        media_po.sort = 999
+        # 将sort设置为None，让mapper层自动计算
+        media_po.sort = None
         media_po.cover_url = upload_result
         media_po.duration = 0
         media_po.size = stat.size
@@ -90,7 +91,23 @@ class MuseumMediaService:
         
         # 返回实体对象
         return self.select_museum_media_by_id(media_id)
+
+    @Transactional(db.session)
+    def update_media_sort_order(self, object_id: int, object_type: str, media_type: str, sorted_media_ids: List[int]) -> int:
+        """
+        根据给定的顺序更新媒体文件的排序
         
+        Args:
+            object_id (int): 对象ID
+            object_type (str): 对象类型
+            media_type (str): 媒体类型
+            sorted_media_ids (List[int]): 按照新顺序排列的媒体ID列表
+            
+        Returns:
+            int: 更新的记录数量
+        """
+        return self.museum_media_mapper.update_media_sort_order(object_id, object_type, media_type, sorted_media_ids)
+                
     @Transactional(db.session)
     def update_museum_media(self, museum_media: MuseumMedia) -> int:
         """

@@ -137,7 +137,7 @@
 </template>
 
 <script>
-import { listMuseumMedia, uploadMuseumMedia, deleteMuseumMedia } from "@/api/exb_museum/museum_media";
+import { listMuseumMedia, uploadMuseumMedia, deleteMuseumMedia, updateMediaSortOrder } from "@/api/exb_museum/museum_media";
 import { getToken } from "@/utils/auth";
 import Sortable from 'sortablejs'
 
@@ -442,9 +442,18 @@ export default {
       // 触发更新，确保视图响应
       this.$forceUpdate();
       
-      // TODO: 如果需要保存排序信息到后端，可以在这里调用 API
       console.log('图片顺序已更新:', this.imageList.map(img => img.mediaName));
-      // this.saveImageOrder();
+      // 调用更新排序 API
+      updateMediaSortOrder({
+        objectId: this.objectId,
+        objectType: this.objectType,
+        mediaType: '1',
+        sortedMediaIds: this.imageList.map(img => img.mediaId)
+      }).then(() => {
+        this.$modal.msgSuccess("图片排序更新成功");
+      }).catch(() => {
+        this.$modal.msgError("图片排序更新失败");
+      });
     },
 
     /** 销毁图片拖拽排序实例 */
@@ -501,9 +510,18 @@ export default {
       // 触发更新，确保视图响应
       this.$forceUpdate();
       
-      // TODO: 如果需要保存排序信息到后端，可以在这里调用 API
       console.log('视频顺序已更新:', this.videoList.map(vid => vid.mediaName));
-      // this.saveVideoOrder();
+      // 调用更新排序 API
+      updateMediaSortOrder({
+        objectId: this.objectId,
+        objectType: this.objectType,
+        mediaType: '2',
+        sortedMediaIds: this.videoList.map(vid => vid.mediaId)
+      }).then(() => {
+        this.$modal.msgSuccess("视频排序更新成功");
+      }).catch(() => {
+        this.$modal.msgError("视频排序更新失败");
+      });
     },
 
     /** 销毁视频拖拽排序实例 */
@@ -560,9 +578,18 @@ export default {
       // 触发更新，确保视图响应
       this.$forceUpdate();
       
-      // TODO: 如果需要保存排序信息到后端，可以在这里调用 API
       console.log('音频顺序已更新:', this.audioList.map(aud => aud.mediaName));
-      // this.saveAudioOrder();
+      // 调用更新排序 API
+      updateMediaSortOrder({
+        objectId: this.objectId,
+        objectType: this.objectType,
+        mediaType: '3',
+        sortedMediaIds: this.audioList.map(aud => aud.mediaId)
+      }).then(() => {
+        this.$modal.msgSuccess("音频排序更新成功");
+      }).catch(() => {
+        this.$modal.msgError("音频排序更新失败");
+      });
     },
 
     /** 销毁音频拖拽排序实例 */
