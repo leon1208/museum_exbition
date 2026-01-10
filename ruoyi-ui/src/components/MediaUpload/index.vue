@@ -77,7 +77,7 @@
         >
           <div class="video-preview">
             <i class="el-icon-video-camera-solid video-icon"></i>
-            <span class="video-label">视频</span>
+            <span class="video-label">{{ video.mediaName }}</span>
           </div>
           <div class="video-info-overlay">
             <div class="file-info">
@@ -100,43 +100,34 @@
     <!-- 音频列表 -->
     <div class="media-list-section" style="margin-top: 20px;" v-if="audioList.length > 0">
       <h4>音频列表</h4>
-      <el-table :data="audioList" border style="width: 100%">
-        <el-table-column label="预览图" prop="mediaName" width="150">
-          <template slot-scope="scope">
-            <div class="media-preview">
-              <div 
-                class="preview-audio" 
-                @click="previewAudio(scope.row.mediaUrl)"
-              >
-                <i class="el-icon-headset"></i>
-                <span class="media-name">{{ scope.row.mediaName }}</span>
-              </div>
+      <div class="audio-gallery" ref="audioGallery">
+        <div 
+          v-for="(audio, index) in audioList" 
+          :key="audio.mediaId" 
+          class="audio-card"
+          @mouseenter="showAudioActions(audio)"
+          @mouseleave="hideAudioActions(audio)"
+        >
+          <div class="audio-preview">
+            <i class="el-icon-headset audio-icon"></i>
+            <span class="audio-label">{{ audio.mediaName }}</span>
+          </div>
+          <div class="audio-info-overlay">
+            <div class="file-info">
+              <p class="file-size">{{ (audio.size / 1024).toFixed(2) }} KB</p>
+              <p class="upload-time">{{ audio.createTime }}</p>
             </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="文件大小" align="right" prop="size">
-          <template slot-scope="scope">{{ (scope.row.size / 1024).toFixed(2) }} KB</template>
-        </el-table-column>
-        <el-table-column label="上传时间" prop="createTime" width="200" />
-        <el-table-column label="操作" align="center" width="150">
-          <template slot-scope="scope">
-            <el-button 
-              size="mini" 
-              type="text" 
-              @click="previewAudio(scope.row.mediaUrl)"
-            >
-              播放
-            </el-button>
-            <el-button 
-              size="mini" 
-              type="text" 
-              @click="deleteMedia(scope.row.mediaId)"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+          </div>
+          <div class="audio-actions" v-show="audio.showActions">
+            <div class="action-btn preview-btn" @click="previewAudio(audio.mediaUrl)">
+              <i class="el-icon-view"></i>
+            </div>
+            <div class="action-btn delete-btn" @click="deleteMedia(audio.mediaId)">
+              <i class="el-icon-delete"></i>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     
     <div slot="footer" class="dialog-footer">
@@ -186,18 +177,21 @@ export default {
       },
       sortable: null,
       videoSortable: null,
+      audioSortable: null,
     };
   },
   mounted() {
     this.$nextTick(() => {
       this.initImageDragSort(); // 初始化图片拖拽排序
       this.initVideoDragSort(); // 初始化视频拖拽排序
+      this.initAudioDragSort(); // 初始化音频拖拽排序
     });
   },
   updated() {
     this.$nextTick(() => {
       this.initImageDragSort(); // 数据更新后重新初始化图片排序
       this.initVideoDragSort(); // 数据更新后重新初始化视频排序
+      this.initAudioDragSort(); // 数据更新后重新初始化音频排序
     })
   },
   computed: {
@@ -242,6 +236,7 @@ export default {
         this.$nextTick(() => {
             this.initImageDragSort();
             this.initVideoDragSort();
+            this.initAudioDragSort();
         });
       }
     },
@@ -269,7 +264,7 @@ export default {
     categorizeMediaList() {
       this.imageList = this.mediaList.filter(item => item.mediaType == 1).map(item => ({ ...item, showActions: false }));
       this.videoList = this.mediaList.filter(item => item.mediaType == 2).map(item => ({ ...item, showActions: false }));
-      this.audioList = this.mediaList.filter(item => item.mediaType == 3);
+      this.audioList = this.mediaList.filter(item => item.mediaType == 3).map(item => ({ ...item, showActions: false }));
     },
 
     /** 处理媒体类型变化 */
@@ -339,6 +334,24 @@ export default {
       this.videoList.forEach(v => {
         if(v.mediaId === video.mediaId) {
           v.showActions = false;
+        }
+      });
+    },
+
+    /** 显示音频操作按钮 */
+    showAudioActions(audio) {
+      this.audioList.forEach(a => {
+        if(a.mediaId === audio.mediaId) {
+          a.showActions = true;
+        }
+      });
+    },
+
+    /** 隐藏音频操作按钮 */
+    hideAudioActions(audio) {
+      this.audioList.forEach(a => {
+        if(a.mediaId === audio.mediaId) {
+          a.showActions = false;
         }
       });
     },
@@ -503,14 +516,73 @@ export default {
         }
         this.videoSortable = null;
       }
-    }    
+    },
 
+    /** 初始化音频拖拽排序功能 */
+    initAudioDragSort() {
+      this.$nextTick(() => {
+        const audioGallery = this.$refs.audioGallery;
+        if (audioGallery) {
+          // 如果已有Sortable实例且父元素相同，不需要重新创建
+          if (this.audioSortable && this.audioSortable.el === audioGallery) {
+            return;
+          }
+          
+          // 如果已有Sortable实例但父元素不同，先销毁
+          if (this.audioSortable) {
+            this.destroyAudioSortable();
+          }
+          
+          this.audioSortable = new Sortable(audioGallery, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            handle: '.audio-preview', // 只能通过音频区域拖拽
+            onEnd: (evt) => {
+              // 拖拽结束后的回调
+              this.onAudioOrderChange(evt);
+            }
+          });
+        }
+      })
+    },
+    
+    /** 音频顺序改变处理 */
+    onAudioOrderChange(evt) {
+      const oldIndex = evt.oldIndex;
+      const newIndex = evt.newIndex;
+      
+      // 更新 audioList 数组顺序
+      const movedItem = this.audioList.splice(oldIndex, 1)[0];
+      this.audioList.splice(newIndex, 0, movedItem);
+      
+      // 触发更新，确保视图响应
+      this.$forceUpdate();
+      
+      // TODO: 如果需要保存排序信息到后端，可以在这里调用 API
+      console.log('音频顺序已更新:', this.audioList.map(aud => aud.mediaName));
+      // this.saveAudioOrder();
+    },
+
+    /** 销毁音频拖拽排序实例 */
+    destroyAudioSortable() {
+      if (this.audioSortable) {
+        try {
+          this.audioSortable.destroy();
+        } catch (error) {
+          console.warn('Error destroying audio sortable instance:', error);
+        }
+        this.audioSortable = null;
+      }
+    },
   },
 
   beforeDestroy() {
     // 组件销毁前销毁 videoSortable 实例
     this.destroyImageSortable();
     this.destroyVideoSortable();
+    this.destroyAudioSortable();
   }
 };
 </script>
@@ -750,5 +822,72 @@ export default {
 
 .video-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 音频画廊样式 */
+.audio-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.audio-card {
+  position: relative;
+  width: 148px;
+  height: 148px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f7fa;
+  transition: all 0.3s;
+  cursor: move; /* 显示可拖拽光标 */
+}
+
+.audio-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.audio-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.audio-icon {
+  font-size: 48px;
+  color: #606266;
+  margin-bottom: 10px;
+}
+
+.audio-label {
+  font-size: 14px;
+  color: #606266;
+}
+
+.audio-info-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.6));
+  color: white;
+  padding: 15px 5px 5px;
+  transform: translateY(0);
+  transition: transform 0.3s ease;
+}
+
+.audio-actions {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 10px;
 }
 </style>

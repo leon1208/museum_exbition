@@ -675,7 +675,9 @@ class MimeTypeUtil:
         # 压缩文件
         "rar", "zip", "gz", "bz2",
         # 视频格式
-        "mp4", "avi", "rmvb",
+        "mp4", "avi", "rmvb", "mov",
+        # 音频格式
+        "mp3", "wav", "wma", "wmv", "mid",
         # pdf
         "pdf" ]
 
