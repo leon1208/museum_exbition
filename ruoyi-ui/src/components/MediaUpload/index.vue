@@ -28,7 +28,7 @@
             :accept="acceptedFileTypes"
           >
             <el-button size="small" type="primary">{{ mediaUpload.isUploading ? '上传中...' : '选择文件' }}</el-button>
-            <div slot="tip" class="el-upload__tip">支持{{ acceptedFileTypesText }}文件上传</div>
+            <!-- <span slot="tip" class="el-upload__tip">支持{{ acceptedFileTypesText }}文件上传</span> -->
           </el-upload>
         </el-form-item>
       </el-form>
@@ -37,9 +37,9 @@
     <!-- 图片列表 -->
     <div class="media-list-section" style="margin-top: 20px;" v-if="imageList.length > 0">
       <h4>图片列表</h4>
-      <div class="image-gallery">
+      <div class="image-gallery" ref="imageGallery">  <!-- 添加ref便于访问 -->
         <div 
-          v-for="image in imageList" 
+          v-for="(image, index) in imageList" 
           :key="image.mediaId" 
           class="image-card"
           @mouseenter="showImageActions(image)"
@@ -157,6 +157,7 @@
 <script>
 import { listMuseumMedia, uploadMuseumMedia, deleteMuseumMedia } from "@/api/exb_museum/museum_media";
 import { getToken } from "@/utils/auth";
+import Sortable from 'sortablejs'
 
 export default {
   name: "MediaUpload",
@@ -186,14 +187,24 @@ export default {
       imageList: [],
       videoList: [],
       audioList: [],
-      isProcessingBatchUpload: false, // 新增：标记是否正在处理批量上传
       fileCount: 0,
       mediaUpload: {
         headers: { Authorization: "Bearer " + getToken() },
         isUploading: false,
         mediaType: '1', // image/video/audio
-      }
+      },
+      sortable: null,
     };
+  },
+  mounted() {
+    this.$nextTick(() => {
+      this.initImageDragSort(); // 初始化图片拖拽排序
+    });
+  },
+  updated() {
+    this.$nextTick(() => {
+      this.initImageDragSort(); // 数据更新后重新初始化
+    })
   },
   computed: {
     dialogTitle() {
@@ -230,10 +241,24 @@ export default {
     }
   },
   watch: {
+    // imageList: {
+    //   handler(newList) {
+    //     // 延迟重新初始化，确保 DOM 已更新
+    //     if (newList && newList.length > 0) {
+    //       this.$nextTick(() => {
+    //         this.initImageDragSort();
+    //       });
+    //     }
+    //   },
+    //   deep: true
+    // },
     visible(newVal) {
       this.mediaDialogVisible = newVal;
       if (newVal) {
         this.loadMediaList();
+        this.$nextTick(() => {
+            this.initImageDragSort();
+        });
       }
     },
     mediaDialogVisible(newVal) {
@@ -291,11 +316,10 @@ export default {
       uploadMuseumMedia(formData).then(response => {
         this.$modal.msgSuccess(`${file.name} 上传成功`);
         this.loadMediaList();
-        this.mediaUpload.isUploading = false;
       }).catch(() => {
+      }).finally(() => {
         this.mediaUpload.isUploading = false;
       });
-      
       return false; // 阻止自动上传
     },
 
@@ -332,6 +356,8 @@ export default {
       this.$alert('<img src="' + this.minioBase + url + '" style="max-width: 100%;" />', '图片预览', {
         dangerouslyUseHTMLString: true,
         customClass: 'preview-image-dialog'
+      }).catch(() => {
+        // 捕获关闭时的Promise cancel错误，避免控制台报错
       });
     },
 
@@ -339,6 +365,8 @@ export default {
     previewVideo(url) {
       this.$alert(`<video src="${this.minioBase + url}" controls style="max-width: 100%;"></video>`, '视频预览', {
         dangerouslyUseHTMLString: true
+      }).catch(() => {
+        // 捕获关闭时的Promise cancel错误，避免控制台报错
       });
     },
 
@@ -346,6 +374,8 @@ export default {
     previewAudio(url) {
       this.$alert(`<audio src="${this.minioBase + url}" controls style="max-width: 100%;"></audio>`, '音频播放', {
         dangerouslyUseHTMLString: true
+      }).catch(() => {
+        // 捕获关闭时的Promise cancel错误，避免控制台报错
       });
     },
 
@@ -353,7 +383,71 @@ export default {
     handleClose() {
       this.mediaDialogVisible = false;
       this.$emit('update:visible', false);
+    },
+
+    /** 初始化图片拖拽排序功能 */
+    initImageDragSort() {
+      this.$nextTick(() => {
+        const imageGallery = this.$refs.imageGallery;
+        if (imageGallery) {
+          // 如果已有Sortable实例且父元素相同，不需要重新创建
+          if (this.sortable && this.sortable.el === imageGallery) {
+            return;
+          }
+          
+          // 如果已有Sortable实例但父元素不同，先销毁
+          if (this.sortable) {
+            this.destroyImageSortable();
+          }
+          
+          this.sortable = new Sortable(imageGallery, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-chosen',
+            dragClass: 'sortable-drag',
+            handle: '.image-preview', // 只能通过图片区域拖拽
+            onEnd: (evt) => {
+              // 拖拽结束后的回调
+              this.onImageOrderChange(evt);
+            }
+          });
+        }
+      })
+    },
+    
+    /** 图片顺序改变处理 */
+    onImageOrderChange(evt) {
+      const oldIndex = evt.oldIndex;
+      const newIndex = evt.newIndex;
+      
+      // 更新 imageList 数组顺序
+      const movedItem = this.imageList.splice(oldIndex, 1)[0];
+      this.imageList.splice(newIndex, 0, movedItem);
+      
+      // 触发更新，确保视图响应
+      this.$forceUpdate();
+      
+      // TODO: 如果需要保存排序信息到后端，可以在这里调用 API
+      console.log('图片顺序已更新:', this.imageList.map(img => img.mediaName));
+      // this.saveImageOrder();
+    },
+
+    /** 销毁图片拖拽排序实例 */
+    destroyImageSortable() {
+      if (this.sortable) {
+        try {
+          this.sortable.destroy();
+        } catch (error) {
+          console.warn('Error destroying sortable instance:', error);
+        }
+        this.sortable = null;
+      }
     }
+  },
+
+  beforeDestroy() {
+    // 组件销毁前销毁 sortable 实例
+    this.destroyImageSortable();
   }
 };
 </script>
@@ -496,5 +590,28 @@ export default {
 
 .delete-btn {
   margin-left: 5px;
+}
+
+/* 拖拽相关样式 */
+.sortable-ghost {
+  opacity: 0.4;
+}
+
+.sortable-chosen {
+  transform: scale(1.05);
+  z-index: 1000;
+}
+
+.sortable-drag {
+  user-select: none;
+}
+
+.image-card {
+  cursor: move; /* 显示可拖拽光标 */
+  transition: transform 0.2s ease;
+}
+
+.image-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 </style>
