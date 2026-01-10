@@ -67,43 +67,34 @@
     <!-- 视频列表 -->
     <div class="media-list-section" style="margin-top: 20px;" v-if="videoList.length > 0">
       <h4>视频列表</h4>
-      <el-table :data="videoList" border style="width: 100%">
-        <el-table-column label="预览图" prop="mediaName" width="150">
-          <template slot-scope="scope">
-            <div class="media-preview">
-              <div 
-                class="preview-video" 
-                @click="previewVideo(scope.row.mediaUrl)"
-              >
-                <i class="el-icon-video-camera-solid"></i>
-                <span class="media-name">{{ scope.row.mediaName }}</span>
-              </div>
+      <div class="video-gallery" ref="videoGallery">
+        <div 
+          v-for="(video, index) in videoList" 
+          :key="video.mediaId" 
+          class="video-card"
+          @mouseenter="showVideoActions(video)"
+          @mouseleave="hideVideoActions(video)"
+        >
+          <div class="video-preview-wrapper">
+            <i class="el-icon-video-camera-solid video-icon"></i>
+            <span class="video-label">视频</span>
+          </div>
+          <div class="video-info-overlay">
+            <div class="file-info">
+              <p class="file-size">{{ (video.size / 1024).toFixed(2) }} KB</p>
+              <p class="upload-time">{{ video.createTime }}</p>
             </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="文件大小" align="right" prop="size">
-          <template slot-scope="scope">{{ (scope.row.size / 1024).toFixed(2) }} KB</template>
-        </el-table-column>
-        <el-table-column label="上传时间" prop="createTime" width="200" />
-        <el-table-column label="操作" align="center" width="150">
-          <template slot-scope="scope">
-            <el-button 
-              size="mini" 
-              type="text" 
-              @click="previewVideo(scope.row.mediaUrl)"
-            >
-              预览
-            </el-button>
-            <el-button 
-              size="mini" 
-              type="text" 
-              @click="deleteMedia(scope.row.mediaId)"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+          </div>
+          <div class="video-actions" v-show="video.showActions">
+            <div class="action-btn preview-btn" @click="previewVideo(video.mediaUrl)">
+              <i class="el-icon-view"></i>
+            </div>
+            <div class="action-btn delete-btn" @click="deleteMedia(video.mediaId)">
+              <i class="el-icon-delete"></i>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 音频列表 -->
@@ -241,17 +232,6 @@ export default {
     }
   },
   watch: {
-    // imageList: {
-    //   handler(newList) {
-    //     // 延迟重新初始化，确保 DOM 已更新
-    //     if (newList && newList.length > 0) {
-    //       this.$nextTick(() => {
-    //         this.initImageDragSort();
-    //       });
-    //     }
-    //   },
-    //   deep: true
-    // },
     visible(newVal) {
       this.mediaDialogVisible = newVal;
       if (newVal) {
@@ -284,7 +264,7 @@ export default {
     /** 将媒体列表按类型分类 */
     categorizeMediaList() {
       this.imageList = this.mediaList.filter(item => item.mediaType == 1).map(item => ({ ...item, showActions: false }));
-      this.videoList = this.mediaList.filter(item => item.mediaType == 2);
+      this.videoList = this.mediaList.filter(item => item.mediaType == 2).map(item => ({ ...item, showActions: false }));
       this.audioList = this.mediaList.filter(item => item.mediaType == 3);
     },
 
@@ -337,6 +317,24 @@ export default {
       this.imageList.forEach(img => {
         if(img.mediaId === image.mediaId) {
           img.showActions = false;
+        }
+      });
+    },
+
+    /** 显示视频操作按钮 */
+    showVideoActions(video) {
+      this.videoList.forEach(v => {
+        if(v.mediaId === video.mediaId) {
+          v.showActions = true;
+        }
+      });
+    },
+
+    /** 隐藏视频操作按钮 */
+    hideVideoActions(video) {
+      this.videoList.forEach(v => {
+        if(v.mediaId === video.mediaId) {
+          v.showActions = false;
         }
       });
     },
@@ -504,6 +502,12 @@ export default {
   gap: 10px;
 }
 
+.video-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .image-card {
   position: relative;
   width: 148px;
@@ -521,6 +525,44 @@ export default {
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
+.video-card {
+  position: relative;
+  width: 148px;
+  height: 148px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f7fa;
+  transition: all 0.3s;
+}
+
+.video-card:hover {
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+.video-preview-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.video-icon {
+  font-size: 48px;
+  color: #606266;
+  margin-bottom: 10px;
+}
+
+.video-label {
+  font-size: 14px;
+  color: #606266;
+}
+
 .image-preview {
   width: 100%;
   height: 100%;
@@ -529,6 +571,18 @@ export default {
 }
 
 .image-info-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.6));
+  color: white;
+  padding: 15px 5px 5px;
+  transform: translateY(0);
+  transition: transform 0.3s ease;
+}
+
+.video-info-overlay {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -558,6 +612,15 @@ export default {
 }
 
 .image-actions {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 10px;
+}
+
+.video-actions {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -612,6 +675,15 @@ export default {
 }
 
 .image-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.video-card {
+  cursor: move; /* 显示可拖拽光标 */
+  transition: transform 0.2s ease;
+}
+
+.video-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 </style>
