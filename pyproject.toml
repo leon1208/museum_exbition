@@ -48,6 +48,7 @@ dependencies = [
     "dashscope>=1.25.5",
     "python-dotenv>=1.2.1",
     "minio>=7.2.20",
+    "ffmpeg-python>=0.2.0",
 ]
 
 [[tool.uv.index]]

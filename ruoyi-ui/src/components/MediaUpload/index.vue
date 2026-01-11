@@ -75,9 +75,14 @@
           @mouseenter="showVideoActions(video)"
           @mouseleave="hideVideoActions(video)"
         >
-          <div class="video-preview">
+          <div class="video-preview" v-if="!video.coverUrl">
             <i class="el-icon-video-camera-solid video-icon"></i>
-            <span class="video-label">{{ video.mediaName }}</span>
+            <span class="video-label">{{ video.mediaName }} / {{ video.duration }} 秒</span>
+          </div>
+          <div class="video-preview" v-else>
+            <img :src="minioBase + video.coverUrl" class="video-cover-img" alt="视频封面">
+            <i class="el-icon-video-play video-play-icon"></i>
+            <span class="video-label" style="position: absolute; bottom: 35px;">{{ video.mediaName }} / {{ video.duration }} 秒</span>
           </div>
           <div class="video-info-overlay">
             <div class="file-info">
@@ -110,7 +115,7 @@
         >
           <div class="audio-preview">
             <i class="el-icon-headset audio-icon"></i>
-            <span class="audio-label">{{ audio.mediaName }}</span>
+            <span class="audio-label">{{ audio.mediaName }} / {{ audio.duration }} 秒</span>
           </div>
           <div class="audio-info-overlay">
             <div class="file-info">
@@ -916,5 +921,21 @@ export default {
   transform: translate(-50%, -50%);
   display: flex;
   gap: 10px;
+}
+
+.video-cover-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.video-play-icon {
+  position: absolute;
+  font-size: 48px;
+  color: rgba(255, 255, 255, 0.8);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 </style>

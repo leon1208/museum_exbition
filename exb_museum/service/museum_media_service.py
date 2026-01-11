@@ -78,8 +78,20 @@ class MuseumMediaService:
         media_po.is_cover = 0
         # 将sort设置为None，让mapper层自动计算
         media_po.sort = None
-        media_po.cover_url = upload_result
-        media_po.duration = 0
+
+        # 当上传音频时，cover_url设置为None
+        from ruoyi_common.utils.minio_util import MinioUtil        
+        if media_type == '3':  # '3'代表音频类型
+            d1 = MinioUtil.get_audio_duration_from_minio(object_name=upload_result)
+            media_po.cover_url = None
+            media_po.duration = int(d1)
+        elif media_type == '2':  # '2'代表视频类型
+            d1, first_frame = MinioUtil.get_video_duration_and_first_frame(object_name=upload_result)
+            media_po.cover_url = first_frame
+            media_po.duration = int(d1)
+        else: # '1'代表图片类型
+            media_po.cover_url = upload_result
+            media_po.duration = 0
         media_po.size = stat.size
         media_po.status = 0
         media_po.del_flag = 0
