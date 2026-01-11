@@ -42,6 +42,11 @@ RUN uv sync --frozen --no-dev --index https://pypi.tuna.tsinghua.edu.cn/simple
 FROM python:3.13-slim AS backend-runtime
 WORKDIR /app
 
+# 新增安装 ffmpeg（包含 ffprobe）
+RUN apt-get update \
+    && apt-get install -y ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
 # 从 builder 拷贝已安装的 site-packages
 # COPY --from=backend-builder /usr/local/lib/python3.13 /usr/local/lib/python3.13
 # COPY --from=backend-builder /usr/local/bin /usr/local/bin
