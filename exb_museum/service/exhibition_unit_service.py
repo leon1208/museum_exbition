@@ -43,13 +43,23 @@ class ExhibitionUnitService:
     def insert_exhibition_unit(self, exhibition_unit: ExhibitionUnit) -> int:
         """
         新增展览单元信息表
-
+    
         Args:
             exhibition_unit (ExhibitionUnit): 展览单元信息表对象
-
+    
         Returns:
             int: 插入的记录数
         """
+        # 如果没有手动设置排序值，则自动计算排序值
+        if exhibition_unit.sort_order is None or exhibition_unit.sort_order == 0:
+            # 获取同一展览、同一篇章的最大排序值
+            max_sort_order = ExhibitionUnitMapper.get_max_sort_order_by_exhibition_and_section(
+                exhibition_unit.exhibition_id, 
+                exhibition_unit.section
+            )
+            # 设置排序值为最大值+1，如果不存在则设为1
+            exhibition_unit.sort_order = (max_sort_order or 0) + 1
+        
         # 设置创建人
         exhibition_unit.create_by_user(security_util.get_username())
         exhibition_unit.update_by_user(security_util.get_username()) 

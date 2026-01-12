@@ -178,3 +178,31 @@ class ExhibitionUnitMapper:
             db.session.rollback()
             print(f"批量删除展览单元信息表出错: {e}")
             return 0
+
+    @staticmethod
+    def get_max_sort_order_by_exhibition_and_section(exhibition_id: int, section: str) -> int:
+        """
+        获取指定展览和章节下的最大排序值
+    
+        Args:
+            exhibition_id (int): 展览ID
+            section (str): 章节
+    
+        Returns:
+            int: 最大排序值
+        """
+        try:
+            from sqlalchemy import func
+            stmt = select(func.max(ExhibitionUnitPo.sort_order)).where(
+                ExhibitionUnitPo.exhibition_id == exhibition_id
+            )
+            if section:
+                stmt = stmt.where(ExhibitionUnitPo.section == section)
+            else:
+                stmt = stmt.where(ExhibitionUnitPo.section.is_(None))
+            
+            result = db.session.execute(stmt).scalar()
+            return result if result is not None else 0
+        except Exception as e:
+            print(f"获取展览单元最大排序值出错: {e}")
+            return 0

@@ -153,7 +153,7 @@ export default {
     objectType: {
       type: String,
       required: true,
-      validator: value => ['museum', 'exhibition', 'collection'].includes(value)
+      validator: value => ['museum', 'exhibition', 'collection', 'exhibition_unit'].includes(value)
     },
     // 对象ID
     objectId: {
@@ -204,7 +204,8 @@ export default {
       const typeMap = {
         museum: '博物馆',
         exhibition: '展览',
-        collection: '藏品'
+        collection: '藏品',
+        exhibition_unit: '展览单元'
       };
       return `${typeMap[this.objectType]}多媒体管理`;
     },

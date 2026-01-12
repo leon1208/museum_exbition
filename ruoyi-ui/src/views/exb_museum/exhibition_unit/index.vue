@@ -76,7 +76,61 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
     </el-row>
 
-    <el-table :loading="loading" :data="exhibitionUnitList" @selection-change="handleSelectionChange">
+    <!-- 按展览章节分组显示 -->
+    <el-collapse v-model="activeNames" accordion>
+      <el-collapse-item 
+        v-for="(section, index) in orderedSections" 
+        :key="section.content"
+        :title="section.content" 
+        :name="section.content"
+      >
+        <el-table 
+          :data="getUnitsBySection(section.content)" 
+          :row-class-name="tableRowClassName"
+          @selection-change="handleSelectionChange"
+        >
+          <el-table-column type="selection" width="55" align="center" />
+          <el-table-column label="单元名称" :show-overflow-tooltip="true" v-if="columns[0].visible" prop="unitName" />
+          <el-table-column label="单元类型" align="center" :show-overflow-tooltip="true" v-if="columns[1].visible" prop="unitType" :formatter="dict_unitType_format" />
+          <el-table-column label="展厅" align="center" :show-overflow-tooltip="true" v-if="columns[2].visible" prop="hallId" :formatter="dict_hallId_format" />
+          <el-table-column label="所属展览章节" align="center" :show-overflow-tooltip="true" v-if="columns[3].visible" prop="section" />
+          <el-table-column label="顺序" align="center" v-if="columns[4].visible" prop="sortOrder" />
+          <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+            <template slot-scope="scope">
+              <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-edit"
+                @click="handleUpdate(scope.row)"
+                v-hasPermi="['exb_museum:unit:edit']"
+              >修改</el-button>
+              <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-delete"
+                @click="handleDelete(scope.row)"
+                v-hasPermi="['exb_museum:unit:remove']"
+              >删除</el-button>
+              <el-button
+                size="mini"
+                type="text"
+                icon="el-icon-picture-outline"
+                @click="openMediaDialog(scope.row)"
+                v-hasPermi="['exb_museum:media:add']"
+              >媒体管理</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-collapse-item>
+    </el-collapse>
+
+    <!-- 如果没有分组数据，则显示原始表格 -->
+    <!-- <el-table 
+      v-if="orderedSections.length === 0" 
+      :loading="loading" 
+      :data="exhibitionUnitList" 
+      @selection-change="handleSelectionChange"
+    >
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="单元名称" :show-overflow-tooltip="true" v-if="columns[0].visible" prop="unitName" />
       <el-table-column label="单元类型" align="center" :show-overflow-tooltip="true" v-if="columns[1].visible" prop="unitType" :formatter="dict_unitType_format" />
@@ -101,18 +155,18 @@
           >删除</el-button>
         </template>
       </el-table-column>
-    </el-table>
+    </el-table> -->
 
-    <pagination
+    <!-- <pagination
       v-show="total>0"
       :total="total"
       :page.sync="queryParams.pageNum"
       :limit.sync="queryParams.pageSize"
       @pagination="getList"
-    />
+    /> -->
 
     <!-- 添加或修改展览单元信息表对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+    <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="120px">
         <el-form-item label="单元名称" prop="unitName">
           <el-input v-model="form.unitName" placeholder="请输入单元名称" />
@@ -137,14 +191,14 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="顺序" prop="sortOrder">
+        <!-- <el-form-item label="顺序" prop="sortOrder">
           <el-input-number v-model="form.sortOrder" placeholder="请输入顺序" :min="0" :max="999" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="展签" prop="exhibitLabel">
-          <el-input v-model="form.exhibitLabel" type="textarea" placeholder="请输入展签" />
+          <el-input v-model="form.exhibitLabel" type="textarea" placeholder="请输入展签" rows="4" />
         </el-form-item>
         <el-form-item label="导览词" prop="guideText">
-          <el-input v-model="form.guideText" type="textarea" placeholder="请输入导览词" />
+          <el-input v-model="form.guideText" type="textarea" placeholder="请输入导览词" rows="8" />
         </el-form-item>
         <el-form-item label="关联藏品" prop="collections">
           <el-select v-model="collectionValues" multiple filterable placeholder="请选择关联藏品" style="width: 100%">
@@ -157,6 +211,13 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+    
+    <!-- 媒体管理对话框 -->
+    <MediaUpload 
+      :objectType="'exhibition_unit'" 
+      :objectId="currentUnitId" 
+      :visible.sync="mediaDialogVisible" 
+    />
   </div>
 </template>
 
@@ -165,10 +226,12 @@ import { listExhibitionUnit, getExhibitionUnit, delExhibitionUnit, addExhibition
 import { listMuseumHall } from "@/api/exb_museum/museum_hall";
 import { listCollection } from "@/api/exb_museum/collection";
 import { getExhibition } from "@/api/exb_museum/exhibition"; // 新增导入
+import MediaUpload from "@/components/MediaUpload";
 
 export default {
   name: "ExhibitionUnit",
   components: {
+    MediaUpload
   },
   props: {
     exhibitionId: {
@@ -196,6 +259,12 @@ export default {
       total: 0,
       // 展览单元信息表表格数据
       exhibitionUnitList: [],
+      // 按章节分组的数据
+      groupedExhibitionUnits: {},
+      // 有序的章节列表
+      orderedSections: [],
+      // 当前激活的折叠面板
+      activeNames: [],
       // 展厅选项列表
       hallOptions: [],
       // 藏品选项列表
@@ -216,10 +285,14 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      // 媒体管理对话框是否显示
+      mediaDialogVisible: false,
+      // 当前选中的展览单元ID
+      currentUnitId: null,
       // 查询参数
       queryParams: {
         pageNum: 1,
-        pageSize: 10,
+        pageSize: 1000,
         section: null,
         unitName: null,
         exhibitionId: null,
@@ -278,8 +351,62 @@ export default {
       listExhibitionUnit(this.queryParams).then(response => {
         this.exhibitionUnitList = response.rows;
         this.total = response.total;
+        this.groupExhibitionUnitsBySection(); // 按章节分组数据
         this.loading = false;
       });
+    },
+    /** 按展览章节分组数据 */
+    groupExhibitionUnitsBySection() {
+      // 清空现有分组
+      this.groupedExhibitionUnits = {};
+      
+      // 按section字段对展览单元进行分组
+      this.exhibitionUnitList.forEach(unit => {
+        const section = unit.section || '未分类';
+        if (!this.groupedExhibitionUnits[section]) {
+          this.groupedExhibitionUnits[section] = [];
+        }
+        this.groupedExhibitionUnits[section].push(unit);
+      });
+      
+      // 按照展览的sections数组顺序重新排序章节
+      this.updateOrderedSections();
+    },
+    /** 获取指定章节的展览单元 */
+    getUnitsBySection(sectionName) {
+      return this.groupedExhibitionUnits[sectionName] || [];
+    },
+    /** 更新有序章节列表 */
+    updateOrderedSections() {
+      // 创建一个映射，将section内容映射到其在原数组中的索引
+      const sectionIndexMap = {};
+      this.sectionOptions.forEach((section, index) => {
+        sectionIndexMap[section.content] = index;
+      });
+      
+      // 按照原数组顺序排序章节
+      this.orderedSections = this.sectionOptions.filter(section => 
+        this.groupedExhibitionUnits[section.content] && 
+        this.groupedExhibitionUnits[section.content].length > 0
+      );
+      
+      // 添加未在原数组中定义但存在于数据中的章节（如"未分类"）
+      Object.keys(this.groupedExhibitionUnits).forEach(sectionName => {
+        if (!sectionIndexMap.hasOwnProperty(sectionName)) {
+          // 检查是否已经在orderedSections中
+          const exists = this.orderedSections.some(sec => sec.content === sectionName);
+          if (!exists) {
+            this.orderedSections.push({ content: sectionName });
+          }
+        }
+      });
+      
+      // 设置默认展开第一个分组
+      if (this.orderedSections.length > 0) {
+        this.activeNames = [this.orderedSections[0].content];
+      } else {
+        this.activeNames = [];
+      }
     },
     /** 加载展览章节数据 */
     loadExhibitionSections() {
@@ -322,6 +449,11 @@ export default {
       listCollection({ museumId: this.museumId }).then(response => {
         this.collectionOptions = response.rows;
       });
+    },
+    // 为表格行添加样式
+    tableRowClassName({ row, rowIndex }) {
+      // 根据需要为特定行添加CSS类
+      return '';
     },
     // 单元类型字典翻译
     dict_unitType_format(row, column) {
@@ -440,6 +572,11 @@ export default {
       this.download('exb_museum/unit/export', {
         ...this.queryParams
       }, `exhibition_unit_${new Date().getTime()}.xlsx`)
+    },
+    /** 打开媒体管理对话框 */
+    openMediaDialog(row) {
+      this.currentUnitId = row.unitId;
+      this.mediaDialogVisible = true;
     }
   }
 };

@@ -539,7 +539,7 @@ class PageModel(VoModel):
     page_size: Annotated[
         int, 
         BeforeValidator(int), 
-        Field(10, ge=1, le=100, frozen=True)
+        Field(10, ge=1, le=1000, frozen=True)
     ] 
     
     total: Annotated[int, Field(default=None)]
