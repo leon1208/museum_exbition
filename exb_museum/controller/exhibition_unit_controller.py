@@ -148,3 +148,27 @@ def exhibition_unit_import_data(
     exhibition_unit_list = excel_util.import_file(file, sheetname="展览单元信息表数据")
     msg = exhibition_unit_service.import_exhibition_unit(exhibition_unit_list, update_support)
     return AjaxResponse.from_success(msg=msg)
+
+
+@reg.api.route('/exb_museum/unit/move_up/<int:unit_id>', methods=['POST'])
+@PreAuthorize(HasPerm('exb_museum:unit:edit'))
+@Log(title='展览单元管理', business_type=BusinessType.UPDATE)
+@JsonSerializer()
+def move_up_exhibition_unit(unit_id: int):
+    """向上移动展览单元"""
+    result = exhibition_unit_service.move_up_exhibition_unit(unit_id)
+    if result:
+        return AjaxResponse.from_success(msg='向上移动成功')
+    return AjaxResponse.from_error(code=HttpStatus.ERROR, msg='向上移动失败')
+
+
+@reg.api.route('/exb_museum/unit/move_down/<int:unit_id>', methods=['POST'])
+@PreAuthorize(HasPerm('exb_museum:unit:edit'))
+@Log(title='展览单元管理', business_type=BusinessType.UPDATE)
+@JsonSerializer()
+def move_down_exhibition_unit(unit_id: int):
+    """向下移动展览单元"""
+    result = exhibition_unit_service.move_down_exhibition_unit(unit_id)
+    if result:
+        return AjaxResponse.from_success(msg='向下移动成功')
+    return AjaxResponse.from_error(code=HttpStatus.ERROR, msg='向下移动失败')

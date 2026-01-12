@@ -77,7 +77,8 @@
     </el-row>
 
     <!-- 按展览章节分组显示 -->
-    <el-collapse v-model="activeNames" accordion>
+    <el-collapse v-model="activeNames">
+    <!-- <el-collapse v-model="activeNames" accordion> -->
       <el-collapse-item 
         v-for="(section, index) in orderedSections" 
         :key="section.content"
@@ -94,7 +95,19 @@
           <el-table-column label="单元类型" align="center" :show-overflow-tooltip="true" v-if="columns[1].visible" prop="unitType" :formatter="dict_unitType_format" />
           <el-table-column label="展厅" align="center" :show-overflow-tooltip="true" v-if="columns[2].visible" prop="hallId" :formatter="dict_hallId_format" />
           <el-table-column label="所属展览章节" align="center" :show-overflow-tooltip="true" v-if="columns[3].visible" prop="section" />
-          <el-table-column label="顺序" align="center" v-if="columns[4].visible" prop="sortOrder" />
+          <el-table-column label="顺序" align="center" prop="sortOrder" width="100">
+            <template #default="scope">
+              <div class="sort-buttons">
+                <el-button size="medium" type="text" icon="el-icon-arrow-up"
+                  @click="moveUp(scope.row)" :disabled="scope.$index === 0 || !canMoveUp(scope.row, scope.$index)"
+                />
+                <span class="sort-value">{{ scope.row.sortOrder + 1 }}</span>
+                <el-button size="medium" type="text" icon="el-icon-arrow-down"
+                  @click="moveDown(scope.row)" :disabled="!canMoveDown(scope.row, scope.$index)"
+                />
+              </div>
+            </template>
+          </el-table-column>          
           <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
             <template slot-scope="scope">
               <el-button
@@ -222,7 +235,7 @@
 </template>
 
 <script>
-import { listExhibitionUnit, getExhibitionUnit, delExhibitionUnit, addExhibitionUnit, updateExhibitionUnit } from "@/api/exb_museum/exhibition_unit";
+import { listExhibitionUnit, getExhibitionUnit, delExhibitionUnit, addExhibitionUnit, updateExhibitionUnit, moveUpExhibitionUnit, moveDownExhibitionUnit } from "@/api/exb_museum/exhibition_unit";
 import { listMuseumHall } from "@/api/exb_museum/museum_hall";
 import { listCollection } from "@/api/exb_museum/collection";
 import { getExhibition } from "@/api/exb_museum/exhibition"; // 新增导入
@@ -402,11 +415,14 @@ export default {
       });
       
       // 设置默认展开第一个分组
-      if (this.orderedSections.length > 0) {
-        this.activeNames = [this.orderedSections[0].content];
-      } else {
-        this.activeNames = [];
-      }
+      // if (this.orderedSections.length > 0) {
+      //   this.activeNames = [this.orderedSections[0].content];
+      // } else {
+      //   this.activeNames = [];
+      // }
+
+      // 设置默认展开所有分组（移除accordion属性以允许多个同时展开）
+      this.activeNames = this.orderedSections.map(section => section.content);
     },
     /** 加载展览章节数据 */
     loadExhibitionSections() {
@@ -577,7 +593,68 @@ export default {
     openMediaDialog(row) {
       this.currentUnitId = row.unitId;
       this.mediaDialogVisible = true;
-    }
+    },
+
+    /** 向上移动展览单元 */
+    async moveUp(row) {
+      try {
+        const response = await moveUpExhibitionUnit(row.unitId);
+        if (response.code === 200) {
+          this.$modal.msgSuccess(response.msg || "向上移动成功");
+          this.getList(); // 重新加载列表
+        } else {
+          this.$modal.msgError(response.msg || "向上移动失败");
+        }
+      } catch (error) {
+        this.$modal.msgError("向上移动失败：" + error.message);
+      }
+    },
+    
+    /** 向下移动展览单元 */
+    async moveDown(row) {
+      try {
+        const response = await moveDownExhibitionUnit(row.unitId);
+        if (response.code === 200) {
+          this.$modal.msgSuccess(response.msg || "向下移动成功");
+          this.getList(); // 重新加载列表
+        } else {
+          this.$modal.msgError(response.msg || "向下移动失败");
+        }
+      } catch (error) {
+        this.$modal.msgError("向下移动失败：" + error.message);
+      }
+    },
+    
+    /** 判断是否可以向上移动 */
+    canMoveUp(row, index) {
+      // 检查是否在同一展览和章节内有其他项可以交换位置
+      const sameSectionItems = this.groupedExhibitionUnits[row.section] || [];
+      const currentIndex = sameSectionItems.findIndex(item => item.unitId === row.unitId);
+      return currentIndex > 0;
+    },
+    
+    /** 判断是否可以向下移动 */
+    canMoveDown(row, index) {
+      // 检查是否在同一展览和章节内有其他项可以交换位置
+      const sameSectionItems = this.groupedExhibitionUnits[row.section] || [];
+      const currentIndex = sameSectionItems.findIndex(item => item.unitId === row.unitId);
+      return currentIndex < sameSectionItems.length - 1;
+    },    
   }
 };
 </script>
+
+<style scoped>
+.sort-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.sort-value {
+  min-width: 20px;
+  text-align: center;
+  font-weight: bold;
+}
+</style>

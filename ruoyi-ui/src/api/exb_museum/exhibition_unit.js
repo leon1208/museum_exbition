@@ -44,3 +44,19 @@ export function delExhibitionUnit(unitId) {
     method: 'delete'
   })
 }
+
+// 向上移动展览单元
+export function moveUpExhibitionUnit(id) {
+  return request({
+    url: '/exb_museum/unit/move_up/' + id,
+    method: 'post'
+  })
+}
+
+// 向下移动展览单元
+export function moveDownExhibitionUnit(id) {
+  return request({
+    url: '/exb_museum/unit/move_down/' + id,
+    method: 'post'
+  })
+}

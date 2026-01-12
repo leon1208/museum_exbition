@@ -151,3 +151,91 @@ class ExhibitionUnitService:
             raise ServiceException(fail_msg)
         success_msg = f"恭喜您，数据已全部导入成功！共 {success_count} 条，数据如下：" + success_msg
         return success_msg
+
+    @staticmethod
+    def move_up_exhibition_unit(unit_id: int) -> bool:
+        """
+        向上移动展览单元
+        
+        Args:
+            unit_id (int): 展览单元ID
+            
+        Returns:
+            bool: 是否移动成功
+        """
+        try:
+            # 获取当前展览单元信息
+            current_unit = ExhibitionUnitMapper.select_exhibition_unit_by_id(unit_id)
+            if not current_unit:
+                return False
+                
+            # 获取同展览和同章节的所有展览单元，按排序值升序排列
+            units = ExhibitionUnitMapper.select_exhibition_units_by_exhibition_and_section(
+                current_unit.exhibition_id, current_unit.section
+            )
+            
+            # 找到当前单元在列表中的位置
+            current_index = -1
+            for i, unit in enumerate(units):
+                if unit.unit_id == unit_id:
+                    current_index = i
+                    break
+                    
+            if current_index <= 0:  # 已经是第一个，无法再向上移动
+                return False
+                
+            # 获取前一个单元
+            prev_unit = units[current_index - 1]
+            
+            # 交换两个单元的排序值
+            result1 = ExhibitionUnitMapper.update_sort_order(prev_unit.unit_id, current_unit.sort_order)
+            result2 = ExhibitionUnitMapper.update_sort_order(current_unit.unit_id, prev_unit.sort_order)
+            
+            return result1 > 0 and result2 > 0
+        except Exception as e:
+            print(f"向上移动展览单元出错: {e}")
+            return False
+
+    @staticmethod
+    def move_down_exhibition_unit(unit_id: int) -> bool:
+        """
+        向下移动展览单元
+        
+        Args:
+            unit_id (int): 展览单元ID
+            
+        Returns:
+            bool: 是否移动成功
+        """
+        try:
+            # 获取当前展览单元信息
+            current_unit = ExhibitionUnitMapper.select_exhibition_unit_by_id(unit_id)
+            if not current_unit:
+                return False
+                
+            # 获取同展览和同章节的所有展览单元，按排序值升序排列
+            units = ExhibitionUnitMapper.select_exhibition_units_by_exhibition_and_section(
+                current_unit.exhibition_id, current_unit.section
+            )
+            
+            # 找到当前单元在列表中的位置
+            current_index = -1
+            for i, unit in enumerate(units):
+                if unit.unit_id == unit_id:
+                    current_index = i
+                    break
+                    
+            if current_index == -1 or current_index >= len(units) - 1:  # 已经是最后一个，无法再向下移动
+                return False
+                
+            # 获取后一个单元
+            next_unit = units[current_index + 1]
+            
+            # 交换两个单元的排序值
+            result1 = ExhibitionUnitMapper.update_sort_order(next_unit.unit_id, current_unit.sort_order)
+            result2 = ExhibitionUnitMapper.update_sort_order(current_unit.unit_id, next_unit.sort_order)
+            
+            return result1 > 0 and result2 > 0
+        except Exception as e:
+            print(f"向下移动展览单元出错: {e}")
+            return False

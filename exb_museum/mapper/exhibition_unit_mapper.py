@@ -51,6 +51,8 @@ class ExhibitionUnitMapper:
 
             if "criterian_meta" in g and g.criterian_meta.page:
                 g.criterian_meta.page.stmt = stmt
+            
+            stmt = stmt.order_by(ExhibitionUnitPo.exhibition_id, ExhibitionUnitPo.section, ExhibitionUnitPo.sort_order)
 
             result = db.session.execute(stmt).scalars().all()
             return [ExhibitionUnit.model_validate(item) for item in result] if result else []
@@ -206,3 +208,57 @@ class ExhibitionUnitMapper:
         except Exception as e:
             print(f"获取展览单元最大排序值出错: {e}")
             return 0
+
+    @staticmethod
+    def update_sort_order(unit_id: int, sort_order: int) -> int:
+        """
+        更新展览单元排序
+        
+        Args:
+            unit_id (int): 展览单元ID
+            sort_order (int): 排序值
+            
+        Returns:
+            int: 更新的记录数
+        """
+        try:
+            stmt = (
+                update(ExhibitionUnitPo)
+                .where(ExhibitionUnitPo.unit_id == unit_id)
+                .values(sort_order=sort_order, update_time=datetime.now())
+            )
+            result = db.session.execute(stmt)
+            db.session.commit()
+            return result.rowcount
+        except Exception as e:
+            db.session.rollback()
+            print(f"更新展览单元排序出错: {e}")
+            return 0
+
+    @staticmethod
+    def select_exhibition_units_by_exhibition_and_section(exhibition_id: int, section: str) -> List[ExhibitionUnit]:
+        """
+        根据展览ID和章节查询所有展览单元，按排序值升序排列
+        
+        Args:
+            exhibition_id (int): 展览ID
+            section (str): 章节
+            
+        Returns:
+            List[ExhibitionUnit]: 展览单元列表
+        """
+        try:
+            stmt = (
+                select(ExhibitionUnitPo)
+                .where(
+                    ExhibitionUnitPo.exhibition_id == exhibition_id,
+                    ExhibitionUnitPo.section == section,
+                    ExhibitionUnitPo.del_flag == 0
+                )
+                .order_by(ExhibitionUnitPo.sort_order.asc(), ExhibitionUnitPo.unit_id.asc())
+            )
+            results = db.session.execute(stmt).scalars().all()
+            return [ExhibitionUnit.model_validate(po) for po in results]
+        except Exception as e:
+            print(f"根据展览ID和章节查询展览单元列表出错: {e}")
+            return []
