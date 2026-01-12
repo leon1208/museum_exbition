@@ -136,6 +136,13 @@
           >删除</el-button>
           <el-button
             size="mini"
+type="text"
+            icon="el-icon-folder-opened"
+            @click="openExhibitionUnitDialog(scope.row)"
+            v-hasPermi="['exb_museum:unit:list']"
+          >展览单元管理</el-button>
+          <el-button
+size="mini"
             type="text"
             icon="el-icon-picture-outline"
             @click="openMediaDialog(scope.row)"
@@ -155,7 +162,7 @@
 
     <!-- 添加或修改展览信息表对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="200px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
         <el-form-item label="展名" prop="exhibitionName">
           <el-input v-model="form.exhibitionName" placeholder="请输入展名" />
         </el-form-item>
@@ -195,10 +202,30 @@
           </el-select>
         </el-form-item>
         <el-form-item label="内容标签" prop="contentTags">
-          <el-select v-model="contentTagValues" multiple filterable placeholder="请选择内容标签" style="width: 100%">
+<el-select v-model="contentTagValues" multiple filterable placeholder="请选择内容标签" style="width: 100%">
             <el-option v-for="tag in contentTagOptions" :key="tag.value" :label="tag.label" :value="tag.value"/>
           </el-select>
         </el-form-item>
+
+        <el-form-item label="展览章节" prop="sections">
+          <div class="section-container">
+            <div v-for="(section, index) in form.sections" :key="index" class="section-item">
+              <el-card class="section-card">
+                <div class="section-content" style="display: flex; align-items: center;">
+                  <el-input v-model="section.content" placeholder="请输入章节标题" style="flex: 1; margin-right: 2px;" />
+                  <el-button-group>
+                    <el-button type="text" size="mini" @click="moveSectionUp(index)" :disabled="index === 0" icon="el-icon-arrow-up"></el-button>
+                    <el-button type="text" size="mini" @click="moveSectionDown(index)" :disabled="index === form.sections.length - 1" icon="el-icon-arrow-down"></el-button>
+                    <el-button type="text" size="mini" @click="removeSection(index)" style="color: #f56c6c" icon="el-icon-delete"></el-button>
+                  </el-button-group>
+                </div>
+              </el-card>
+            </div>
+            <el-button type="primary" size="mini" @click="addSection" icon="el-icon-plus">添加章节</el-button>
+          </div>
+        </el-form-item>
+
+
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status">
             <el-radio v-for="item in statusOptions" :key="item.value" :label="item.value">{{item.label}}</el-radio>
@@ -251,6 +278,23 @@
       :visible.sync="mediaDialogVisible"
     />
 
+    <!-- 展览单元管理对话框 -->
+    <el-dialog 
+      :title="currentExhibition ? '展览单元管理 - ' + currentExhibition.exhibitionName : '展览单元管理'" 
+      :visible.sync="exhibitionUnitDialogVisible" 
+      width="80%" 
+      append-to-body
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+    >
+      <ExhibitionUnit 
+        v-if="exhibitionUnitDialogVisible"
+        :exhibitionId="currentExhibition ? currentExhibition.exhibitionId : null"
+        :museumId="currentExhibition ? currentExhibition.museumId : null"
+        @close="exhibitionUnitDialogVisible = false"
+      />
+    </el-dialog>
+
   </div>
 </template>
 
@@ -259,11 +303,13 @@ import { listExhibition, getExhibition, delExhibition, addExhibition, updateExhi
 import { listMuseum } from "@/api/exb_museum/museum"; // 导入博物馆API
 import { getToken } from "@/utils/auth";
 import MediaUpload from "@/components/MediaUpload/index.vue";
+import ExhibitionUnit from "@/views/exb_museum/exhibition_unit/index.vue";
 
 export default {
   name: "Exhibition",
   components: {
     MediaUpload,
+    ExhibitionUnit,
   },
   data() {
     return {
@@ -408,6 +454,9 @@ export default {
       // 媒体上传相关
       mediaDialogVisible: false,
       currentExhibitionId: 0,
+      // 展览单元管理对话框
+      exhibitionUnitDialogVisible: false,
+      currentExhibition: null,
     };
   },
   created() {
@@ -477,6 +526,7 @@ export default {
         organizer: null,
         exhibitionType: null,
         contentTags: null,
+        sections: [],
         status: null,
         delFlag: null,
         createBy: null,
@@ -522,6 +572,12 @@ export default {
           this.contentTagValues = this.form.contentTags.split(',');
         } else {
           this.contentTagValues = [];
+        }
+        // 将展览章节字符串转换为数组
+        if (this.form.sections) {
+          this.form.sections = JSON.parse(this.form.sections);
+        } else {
+          this.form.sections = [];
         }
         this.open = true;
         this.title = "修改展览信息表";
@@ -598,7 +654,12 @@ export default {
       } else {
         data.contentTags = null;
       }
-      
+      // 将展览章节数组转换为JSON字符串
+      if (data.sections && Array.isArray(data.sections)) {
+        data.sections = JSON.stringify(data.sections);
+      } else {
+        data.sections = null;
+      }
       if (data.exhibitionId !== null && data.exhibitionId !== undefined && data.exhibitionId !== "") {
         data.exhibitionId = parseInt(data.exhibitionId, 10);
       } else {
@@ -632,11 +693,63 @@ export default {
       this.$refs.upload.submit();
     },
 
+    /** 打开展览单元管理对话框 */
+    openExhibitionUnitDialog(row) {
+      this.currentExhibition = row;
+      this.exhibitionUnitDialogVisible = true;
+    },
+
     /** 打开媒体上传对话框 */
     openMediaDialog(row) {
       this.currentExhibitionId = row.exhibitionId;
       this.mediaDialogVisible = true;
     },
+
+    addSection() {
+      if (!this.form.sections) {
+        this.form.sections = [];
+      }
+      this.form.sections.push({
+        content: ''
+      });
+    },
+    removeSection(index) {
+      this.form.sections.splice(index, 1);
+    },
+    moveSectionUp(index) {
+      if (index > 0) {
+        // 使用数组解构交换元素位置
+        [this.form.sections[index], this.form.sections[index - 1]] = [this.form.sections[index - 1], this.form.sections[index]];
+        // 触发响应式更新
+        this.$set(this.form, 'sections', [...this.form.sections]);
+      }
+    },
+    moveSectionDown(index) {
+      if (index < this.form.sections.length - 1) {
+        // 使用数组解构交换元素位置
+        [this.form.sections[index], this.form.sections[index + 1]] = [this.form.sections[index + 1], this.form.sections[index]];
+        // 触发响应式更新
+        this.$set(this.form, 'sections', [...this.form.sections]);
+      }
+    }
   }
 };
 </script>
+
+<style scoped>
+/* 添加一些样式以美化章节编辑界面 */
+.section-container {
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.section-item {
+  margin-bottom: 5px;
+}
+
+.section-card {
+  margin-bottom: 5px;
+  padding: 5px;
+}
+</style>

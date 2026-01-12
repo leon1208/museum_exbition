@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Author  : leeon
-# @FileName: exhibition_po.py
-# @Time    : 2025-01-05
+# @FileName: exhibition_unit_po.py
+# @Time    : 
 
 from typing import Optional
 from datetime import datetime
@@ -13,81 +13,75 @@ from sqlalchemy.dialects import mysql
 
 from ruoyi_admin.ext import db
 
-class ExhibitionPo(db.Model):
+class ExhibitionUnitPo(db.Model):
     """
-    展览信息表PO对象
+    展览单元信息表PO对象
     """
-    __tablename__ = 'exb_exhibition'
-    __table_args__ = {'comment': '展览信息表'}
+    __tablename__ = 'exb_exhibition_unit'
+    __table_args__ = {'comment': '展览单元信息表'}
     
-    exhibition_id: Mapped[int] = mapped_column(
-        'exhibition_id',
+    unit_id: Mapped[int] = mapped_column(
+        'unit_id',
         BigInteger,
         primary_key=True,
         autoincrement=True,
         nullable=False,
-        comment='展览ID'
+        comment='展览单元ID'
     )
-    exhibition_name: Mapped[Optional[str]] = mapped_column(
-        'exhibition_name',
+    unit_name: Mapped[Optional[str]] = mapped_column(
+        'unit_name',
         String(500),
         nullable=False,
-        comment='展名'
+        comment='单元名称'
     )
-    description: Mapped[Optional[str]] = mapped_column(
-        'description',
-        Text,
-        nullable=True,
-        comment='展览简介'
-    )
-    museum_id: Mapped[Optional[int]] = mapped_column(
-        'museum_id',
+    exhibition_id: Mapped[Optional[int]] = mapped_column(
+        'exhibition_id',
         BigInteger,
         nullable=False,
-        comment='所属博物馆ID'
+        comment='所属展览ID'
     )
-    hall: Mapped[Optional[str]] = mapped_column(
-        'hall',
-        String(100),
+    exhibit_label: Mapped[Optional[str]] = mapped_column(
+        'exhibit_label',
+        Text,
         nullable=True,
-        comment='展厅'
+        comment='展签'
     )
-    start_time: Mapped[Optional[datetime]] = mapped_column(
-        'start_time',
-        DateTime,
-        nullable=False,
-        comment='展览开始时间'
-    )
-    end_time: Mapped[Optional[datetime]] = mapped_column(
-        'end_time',
-        DateTime,
-        nullable=False,
-        comment='展览结束时间'
-    )
-    organizer: Mapped[Optional[str]] = mapped_column(
-        'organizer',
-        String(500),
+    guide_text: Mapped[Optional[str]] = mapped_column(
+        'guide_text',
+        Text,
         nullable=True,
-        comment='主办单位'
+        comment='导览词'
     )
-    exhibition_type: Mapped[Optional[int]] = mapped_column(
-        'exhibition_type',
+    unit_type: Mapped[Optional[int]] = mapped_column(
+        'unit_type',
         mysql.TINYINT,
         nullable=False,
-        server_default=sa.text("'0'"),
-        comment='展览类型（0长期 1临时）'
+        comment='类型(0展品单元 1文字单元 2多媒体单元)'
     )
-    content_tags: Mapped[Optional[str]] = mapped_column(
-        'content_tags',
-        String(500),
+    hall_id: Mapped[Optional[int]] = mapped_column(
+        'hall_id',
+        BigInteger,
         nullable=True,
-        comment='内容标签'
+        comment='所在展厅ID'
     )
-    sections: Mapped[Optional[str]] = mapped_column(
-        'sections',
+    section: Mapped[Optional[str]] = mapped_column(
+        'section',
+        String(255),
+        nullable=True,
+        comment='所属章节'
+    )
+    sort_order: Mapped[Optional[int]] = mapped_column(
+        'sort_order',
+        Integer,
+        nullable=False,
+        default=0,
+        comment='顺序'
+    )
+    collections: Mapped[Optional[str]] = mapped_column(
+        'collections',
         JSON,
         nullable=True,
-        comment='展览章节（JSON数组存储）'
+        comment='关联藏品ID列表(JSON数组存储，仅展品单元类型使用)'
     )
     status: Mapped[Optional[int]] = mapped_column(
         'status',

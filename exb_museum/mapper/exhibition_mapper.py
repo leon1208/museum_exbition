@@ -32,52 +32,29 @@ class ExhibitionMapper:
             stmt = select(ExhibitionPo)
 
 
-
-
             if exhibition.exhibition_name:
                 stmt = stmt.where(ExhibitionPo.exhibition_name.like("%" + str(exhibition.exhibition_name) + "%"))
 
-
-
-
+            if exhibition.sections:
+                stmt = stmt.where(ExhibitionPo.sections.like("%" + str(exhibition.sections) + "%"))
 
             if exhibition.museum_id is not None:
                 stmt = stmt.where(ExhibitionPo.museum_id == exhibition.museum_id)
 
-
-
-
-
-
-
-
+            if exhibition.hall:
+                stmt = stmt.where(ExhibitionPo.hall.like("%" + str(exhibition.hall) + "%"))
 
             if exhibition.organizer:
                 stmt = stmt.where(ExhibitionPo.organizer.like("%" + str(exhibition.organizer) + "%"))
 
-
-
             if exhibition.exhibition_type is not None:
                 stmt = stmt.where(ExhibitionPo.exhibition_type == exhibition.exhibition_type)
 
-
-
-
+            if exhibition.content_tags:
+                stmt = stmt.where(ExhibitionPo.content_tags.like("%" + str(exhibition.content_tags) + "%"))
 
             if exhibition.status is not None:
                 stmt = stmt.where(ExhibitionPo.status == exhibition.status)
-
-
-
-
-
-
-
-
-
-
-
-
 
 
             if "criterian_meta" in g and g.criterian_meta.page:
@@ -133,6 +110,7 @@ class ExhibitionMapper:
             new_po.organizer = exhibition.organizer
             new_po.exhibition_type = exhibition.exhibition_type
             new_po.content_tags = exhibition.content_tags
+            new_po.sections = exhibition.sections
             new_po.status = exhibition.status
             new_po.del_flag = exhibition.del_flag
             new_po.create_by = exhibition.create_by
@@ -177,6 +155,7 @@ class ExhibitionMapper:
             existing.organizer = exhibition.organizer
             existing.exhibition_type = exhibition.exhibition_type
             existing.content_tags = exhibition.content_tags
+            existing.sections = exhibition.sections
             existing.status = exhibition.status
             existing.del_flag = exhibition.del_flag
             existing.create_by = exhibition.create_by
@@ -212,4 +191,3 @@ class ExhibitionMapper:
             db.session.rollback()
             print(f"批量删除展览信息表出错: {e}")
             return 0
-    

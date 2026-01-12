@@ -117,6 +117,13 @@
             @click="openMediaDialog(scope.row)"
             v-hasPermi="['exb_museum:media:add']"
           >媒体管理</el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-office-building"
+            @click="openHallManagement(scope.row)"
+            v-hasPermi="['exb_museum:hall:list']"
+          >展厅管理</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -208,6 +215,100 @@
       </div>
     </el-dialog>
 
+    <!-- 展厅管理对话框 -->
+    <el-dialog :title="hallDialogTitle" :visible.sync="hallDialogVisible" width="800px" append-to-body>
+      <el-row :gutter="10" class="mb8">
+        <el-col :span="1.5">
+          <el-button
+            type="primary"
+            plain
+            icon="el-icon-plus"
+            size="mini"
+            @click="handleAddHall"
+            v-hasPermi="['exb_museum:hall:add']"
+          >新增</el-button>
+        </el-col>
+        <el-col :span="1.5">
+          <el-button
+            type="danger"
+            plain
+            icon="el-icon-delete"
+            size="mini"
+            :disabled="hallMultiple"
+            @click="handleDeleteHalls"
+            v-hasPermi="['exb_museum:hall:remove']"
+          >删除</el-button>
+        </el-col>
+      </el-row>
+
+      <el-table v-loading="hallLoading" :data="hallList" @selection-change="handleHallSelectionChange">
+        <el-table-column type="selection" width="55" align="center" />
+        <el-table-column label="展厅名称" align="center" prop="hallName" />
+        <el-table-column label="位置" align="center" prop="location" />
+        <el-table-column label="状态" align="center" prop="status" :formatter="dict_hallStatus_format" />
+        <el-table-column label="备注" align="center" prop="remark" />
+        <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+          <template slot-scope="scope">
+            <el-button
+              size="mini"
+              type="text"
+              icon="el-icon-edit"
+              @click="handleUpdateHall(scope.row)"
+              v-hasPermi="['exb_museum:hall:edit']"
+            >修改</el-button>
+            <el-button
+              size="mini"
+              type="text"
+              icon="el-icon-delete"
+              @click="handleDeleteHall(scope.row)"
+              v-hasPermi="['exb_museum:hall:remove']"
+            >删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <pagination
+        v-show="hallTotal>0"
+        :total="hallTotal"
+        :page.sync="hallQueryParams.pageNum"
+        :limit.sync="hallQueryParams.pageSize"
+        @pagination="getHallList"
+      />
+
+      <!-- 展厅新增/修改表单 -->
+      <el-form v-if="showHallForm" ref="hallForm" :model="hallForm" :rules="hallRules" label-width="100px" style="margin-top: 20px;">
+        <el-form-item label="展厅名称" prop="hallName">
+          <el-input v-model="hallForm.hallName" placeholder="请输入展厅名称" />
+        </el-form-item>
+        <el-form-item label="位置" prop="location">
+          <el-input v-model="hallForm.location" placeholder="请输入位置" />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-radio-group v-model="hallForm.status">
+            <el-radio
+              v-for="dict in sys_yes_noOptions" :key="dict.value" :label="dict.value">{{ dict.label }}</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input 
+            v-model="form.remark" 
+            placeholder="请输入备注"
+            type="textarea"
+            :rows="2"
+            :autosize="{ minRows: 2, maxRows: 4 }"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="submitHallForm">确 定</el-button>
+          <el-button @click="cancelHallForm">取 消</el-button>
+        </el-form-item>
+      </el-form>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="hallDialogVisible = false">关 闭</el-button>
+      </div>
+    </el-dialog>
+
   <!-- 媒体上传对话框 - 使用可复用组件 -->
   <MediaUpload 
     :objectType="'museum'"
@@ -217,7 +318,6 @@
 
   </div>
 </template>
-
 
 <script>
 import {
@@ -229,6 +329,7 @@ import {
 } from "@/api/exb_museum/museum";
 import { getToken } from "@/utils/auth";
 import MediaUpload from "@/components/MediaUpload/index.vue";
+import { listMuseumHall, getMuseumHall, delMuseumHall, addMuseumHall, updateMuseumHall } from "@/api/exb_museum/museum_hall";
 
 export default {
   name: "Museum",
@@ -312,6 +413,38 @@ export default {
       // 媒体上传相关
       mediaDialogVisible: false,
       currentMuseumId: 0,
+
+      // 展厅管理相关
+      hallDialogVisible: false,
+      hallDialogTitle: '',
+      hallLoading: false,
+      hallTotal: 0,
+      hallList: [],
+      hallIds: [],
+      hallSingle: true,
+      hallMultiple: true,
+      currentMuseumIdForHall: null,
+      hallQueryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        museumId: null,
+        hallName: null,
+        status: null,
+      },
+      hallForm: {},
+      hallRules: {
+        hallName: [
+          { required: true, message: "展厅名称不能为空", trigger: "blur" }
+        ],
+        location: [
+          { required: true, message: "位置不能为空", trigger: "blur" }
+        ],
+        status: [
+          { required: true, message: "状态不能为空", trigger: "change" }
+        ]
+      },
+      isHallEdit: false,
+      showHallForm: false,
     };
   },
   created() {
@@ -487,6 +620,126 @@ export default {
       this.mediaDialogVisible = true;
     },
 
+    /** 打开展厅管理对话框 */
+    openHallManagement(row) {
+      this.currentMuseumIdForHall = row.museumId;
+      this.hallDialogTitle = `${row.museumName} - 展厅管理`;
+      this.hallQueryParams.museumId = row.museumId;
+      this.showHallForm = false;
+      this.getHallList();
+      this.hallDialogVisible = true;
+    },
+
+    /** 查询展厅信息表列表 */
+    getHallList() {
+      this.hallLoading = true;
+      listMuseumHall(this.hallQueryParams).then(response => {
+        const rows = Array.isArray(response && response.rows) ? response.rows : (Array.isArray(response && response.data) ? response.data : []);
+        this.hallList = rows;
+        this.hallTotal = response.total || rows.length;
+        this.hallLoading = false;
+      });
+    },
+
+    // 展厅状态字典翻译
+    dict_hallStatus_format(row, column) {
+      return this.selectDictLabel(this.sys_yes_noOptions, row.status);
+    },
+
+    // 展厅多选框选中数据
+    handleHallSelectionChange(selection) {
+      this.hallIds = selection.map(item => item.hallId)
+      this.hallSingle = selection.length!==1
+      this.hallMultiple = !selection.length
+    },
+
+    /** 新增展厅按钮操作 */
+    handleAddHall() {
+      this.resetHallForm();
+      this.isHallEdit = false;
+      this.showHallForm = true;
+    },
+
+    /** 修改展厅按钮操作 */
+    handleUpdateHall(row) {
+      this.resetHallForm();
+      const hallId = row.hallId;
+      getMuseumHall(hallId).then(response => {
+        this.hallForm = response.data || {};
+        this.isHallEdit = true;
+        this.showHallForm = true;
+      });
+    },
+
+    // 展厅表单重置
+    resetHallForm() {
+      this.hallForm = {
+        hallId: null,
+        hallName: null,
+        location: null,
+        museumId: this.currentMuseumIdForHall,
+        status: null,
+        delFlag: null,
+        createBy: null,
+        createTime: null,
+        updateBy: null,
+        updateTime: null,
+        remark: null
+      };
+      this.resetForm("hallForm");
+    },
+
+    /** 提交展厅表单 */
+    submitHallForm() {
+      this.$refs["hallForm"].validate(valid => {
+        if (valid) {
+          // 确保展厅关联到正确的博物馆
+          this.hallForm.museumId = this.currentMuseumIdForHall;
+          
+          if (this.hallForm.hallId != null) {
+            updateMuseumHall(this.hallForm).then(response => {
+              this.$modal.msgSuccess("修改成功");
+              this.cancelHallForm();
+              this.getHallList();
+            });
+          } else {
+            addMuseumHall(this.hallForm).then(response => {
+              this.$modal.msgSuccess("新增成功");
+              this.cancelHallForm();
+              this.getHallList();
+            });
+          }
+        }
+      });
+    },
+
+    /** 取消展厅表单 */
+    cancelHallForm() {
+      this.showHallForm = false;
+      this.resetHallForm();
+    },
+
+    /** 删除单个展厅 */
+    handleDeleteHall(row) {
+      const hallId = row.hallId;
+      this.$modal.confirm('是否确认删除展厅编号为"' + hallId + '"的数据项？').then(function() {
+        return delMuseumHall(hallId);
+      }).then(() => {
+        this.getHallList();
+        this.$modal.msgSuccess("删除成功");
+      }).catch(() => {});
+    },
+
+    /** 批量删除展厅 */
+    handleDeleteHalls() {
+      const hallIds = this.hallIds.join(',');
+      this.$modal.confirm('是否确认删除编号为"' + hallIds + '"的展厅数据项？').then(function() {
+        return delMuseumHall(hallIds);
+      }).then(() => {
+        this.getHallList();
+        this.$modal.msgSuccess("删除成功");
+      }).catch(() => {});
+    },
   }
 }
 </script>

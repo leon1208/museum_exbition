@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Author  : leeon
-# @FileName: exhibition.py
-# @Time    : 2026-01-08 08:54:20
+# @FileName: exhibition_unit.py
+# @Time    : 
 
 from typing import Optional, Annotated
 from datetime import datetime
@@ -12,84 +12,79 @@ from ruoyi_common.base.schema_excel import ExcelField
 from ruoyi_common.base.schema_vo import VoField
 
 
-class Exhibition(BaseEntity):
+class ExhibitionUnit(BaseEntity):
     """
-    展览信息表对象
+    展览单元信息表对象
     """
-    # 展览ID
+    # 展览单元ID
+    unit_id: Annotated[
+        Optional[int],
+        BeforeValidator(str_to_int),
+        Field(default=None, description="展览单元ID"),
+        ExcelField(name="展览单元ID")
+    ]
+    # 单元名称
+    unit_name: Annotated[
+        Optional[str],
+        Field(default=None, description="单元名称"),
+        VoField(query=True),
+        ExcelField(name="单元名称")
+    ]
+    # 所属展览ID
     exhibition_id: Annotated[
         Optional[int],
         BeforeValidator(str_to_int),
-        Field(default=None, description="展览ID"),
-        ExcelField(name="展览ID")
-    ]
-    # 展名
-    exhibition_name: Annotated[
-        Optional[str],
-        Field(default=None, description="展名"),
+        Field(default=None, description="所属展览ID"),
         VoField(query=True),
-        ExcelField(name="展名")
+        ExcelField(name="所属展览ID")
     ]
-    # 展览简介
-    description: Annotated[
+    # 展签
+    exhibit_label: Annotated[
         Optional[str],
-        Field(default=None, description="展览简介"),
-        ExcelField(name="展览简介")
+        Field(default=None, description="展签"),
+        ExcelField(name="展签")
     ]
-    # 所属博物馆ID
-    museum_id: Annotated[
+    # 导览词
+    guide_text: Annotated[
+        Optional[str],
+        Field(default=None, description="导览词"),
+        ExcelField(name="导览词")
+    ]
+    # 类型(0展品单元 1文字单元 2多媒体单元)
+    unit_type: Annotated[
         Optional[int],
         BeforeValidator(str_to_int),
-        Field(default=None, description="所属博物馆ID"),
+        Field(default=None, description="类型(0展品单元 1文字单元 2多媒体单元)"),
         VoField(query=True),
-        ExcelField(name="所属博物馆ID")
+        ExcelField(name="类型(0展品单元 1文字单元 2多媒体单元)")
     ]
-    # 展厅
-    hall: Annotated[
-        Optional[str],
-        Field(default=None, description="展厅"),
-        ExcelField(name="展厅")
-    ]
-    # 展览开始时间
-    start_time: Annotated[
-        Optional[datetime],
-        BeforeValidator(to_datetime()),
-        Field(default=None, description="展览开始时间"),
-        ExcelField(name="展览开始时间")
-    ]
-    # 展览结束时间
-    end_time: Annotated[
-        Optional[datetime],
-        BeforeValidator(to_datetime()),
-        Field(default=None, description="展览结束时间"),
-        ExcelField(name="展览结束时间")
-    ]
-    # 主办单位
-    organizer: Annotated[
-        Optional[str],
-        Field(default=None, description="主办单位"),
-        VoField(query=True),
-        ExcelField(name="主办单位")
-    ]
-    # 展览类型（0长期 1临时）
-    exhibition_type: Annotated[
+    # 所在展厅ID
+    hall_id: Annotated[
         Optional[int],
         BeforeValidator(str_to_int),
-        Field(default=None, description="展览类型（0长期 1临时）"),
+        Field(default=None, description="所在展厅ID"),
         VoField(query=True),
-        ExcelField(name="展览类型（0长期 1临时）")
+        ExcelField(name="所在展厅ID")
     ]
-    # 内容标签
-    content_tags: Annotated[
+    # 所属章节
+    section: Annotated[
         Optional[str],
-        Field(default=None, description="内容标签"),
-        ExcelField(name="内容标签")
+        Field(default=None, description="所属章节"),
+        VoField(query=True),
+        ExcelField(name="所属章节")
     ]
-    # 展览章节（JSON数组存储）
-    sections: Annotated[
+    # 顺序
+    sort_order: Annotated[
+        Optional[int],
+        BeforeValidator(str_to_int),
+        Field(default=0, description="顺序"),
+        ExcelField(name="顺序")
+    ]
+    # 关联藏品ID列表(JSON数组存储，仅展品单元类型使用)
+    collections: Annotated[
         Optional[str],
-        Field(default=None, description="展览章节（JSON数组存储）"),
-        ExcelField(name="展览章节")
+        Field(default=None, description="关联藏品ID列表(JSON数组存储，仅展品单元类型使用)"),
+        ExcelField(name="关联藏品ID列表")
     ]
     # 状态（0正常 1停用）
     status: Annotated[

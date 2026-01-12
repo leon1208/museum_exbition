@@ -7,6 +7,7 @@ from typing import List
 
 from ruoyi_common.exception import ServiceException
 from ruoyi_common.utils.base import LogUtil
+from ruoyi_common.utils import security_util
 from exb_museum.domain.entity import Exhibition
 from exb_museum.mapper.exhibition_mapper import ExhibitionMapper
 
@@ -49,6 +50,9 @@ class ExhibitionService:
         Returns:
             int: 插入的记录数
         """
+        # 设置创建人
+        exhibition.create_by_user(security_util.get_username())
+        exhibition.update_by_user(security_util.get_username()) 
         return ExhibitionMapper.insert_exhibition(exhibition)
 
     
@@ -62,6 +66,8 @@ class ExhibitionService:
         Returns:
             int: 更新的记录数
         """
+        # 设置更新人
+        exhibition.update_by_user(security_util.get_username()) 
         return ExhibitionMapper.update_exhibition(exhibition)
     
 

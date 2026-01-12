@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Author  : leeon
-# @FileName: exhibition.py
-# @Time    : 2026-01-08 08:54:20
+# @FileName: exhibition_hall.py
+# @Time    : 
 
 from typing import Optional, Annotated
 from datetime import datetime
@@ -12,29 +12,29 @@ from ruoyi_common.base.schema_excel import ExcelField
 from ruoyi_common.base.schema_vo import VoField
 
 
-class Exhibition(BaseEntity):
+class MuseumHall(BaseEntity):
     """
-    展览信息表对象
+    展厅信息表对象
     """
-    # 展览ID
-    exhibition_id: Annotated[
+    # 展厅ID
+    hall_id: Annotated[
         Optional[int],
         BeforeValidator(str_to_int),
-        Field(default=None, description="展览ID"),
-        ExcelField(name="展览ID")
+        Field(default=None, description="展厅ID"),
+        ExcelField(name="展厅ID")
     ]
-    # 展名
-    exhibition_name: Annotated[
+    # 展厅名称
+    hall_name: Annotated[
         Optional[str],
-        Field(default=None, description="展名"),
+        Field(default=None, description="展厅名称"),
         VoField(query=True),
-        ExcelField(name="展名")
+        ExcelField(name="展厅名称")
     ]
-    # 展览简介
-    description: Annotated[
+    # 位置
+    location: Annotated[
         Optional[str],
-        Field(default=None, description="展览简介"),
-        ExcelField(name="展览简介")
+        Field(default=None, description="位置"),
+        ExcelField(name="位置")
     ]
     # 所属博物馆ID
     museum_id: Annotated[
@@ -43,53 +43,6 @@ class Exhibition(BaseEntity):
         Field(default=None, description="所属博物馆ID"),
         VoField(query=True),
         ExcelField(name="所属博物馆ID")
-    ]
-    # 展厅
-    hall: Annotated[
-        Optional[str],
-        Field(default=None, description="展厅"),
-        ExcelField(name="展厅")
-    ]
-    # 展览开始时间
-    start_time: Annotated[
-        Optional[datetime],
-        BeforeValidator(to_datetime()),
-        Field(default=None, description="展览开始时间"),
-        ExcelField(name="展览开始时间")
-    ]
-    # 展览结束时间
-    end_time: Annotated[
-        Optional[datetime],
-        BeforeValidator(to_datetime()),
-        Field(default=None, description="展览结束时间"),
-        ExcelField(name="展览结束时间")
-    ]
-    # 主办单位
-    organizer: Annotated[
-        Optional[str],
-        Field(default=None, description="主办单位"),
-        VoField(query=True),
-        ExcelField(name="主办单位")
-    ]
-    # 展览类型（0长期 1临时）
-    exhibition_type: Annotated[
-        Optional[int],
-        BeforeValidator(str_to_int),
-        Field(default=None, description="展览类型（0长期 1临时）"),
-        VoField(query=True),
-        ExcelField(name="展览类型（0长期 1临时）")
-    ]
-    # 内容标签
-    content_tags: Annotated[
-        Optional[str],
-        Field(default=None, description="内容标签"),
-        ExcelField(name="内容标签")
-    ]
-    # 展览章节（JSON数组存储）
-    sections: Annotated[
-        Optional[str],
-        Field(default=None, description="展览章节（JSON数组存储）"),
-        ExcelField(name="展览章节")
     ]
     # 状态（0正常 1停用）
     status: Annotated[

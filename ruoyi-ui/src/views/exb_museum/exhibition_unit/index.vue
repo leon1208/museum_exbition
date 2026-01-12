@@ -1,0 +1,446 @@
+<template>
+  <div class="app-container">
+    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="100px">
+      <el-form-item label="所属展览章节" prop="section">
+        <el-select
+          v-model="queryParams.section"
+          placeholder="请选择所属展览章节"
+          clearable
+          style="width: 200px;"
+        >
+          <el-option
+            v-for="section in sectionOptions"
+            :key="section.content"
+            :label="section.content"
+            :value="section.content"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="单元名称" prop="unitName">
+        <el-input
+          v-model="queryParams.unitName"
+          placeholder="请输入单元名称"
+          clearable
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
+        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
+      </el-form-item>
+    </el-form>
+
+    <el-row :gutter="10" class="mb8">
+      <el-col :span="1.5">
+        <el-button
+          type="primary"
+          plain
+          icon="el-icon-plus"
+          size="mini"
+          @click="handleAdd"
+          v-hasPermi="['exb_museum:unit:add']"
+        >新增</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="success"
+          plain
+          icon="el-icon-edit"
+          size="mini"
+          :disabled="single"
+          @click="handleUpdate"
+          v-hasPermi="['exb_museum:unit:edit']"
+        >修改</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="danger"
+          plain
+          icon="el-icon-delete"
+          size="mini"
+          :disabled="multiple"
+          @click="handleDelete"
+          v-hasPermi="['exb_museum:unit:remove']"
+        >删除</el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="warning"
+          plain
+          icon="el-icon-download"
+          size="mini"
+          @click="handleExport"
+          v-hasPermi="['exb_museum:unit:export']"
+        >导出</el-button>
+      </el-col>
+      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
+    </el-row>
+
+    <el-table :loading="loading" :data="exhibitionUnitList" @selection-change="handleSelectionChange">
+      <el-table-column type="selection" width="55" align="center" />
+      <el-table-column label="单元名称" :show-overflow-tooltip="true" v-if="columns[0].visible" prop="unitName" />
+      <el-table-column label="单元类型" align="center" :show-overflow-tooltip="true" v-if="columns[1].visible" prop="unitType" :formatter="dict_unitType_format" />
+      <el-table-column label="展厅" align="center" :show-overflow-tooltip="true" v-if="columns[2].visible" prop="hallId" :formatter="dict_hallId_format" />
+      <el-table-column label="所属展览章节" align="center" :show-overflow-tooltip="true" v-if="columns[3].visible" prop="section" />
+      <el-table-column label="顺序" align="center" v-if="columns[4].visible" prop="sortOrder" />
+      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+        <template slot-scope="scope">
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-edit"
+            @click="handleUpdate(scope.row)"
+            v-hasPermi="['exb_museum:unit:edit']"
+          >修改</el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-delete"
+            @click="handleDelete(scope.row)"
+            v-hasPermi="['exb_museum:unit:remove']"
+          >删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <pagination
+      v-show="total>0"
+      :total="total"
+      :page.sync="queryParams.pageNum"
+      :limit.sync="queryParams.pageSize"
+      @pagination="getList"
+    />
+
+    <!-- 添加或修改展览单元信息表对话框 -->
+    <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
+      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+        <el-form-item label="单元名称" prop="unitName">
+          <el-input v-model="form.unitName" placeholder="请输入单元名称" />
+        </el-form-item>
+        <el-form-item label="单元类型" prop="unitType">
+          <el-select v-model="form.unitType" placeholder="请选择单元类型">
+            <el-option v-for="item in unitTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="展厅" prop="hallId">
+          <el-select v-model="form.hallId" placeholder="请选择展厅" filterable>
+            <el-option v-for="hall in hallOptions" :key="hall.hallId" :label="hall.hallName" :value="hall.hallId" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="所属展览章节" prop="section">
+          <el-select v-model="form.section" placeholder="请选择所属展览章节" filterable style="width: 100%;">
+            <el-option
+              v-for="section in sectionOptions"
+              :key="section.content"
+              :label="section.content"
+              :value="section.content"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="顺序" prop="sortOrder">
+          <el-input-number v-model="form.sortOrder" placeholder="请输入顺序" :min="0" :max="999" />
+        </el-form-item>
+        <el-form-item label="展签" prop="exhibitLabel">
+          <el-input v-model="form.exhibitLabel" type="textarea" placeholder="请输入展签" />
+        </el-form-item>
+        <el-form-item label="导览词" prop="guideText">
+          <el-input v-model="form.guideText" type="textarea" placeholder="请输入导览词" />
+        </el-form-item>
+        <el-form-item label="关联藏品" prop="collections">
+          <el-select v-model="collectionValues" multiple filterable placeholder="请选择关联藏品" style="width: 100%">
+            <el-option v-for="collection in collectionOptions" :key="collection.collectionId" :label="collection.collectionName" :value="collection.collectionId" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
+  </div>
+</template>
+
+<script>
+import { listExhibitionUnit, getExhibitionUnit, delExhibitionUnit, addExhibitionUnit, updateExhibitionUnit } from "@/api/exb_museum/exhibition_unit";
+import { listMuseumHall } from "@/api/exb_museum/museum_hall";
+import { listCollection } from "@/api/exb_museum/collection";
+import { getExhibition } from "@/api/exb_museum/exhibition"; // 新增导入
+
+export default {
+  name: "ExhibitionUnit",
+  components: {
+  },
+  props: {
+    exhibitionId: {
+      type: Number,
+      required: true
+    },
+    museumId: {
+      type: Number,
+      required: true
+    },
+  },
+  data() {
+    return {
+      // 遮罩层
+      loading: true,
+      // 选中数组
+      ids: [],
+      // 非单个禁用
+      single: true,
+      // 非多个禁用
+      multiple: true,
+      // 显示搜索条件
+      showSearch: true,
+      // 总条数
+      total: 0,
+      // 展览单元信息表表格数据
+      exhibitionUnitList: [],
+      // 展厅选项列表
+      hallOptions: [],
+      // 藏品选项列表
+      collectionOptions: [],
+      // 藏品选中值（用于多选控件）
+      collectionValues: [],
+      // 章节选项列表
+      sectionOptions: [], // 新增章节选项
+      // 表格列信息
+      columns: [
+        { key: 0, label: '单元名称', visible: true },
+        { key: 1, label: '单元类型', visible: true },
+        { key: 2, label: '展厅', visible: true },
+        { key: 3, label: '所属展览章节', visible: true },
+        { key: 4, label: '顺序', visible: true },
+      ],
+      // 弹出层标题
+      title: "",
+      // 是否显示弹出层
+      open: false,
+      // 查询参数
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        section: null,
+        unitName: null,
+        exhibitionId: null,
+      },
+      // 表单参数
+      form: {},
+      // 表单校验
+      rules: {
+        unitName: [
+          { required: true, message: "单元名称不能为空", trigger: "blur" }
+        ],
+        unitType: [
+          { required: true, message: "单元类型不能为空", trigger: "change" }
+        ],
+        hallId: [
+          { required: true, message: "展厅不能为空", trigger: "change" }
+        ],
+        section: [
+          { required: true, message: "所属展览章节不能为空", trigger: "change" }
+        ],
+        sortOrder: [
+          { required: true, message: "顺序不能为空", trigger: "blur" }
+        ],
+        exhibitionId: [
+          { required: true, message: "所属展览不能为空", trigger: "blur" }
+        ],
+      },
+      // 单元类型选项
+      unitTypeOptions: [
+        { value: 0, label: '展品单元' },
+        { value: 1, label: '文字单元' },
+        { value: 2, label: '多媒体单元' },
+      ],
+    };
+  },
+  watch: {
+    exhibitionId: {
+      handler(newVal) {
+        if (newVal) {
+          this.queryParams.exhibitionId = newVal;
+          this.getList();
+          this.loadExhibitionSections(); // 加载展览章节数据
+        }
+      },
+      immediate: true
+    }
+  },
+  created() {
+    this.getHallList();
+    this.getCollectionList();
+  },
+  methods: {
+    /** 查询展览单元信息表列表 */
+    getList() {
+      this.loading = true;
+      listExhibitionUnit(this.queryParams).then(response => {
+        this.exhibitionUnitList = response.rows;
+        this.total = response.total;
+        this.loading = false;
+      });
+    },
+    /** 加载展览章节数据 */
+    loadExhibitionSections() {
+      if (this.exhibitionId) {
+        getExhibition(this.exhibitionId).then(response => {
+          const exhibition = response.data;
+          if (exhibition && exhibition.sections) {
+            try {
+              // 解析章节JSON数据
+              const sections = typeof exhibition.sections === 'string' 
+                ? JSON.parse(exhibition.sections) 
+                : exhibition.sections;
+              
+              if (Array.isArray(sections)) {
+                this.sectionOptions = sections;
+              } else {
+                this.sectionOptions = [];
+              }
+            } catch (error) {
+              console.error('解析展览章节数据失败:', error);
+              this.sectionOptions = [];
+            }
+          } else {
+            this.sectionOptions = [];
+          }
+        }).catch(error => {
+          console.error('获取展览章节数据失败:', error);
+          this.sectionOptions = [];
+        });
+      }
+    },
+    /** 查询展厅列表 */
+    getHallList() {
+      listMuseumHall({ museumId: this.museumId }).then(response => {
+        this.hallOptions = response.rows;
+      });
+    },
+    /** 查询藏品列表 */
+    getCollectionList() {
+      listCollection({ museumId: this.museumId }).then(response => {
+        this.collectionOptions = response.rows;
+      });
+    },
+    // 单元类型字典翻译
+    dict_unitType_format(row, column) {
+      const unitType = this.unitTypeOptions.find(item => item.value === row.unitType);
+      return unitType ? unitType.label : '';
+    },
+    // 展厅字典翻译
+    dict_hallId_format(row, column) {
+      const hall = this.hallOptions.find(item => item.hallId === row.hallId);
+      return hall ? hall.hallName : '';
+    },
+    // 取消按钮
+    cancel() {
+      this.open = false;
+      this.reset();
+    },
+    // 表单重置
+    reset() {
+      this.form = {
+        unitId: null,
+        unitName: null,
+        exhibitionId: this.exhibitionId,
+        exhibitLabel: null,
+        guideText: null,
+        unitType: null,
+        hallId: null,
+        section: null,
+        sortOrder: null,
+        collections: [],
+      };
+      this.collectionValues = [];
+      this.$refs["form"] && this.$refs["form"].resetFields();
+    },
+    /** 搜索按钮操作 */
+    handleQuery() {
+      this.queryParams.pageNum = 1;
+      this.getList();
+    },
+    /** 重置按钮操作 */
+    resetQuery() {
+      this.resetForm("queryForm");
+      this.handleQuery();
+    },
+    // 多选框选中数据
+    handleSelectionChange(selection) {
+      this.ids = selection.map(item => item.unitId)
+      this.single = selection.length!==1
+      this.multiple = !selection.length
+    },
+    /** 新增按钮操作 */
+    handleAdd() {
+      this.reset();
+      this.open = true;
+      this.title = "添加展览单元信息表";
+    },
+    /** 修改按钮操作 */
+    handleUpdate(row) {
+      this.reset();
+      const unitId = row.unitId || this.ids
+      getExhibitionUnit(unitId).then(response => {
+        this.form = response.data;
+        // 将关联藏品字符串转换为数组
+        if (this.form.collections) {
+          try {
+            this.collectionValues = JSON.parse(this.form.collections);
+          } catch (e) {
+            this.collectionValues = [];
+          }
+        } else {
+          this.collectionValues = [];
+        }
+        this.open = true;
+        this.title = "修改展览单元信息表";
+      });
+    },
+    /** 提交按钮 */
+    submitForm() {
+      this.$refs["form"].validate(valid => {
+        if (valid) {
+          // 将藏品选中值转换为JSON字符串
+          const submitData = { ...this.form };
+          if (this.collectionValues && this.collectionValues.length > 0) {
+            submitData.collections = JSON.stringify(this.collectionValues);
+          } else {
+            submitData.collections = null;
+          }
+          
+          if (submitData.unitId != null) {
+            updateExhibitionUnit(submitData).then(response => {
+              this.$modal.msgSuccess("修改成功");
+              this.open = false;
+              this.getList();
+            });
+          } else {
+            addExhibitionUnit(submitData).then(response => {
+              this.$modal.msgSuccess("新增成功");
+              this.open = false;
+              this.getList();
+            });
+          }
+        }
+      });
+    },
+    /** 删除按钮操作 */
+    handleDelete(row) {
+      const unitIds = row.unitId || this.ids;
+      this.$modal.confirm('是否确认删除展览单元信息表编号为"' + unitIds + '"的数据项？').then(function() {
+        return delExhibitionUnit(unitIds);
+      }).then(() => {
+        this.getList();
+        this.$modal.msgSuccess("删除成功");
+      }).catch(() => {});
+    },
+    /** 导出按钮操作 */
+    handleExport() {
+      this.download('exb_museum/unit/export', {
+        ...this.queryParams
+      }, `exhibition_unit_${new Date().getTime()}.xlsx`)
+    }
+  }
+};
+</script>
