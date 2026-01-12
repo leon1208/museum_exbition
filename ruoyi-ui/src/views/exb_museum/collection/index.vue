@@ -14,7 +14,7 @@
           <el-option v-for="item in collectionTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
-      <el-form-item label="所属展览" prop="exhibitionId">
+      <!-- <el-form-item label="所属展览" prop="exhibitionId">
         <el-select v-model="queryParams.exhibitionId" placeholder="请选择所属展览" clearable @change="handleExhibitionChange" filterable>
           <el-option
             v-for="exhibition in exhibitionOptions"
@@ -23,7 +23,7 @@
             :value="exhibition.exhibitionId"
           />
         </el-select>
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="所属博物馆" prop="museumId">
         <el-select v-model="queryParams.museumId" placeholder="请选择所属博物馆" clearable :disabled="!!queryParams.exhibitionId" filterable>
           <el-option
@@ -107,9 +107,9 @@
       <el-table-column label="类型" align="center" :show-overflow-tooltip="true" v-if="columns[1].visible" prop="collectionType" :formatter="dict_collectionType_format" />
       <el-table-column label="材质" align="center" :show-overflow-tooltip="true" v-if="columns[2].visible" prop="material" />
       <el-table-column label="年代" align="center" :show-overflow-tooltip="true" v-if="columns[3].visible" prop="age" />
-      <el-table-column label="所属展览" align="center" :show-overflow-tooltip="true" v-if="columns[4].visible" prop="exhibitionName" :formatter="dict_exhibitionId_format" />
-      <el-table-column label="所属博物馆" align="center" :show-overflow-tooltip="true" v-if="columns[5].visible" prop="museumName" :formatter="dict_museumId_format" />
-      <el-table-column label="状态" align="center" :show-overflow-tooltip="true" v-if="columns[6].visible" prop="status" :formatter="dict_status_format" />
+      <!-- <el-table-column label="所属展览" align="center" :show-overflow-tooltip="true" v-if="columns[4].visible" prop="exhibitionName" :formatter="dict_exhibitionId_format" /> -->
+      <el-table-column label="所属博物馆" align="center" :show-overflow-tooltip="true" v-if="columns[4].visible" prop="museumName" :formatter="dict_museumId_format" />
+      <el-table-column label="状态" align="center" :show-overflow-tooltip="true" v-if="columns[5].visible" prop="status" :formatter="dict_status_format" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -175,13 +175,13 @@
         <el-form-item label="藏品简介" prop="description">
           <el-input v-model="form.description" placeholder="请输入藏品简介" />
         </el-form-item>
-        <el-form-item label="所属展览" prop="exhibitionId">
+        <!-- <el-form-item label="所属展览" prop="exhibitionId">
           <el-select v-model="form.exhibitionId" placeholder="请选择所属展览" clearable @change="handleExhibitionChangeForForm" filterable>
             <el-option v-for="exhibition in exhibitionOptions" :key="exhibition.exhibitionId" :label="exhibition.exhibitionName" :value="exhibition.exhibitionId"/>
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="所属博物馆" prop="museumId">
-          <el-select v-model="form.museumId" placeholder="请选择所属博物馆" clearable :disabled="!!form.exhibitionId" filterable>
+          <el-select v-model="form.museumId" placeholder="请选择所属博物馆" clearable filterable>
             <el-option v-for="museum in museumOptions" :key="museum.museumId" :label="museum.museumName" :value="museum.museumId"/>
           </el-select>
         </el-form-item>
@@ -317,9 +317,9 @@ export default {
         { key: 1, label: '类型', visible: true },
         { key: 2, label: '材质', visible: true },
         { key: 3, label: '年代', visible: true },
-        { key: 4, label: '所属展览', visible: true },
-        { key: 5, label: '所属博物馆', visible: true },
-        { key: 6, label: '状态', visible: true },
+        // { key: 4, label: '所属展览', visible: true },
+        { key: 4, label: '所属博物馆', visible: true },
+        { key: 5, label: '状态', visible: true },
       ],
       // 弹出层标题
       title: "",
