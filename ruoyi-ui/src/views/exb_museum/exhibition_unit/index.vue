@@ -101,7 +101,7 @@
                 <el-button size="medium" type="text" icon="el-icon-arrow-up"
                   @click="moveUp(scope.row)" :disabled="scope.$index === 0 || !canMoveUp(scope.row, scope.$index)"
                 />
-                <span class="sort-value">{{ scope.row.sortOrder + 1 }}</span>
+                <span class="sort-value">{{ scope.row.sortOrder}}</span>
                 <el-button size="medium" type="text" icon="el-icon-arrow-down"
                   @click="moveDown(scope.row)" :disabled="!canMoveDown(scope.row, scope.$index)"
                 />
