@@ -6,8 +6,10 @@
 from typing import List
 
 from ruoyi_common.exception import ServiceException
+from ruoyi_admin.ext import db
 from ruoyi_common.utils.base import LogUtil
 from ruoyi_common.utils import security_util
+from ruoyi_common.sqlalchemy.transaction import Transactional
 from exb_museum.domain.entity import Collection
 from exb_museum.mapper.collection_mapper import CollectionMapper
 
@@ -40,6 +42,7 @@ class CollectionService:
         return CollectionMapper.select_collection_by_id(collection_id)
     
 
+    @Transactional(db.session)
     def insert_collection(self, collection: Collection) -> int:
         """
         新增藏品信息表
@@ -56,6 +59,7 @@ class CollectionService:
         return CollectionMapper.insert_collection(collection)
 
     
+    @Transactional(db.session)
     def update_collection(self, collection: Collection) -> int:
         """
         修改藏品信息表
@@ -72,6 +76,7 @@ class CollectionService:
     
 
     
+    @Transactional(db.session)
     def delete_collection_by_ids(self, ids: List[int]) -> int:
         """
         批量删除藏品信息表
@@ -85,6 +90,7 @@ class CollectionService:
         return CollectionMapper.delete_collection_by_ids(ids)
     
 
+    @Transactional(db.session)
     def import_collection(self, collection_list: List[Collection], is_update: bool = False) -> str:
         """
         导入藏品信息表数据

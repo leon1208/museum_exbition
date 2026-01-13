@@ -363,6 +363,9 @@ export default {
         collectionType: [
           { required: true, message: "类型不能为空", trigger: "change" }
         ],
+        museumId: [
+          { required: true, message: "所属博物馆不能为空", trigger: "change" }
+        ],
         status: [
           { required: true, message: "状态不能为空", trigger: "change" }
         ],

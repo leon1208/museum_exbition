@@ -8,6 +8,8 @@ from typing import List
 from ruoyi_common.exception import ServiceException
 from ruoyi_common.utils.base import LogUtil
 from ruoyi_common.utils import security_util
+from ruoyi_admin.ext import db
+from ruoyi_common.sqlalchemy.transaction import Transactional
 from exb_museum.domain.entity import Exhibition
 from exb_museum.mapper.exhibition_mapper import ExhibitionMapper
 
@@ -39,7 +41,7 @@ class ExhibitionService:
         """
         return ExhibitionMapper.select_exhibition_by_id(exhibition_id)
     
-
+    @Transactional(db.session)
     def insert_exhibition(self, exhibition: Exhibition) -> int:
         """
         新增展览信息表
@@ -55,7 +57,7 @@ class ExhibitionService:
         exhibition.update_by_user(security_util.get_username()) 
         return ExhibitionMapper.insert_exhibition(exhibition)
 
-    
+    @Transactional(db.session)    
     def update_exhibition(self, exhibition: Exhibition) -> int:
         """
         修改展览信息表
@@ -70,8 +72,7 @@ class ExhibitionService:
         exhibition.update_by_user(security_util.get_username()) 
         return ExhibitionMapper.update_exhibition(exhibition)
     
-
-    
+    @Transactional(db.session)
     def delete_exhibition_by_ids(self, ids: List[int]) -> int:
         """
         批量删除展览信息表
@@ -84,7 +85,7 @@ class ExhibitionService:
         """
         return ExhibitionMapper.delete_exhibition_by_ids(ids)
     
-
+    @Transactional(db.session)
     def import_exhibition(self, exhibition_list: List[Exhibition], is_update: bool = False) -> str:
         """
         导入展览信息表数据

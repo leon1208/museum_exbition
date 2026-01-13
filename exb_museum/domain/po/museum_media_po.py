@@ -34,7 +34,7 @@ class MuseumMediaPo(db.Model):
         'object_type',
         String(50),
         nullable=False,
-        comment='对象类型（museum, exhibition, collection等）'
+        comment='对象类型（museum, exhibition, collection, exhibition_unit等）'
     )
     object_id: Mapped[Optional[int]] = mapped_column(
         'object_id',

@@ -20,9 +20,6 @@ class MuseumMediaService:
     博物馆媒体表业务逻辑层
     """
     
-    def __init__(self):
-        self.museum_media_mapper = MuseumMediaMapper()
-    
     def select_museum_media_list(self, object_id: int = None, object_type: str = None, media_type: str = None) -> List[MuseumMedia]:
         """
         查询博物馆媒体列表
@@ -35,7 +32,7 @@ class MuseumMediaService:
         Returns:
             List[MuseumMedia]: 博物馆媒体列表
         """
-        return self.museum_media_mapper.select_museum_media_list(object_id, object_type, media_type)
+        return MuseumMediaMapper.select_museum_media_list(object_id, object_type, media_type)
     
     def select_museum_media_by_id(self, media_id: int) -> MuseumMedia:
         """
@@ -47,7 +44,7 @@ class MuseumMediaService:
         Returns:
             MuseumMedia: 博物馆媒体对象
         """
-        return self.museum_media_mapper.select_museum_media_by_id(media_id)
+        return MuseumMediaMapper.select_museum_media_by_id(media_id)
     
     @Transactional(db.session)
     def upload_museum_media(self, object_id: int, object_type: str, file: FileStorage, media_type: str) -> MuseumMedia:
@@ -99,7 +96,7 @@ class MuseumMediaService:
         media_po.create_time = datetime.now()
                 
         # 保存到数据库
-        media_id = self.museum_media_mapper.insert_museum_media(media_po)
+        media_id = MuseumMediaMapper.insert_museum_media(media_po)
         
         # 返回实体对象
         return self.select_museum_media_by_id(media_id)
@@ -118,7 +115,7 @@ class MuseumMediaService:
         Returns:
             int: 更新的记录数量
         """
-        return self.museum_media_mapper.update_media_sort_order(object_id, object_type, media_type, sorted_media_ids)
+        return MuseumMediaMapper.update_media_sort_order(object_id, object_type, media_type, sorted_media_ids)
                 
     @Transactional(db.session)
     def update_museum_media(self, museum_media: MuseumMedia) -> int:
@@ -153,4 +150,4 @@ class MuseumMediaService:
         Returns:
             int: 影响行数
         """
-        return self.museum_media_mapper.delete_museum_media_by_id(media_id)
+        return MuseumMediaMapper.delete_museum_media_by_id(media_id)

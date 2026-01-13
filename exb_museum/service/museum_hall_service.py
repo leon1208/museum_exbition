@@ -8,8 +8,10 @@ from typing import List
 from ruoyi_common.exception import ServiceException
 from ruoyi_common.utils.base import LogUtil
 from ruoyi_common.utils import security_util
+from ruoyi_common.sqlalchemy.transaction import Transactional
 from exb_museum.domain.entity import MuseumHall
 from exb_museum.mapper.museum_hall_mapper import MuseumHallMapper
+from ruoyi_admin.ext import db
 
 class MuseumHallService:
     """博物馆展厅信息表服务类"""
@@ -40,6 +42,7 @@ class MuseumHallService:
         return MuseumHallMapper.select_museum_hall_by_id(hall_id)
     
 
+    @Transactional(db.session)
     def insert_museum_hall(self, museum_hall: MuseumHall) -> int:
         """
         新增博物馆展厅信息表
@@ -56,6 +59,7 @@ class MuseumHallService:
         return MuseumHallMapper.insert_museum_hall(museum_hall)
 
     
+    @Transactional(db.session)
     def update_museum_hall(self, museum_hall: MuseumHall) -> int:
         """
         修改博物馆展厅信息表
@@ -72,6 +76,7 @@ class MuseumHallService:
     
 
     
+    @Transactional(db.session)
     def delete_museum_hall_by_ids(self, ids: List[int]) -> int:
         """
         批量删除博物馆展厅信息表
@@ -85,6 +90,7 @@ class MuseumHallService:
         return MuseumHallMapper.delete_museum_hall_by_ids(ids)
     
 
+    @Transactional(db.session)
     def import_museum_hall(self, museum_hall_list: List[MuseumHall], is_update: bool = False) -> str:
         """
         导入博物馆展厅信息表数据

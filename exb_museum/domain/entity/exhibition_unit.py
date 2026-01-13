@@ -86,6 +86,12 @@ class ExhibitionUnit(BaseEntity):
         Field(default=None, description="关联藏品ID列表(JSON数组存储，仅展品单元类型使用)"),
         ExcelField(name="关联藏品ID列表")
     ]
+    # 是否复制藏品媒体至展览单元
+    copy_collection_media: Annotated[
+        Optional[bool],
+        Field(default=False, description="是否复制藏品媒体至展览单元"),
+        ExcelField(name="是否复制藏品媒体至展览单元")
+    ]
     # 状态（0正常 1停用）
     status: Annotated[
         Optional[int],

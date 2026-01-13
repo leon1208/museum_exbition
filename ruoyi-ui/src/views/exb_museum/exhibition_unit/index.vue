@@ -185,7 +185,7 @@
           <el-input v-model="form.unitName" placeholder="请输入单元名称" />
         </el-form-item>
         <el-form-item label="单元类型" prop="unitType">
-          <el-select v-model="form.unitType" placeholder="请选择单元类型">
+          <el-select v-model="form.unitType" placeholder="请选择单元类型" @change="handleUnitTypeChange">
             <el-option v-for="item in unitTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
@@ -213,10 +213,15 @@
         <el-form-item label="导览词" prop="guideText">
           <el-input v-model="form.guideText" type="textarea" placeholder="请输入导览词" rows="8" />
         </el-form-item>
-        <el-form-item label="关联藏品" prop="collections">
-          <el-select v-model="collectionValues" multiple filterable placeholder="请选择关联藏品" style="width: 100%">
+        <el-form-item v-if="showCopyMediaCheckbox" label="关联藏品" prop="collections">
+          <el-select v-model="collectionValues" multiple filterable placeholder="请选择关联藏品" style="width: 100%" @change="handleCollectionChange">
             <el-option v-for="collection in collectionOptions" :key="collection.collectionId" :label="collection.collectionName" :value="collection.collectionId" />
           </el-select>
+        </el-form-item>
+        <el-form-item v-if="showCopyMediaCheckbox" label=" ">
+          <el-checkbox v-model="copyCollectionMedia">
+            是否复制藏品媒体至展览单元
+          </el-checkbox>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -284,6 +289,10 @@ export default {
       collectionOptions: [],
       // 藏品选中值（用于多选控件）
       collectionValues: [],
+      // 是否复制藏品媒体至展览单元
+      copyCollectionMedia: false,
+      // 是否显示复制媒体复选框
+      showCopyMediaCheckbox: false,
       // 章节选项列表
       sectionOptions: [], // 新增章节选项
       // 表格列信息
@@ -301,7 +310,7 @@ export default {
       // 媒体管理对话框是否显示
       mediaDialogVisible: false,
       // 当前选中的展览单元ID
-      currentUnitId: null,
+      currentUnitId: 0,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -501,6 +510,8 @@ export default {
         collections: [],
       };
       this.collectionValues = [];
+      this.copyCollectionMedia = false;
+      this.showCopyMediaCheckbox = false;
       this.$refs["form"] && this.$refs["form"].resetFields();
     },
     /** 搜索按钮操作 */
@@ -543,6 +554,10 @@ export default {
         }
         this.open = true;
         this.title = "修改展览单元信息表";
+        // 在加载表单后，检查是否需要显示复选框
+        this.$nextTick(() => {
+          this.checkShowCopyMediaCheckbox();
+        });
       });
     },
     /** 提交按钮 */
@@ -556,6 +571,9 @@ export default {
           } else {
             submitData.collections = null;
           }
+
+           // 添加复制藏品媒体的字段
+          submitData.copyCollectionMedia = this.copyCollectionMedia;
           
           if (submitData.unitId != null) {
             updateExhibitionUnit(submitData).then(response => {
@@ -639,7 +657,29 @@ export default {
       const sameSectionItems = this.groupedExhibitionUnits[row.section] || [];
       const currentIndex = sameSectionItems.findIndex(item => item.unitId === row.unitId);
       return currentIndex < sameSectionItems.length - 1;
-    },    
+    },
+    
+    /** 处理单元类型变化 */
+    handleUnitTypeChange(value) {
+      this.checkShowCopyMediaCheckbox();
+    },
+    
+    /** 处理藏品选择变化 */
+    handleCollectionChange(value) {
+      this.checkShowCopyMediaCheckbox();
+    },
+    
+    /** 检查是否显示复制媒体复选框 */
+    checkShowCopyMediaCheckbox() {
+      // 当单元类型为展品单元(0)且已选择关联藏品时显示复选框
+      this.showCopyMediaCheckbox = this.form.unitType === 0 //&& this.collectionValues && this.collectionValues.length > 0;
+      // 如果不再满足条件，取消勾选
+      if (!this.showCopyMediaCheckbox) {
+        this.collectionValues = [];
+        this.copyCollectionMedia = false;
+      }
+    }
+    
   }
 };
 </script>
