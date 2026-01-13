@@ -170,12 +170,14 @@ size="mini"
           <el-input v-model="form.description" placeholder="请输入展览简介" />
         </el-form-item>
         <el-form-item label="所属博物馆" prop="museumId">
-          <el-select v-model="form.museumId" placeholder="请选择所属博物馆">
+          <el-select v-model="form.museumId" placeholder="请选择所属博物馆" @change="handleMuseumChange">
             <el-option v-for="museum in museumOptions" :key="museum.museumId" :label="museum.museumName" :value="museum.museumId"/>
           </el-select>
         </el-form-item>
         <el-form-item label="展厅" prop="hall">
-          <el-input v-model="form.hall" placeholder="请输入展厅" />
+          <el-select v-model="selectedHalls" multiple filterable placeholder="请选择展厅" style="width: 100%">
+            <el-option v-for="hall in hallOptions" :key="hall.hallId" :label="hall.hallName" :value="hall.hallId"/>
+          </el-select>
         </el-form-item>
         <el-form-item label="展览开始时间" prop="startTime">
           <el-date-picker clearable
@@ -304,6 +306,7 @@ import { listMuseum } from "@/api/exb_museum/museum"; // 导入博物馆API
 import { getToken } from "@/utils/auth";
 import MediaUpload from "@/components/MediaUpload/index.vue";
 import ExhibitionUnit from "@/views/exb_museum/exhibition_unit/index.vue";
+import { listMuseumHall } from "@/api/exb_museum/museum_hall"; // 导入展厅API
 
 export default {
   name: "Exhibition",
@@ -329,6 +332,10 @@ export default {
       exhibitionList: [],
       // 博物馆选项列表
       museumOptions: [],
+      // 展厅选项列表
+      hallOptions: [],
+      // 已选中的展厅ID列表
+      selectedHalls: [],
       // 内容标签选项列表
       contentTagOptions: [
         { label: '艺术', value: '艺术' },
@@ -336,7 +343,7 @@ export default {
         { label: '文化', value: '文化' },
         { label: '科技', value: '科技' },
         { label: '考古', value: '考古' },
-        { label: '古代', value: '古代' },
+{ label: '古代', value: '古代' },
         { label: '现代', value: '现代' },
         { label: '当代', value: '当代' },
         { label: '文物', value: '文物' },
@@ -470,6 +477,23 @@ export default {
         this.museumOptions = response.rows;
       });
     },
+    /** 根据博物馆ID获取展厅列表 */
+    getHallListByMuseumId(museumId) {
+      if (!museumId) {
+        this.hallOptions = [];
+        return Promise.resolve(); // 返回resolved promise
+      }
+      
+      const query = { museumId: museumId };
+      return listMuseumHall(query).then(response => {
+        this.hallOptions = response.rows || [];
+      });
+    },
+    /** 当博物馆改变时，更新展厅选项 */
+    handleMuseumChange(museumId) {
+      this.selectedHalls = []; // 清空已选展厅
+      this.getHallListByMuseumId(museumId);
+    },
     /** 查询展览信息表列表 */
     getList() {
       this.loading = true;
@@ -579,6 +603,25 @@ export default {
         } else {
           this.form.sections = [];
         }
+        
+        // 将展厅字符串转换为展厅ID数组
+        if (this.form.hall) {
+          // 先获取对应博物馆的展厅列表
+          this.getHallListByMuseumId(this.form.museumId).then(() => {
+            // 等待展厅列表加载完成后，根据展厅名称找到对应的ID
+            const hallNames = this.form.hall.split(',');
+            this.selectedHalls = [];
+            hallNames.forEach(name => {
+              const hall = this.hallOptions.find(h => h.hallName === name.trim());
+              if (hall) {
+                this.selectedHalls.push(hall.hallId);
+              }
+            });
+          });
+        } else {
+          this.selectedHalls = [];
+        }
+        
         this.open = true;
         this.title = "修改展览信息表";
       });
@@ -648,6 +691,18 @@ export default {
     },
     buildSubmitData() {
       const data = { ...this.form };
+      
+      // 将选中的展厅ID转换为展厅名称并拼接成逗号分隔的字符串
+      if (this.selectedHalls && this.selectedHalls.length > 0) {
+        const selectedHallNames = this.selectedHalls.map(id => {
+          const hall = this.hallOptions.find(h => h.hallId === id);
+          return hall ? hall.hallName : '';
+        }).filter(name => name !== '');
+        data.hall = selectedHallNames.join(',');
+      } else {
+        data.hall = null;
+      }
+      
       // 将内容标签选中值转换为逗号分隔的字符串
       if (this.contentTagValues && this.contentTagValues.length > 0) {
         data.contentTags = this.contentTagValues.join(',');
