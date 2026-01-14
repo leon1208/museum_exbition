@@ -9,13 +9,15 @@ from typing import List
 from werkzeug.datastructures import FileStorage
 
 from exb_museum.service.museum_media_service import MuseumMediaService
+from exb_museum.service.collection_service import CollectionService
+from exb_museum.service.exhibition_service import ExhibitionService
 from ruoyi_common.base.model import AjaxResponse, TableResponse
 from ruoyi_common.constant import HttpStatus
 from ruoyi_common.descriptor.serializer import BaseSerializer, JsonSerializer
 from ruoyi_common.descriptor.validator import QueryValidator, FileUploadValidator
 from ruoyi_framework.descriptor.permission import HasPerm, PreAuthorize
 
-from exb_museum.domain.entity import MuseumMedia, Museum
+from exb_museum.domain.entity import MuseumMedia, Museum, Collection, Exhibition
 from exb_museum.service.museum_media_service import MuseumMediaService
 from exb_museum.service.museum_service import MuseumService
 
@@ -30,6 +32,8 @@ def museum_home(app_id: str):
     # 从数据库获取真实数据
     museum_service = MuseumService()
     media_service = MuseumMediaService()
+    collection_service = CollectionService()
+    exhibition_service = ExhibitionService()
 
     # 获取博物馆信息
     museum = museum_service.select_museum_by_app_id(app_id)
@@ -37,54 +41,90 @@ def museum_home(app_id: str):
         return AjaxResponse.from_error(msg="博物馆不存在")
     
     # 获取展览媒体
-    media_list = media_service.select_museum_media_list(museum_id=museum.museum_id, media_type='1')
+    media_list = media_service.select_museum_media_list(object_id=museum.museum_id, object_type='museum', media_type='1')
 
-    # 这里可以替换为从数据库获取真实数据
+    # 获取该博物馆下的藏品列表
+    collection = Collection()
+    collection.museum_id = museum.museum_id
+    collection.status = 0  # 只获取正常状态的藏品
+    collections = collection_service.select_collection_list(collection)
+    
+    # 获取该博物馆下的展览列表
+    exhibition = Exhibition()
+    exhibition.museum_id = museum.museum_id
+    exhibition.status = 0  # 只获取正常状态的展览
+    exhibitions = exhibition_service.select_exhibition_list(exhibition)
+
+    # 构建返回数据
+    # 转换藏品数据格式
+    collection_list = []
+    for col in collections:
+        collection_item = {
+            "id": col.collection_id,
+            "title": col.collection_name or "",
+            "period": col.age or "",
+            "img": "",  # 后续可以从媒体表获取图片
+            "description": col.description or "",
+            "material": col.material or "",
+            "sizeInfo": col.size_info or "",
+            "author": col.author or "",
+            "type": col.collection_type or ""
+        }
+        # 从媒体表获取藏品图片
+        medias = media_service.select_museum_media_list(object_id=col.collection_id, object_type='collection', media_type='1')
+        if medias:
+            collection_item["img"] = medias[0].media_url
+
+        collection_list.append(collection_item)
+
+    # 转换展览数据格式
+    exhibition_list = []
+    for exh in exhibitions:
+        exhibition_item = {
+            "id": exh.exhibition_id,
+            "title": exh.exhibition_name or "",
+            "desc": exh.description or "",
+            "date": f"{exh.start_time.strftime('%m月%d日') if exh.start_time else ''} - {exh.end_time.strftime('%m月%d日') if exh.end_time else ''}",
+            "place": exh.hall or "",
+            "status": "",
+            "statusText": "",
+            "img": "",  # 后续可以从媒体表获取图片
+            "organizer": exh.organizer or "",
+            "startTime": exh.start_time.strftime('%Y-%m-%d') if exh.start_time else "",
+            "endTime": exh.end_time.strftime('%Y-%m-%d') if exh.end_time else ""
+        }
+        # 从媒体表获取展览图片
+        medias = media_service.select_museum_media_list(object_id=exh.exhibition_id, object_type='exhibition', media_type='1')
+        if medias:
+            exhibition_item["img"] = medias[0].media_url
+        
+        # 通过当前时间和展览时间判断展览状态
+        from datetime import datetime
+        now = datetime.now()
+        if now < exh.start_time:
+            exhibition_item["status"] = "upcoming"
+            exhibition_item["statusText"] = "即将开始"
+        elif now > exh.end_time:
+            exhibition_item["status"] = "ended"
+            exhibition_item["statusText"] = "已结束"
+        else:
+            exhibition_item["status"] = "ongoing"
+            exhibition_item["statusText"] = "正在热展"
+
+        exhibition_list.append(exhibition_item)
+
+    # 构建首页数据
     home_data = {
         "museum": {
             "name": museum.museum_name,
             "description": museum.description,
             "openStatus": "今日开放",
             "openTime": "10:00 - 18:00",
-            "bgImage": media_list[0].media_url
+            # "bgImage": media_list[0].media_url if media_list else "",
+            "bgImageList": [media.media_url for media in media_list] if media_list else []
         },
-        "collections": [
-            {
-                "title": "明代青花瓷",
-                "period": "明朝",
-                "img": "/wx_static/tmp_images/it01.png"
-            },
-            {
-                "title": "皇家金冠",
-                "period": "18世纪",
-                "img": "/wx_static/tmp_images/it02.png"
-            },
-            {
-                "title": "青铜短剑",
-                "period": "青铜时代",
-                "img": "/wx_static/tmp_images/it03.png"
-            }
-        ],
-        "exhibitions": [
-            {
-                "title": "2024 现代艺术展",
-                "desc": "一场当代表现主义的探索之旅。",
-                "date": "10月12日 - 12月30日",
-                "place": "二层 A厅",
-                "status": "hot",
-                "statusText": "正在热展",
-                "img": "/wx_static/tmp_images/exb01.png"
-            },
-            {
-                "title": "罗马帝国的荣耀",
-                "desc": "探索塑造世界的伟大帝国。",
-                "date": "1月10日 - 3月15日",
-                "place": "中央大厅",
-                "status": "upcoming",
-                "statusText": "即将开展",
-                "img": "/wx_static/tmp_images/exb02.png"
-            }
-        ],
+        "collections": collection_list,
+        "exhibitions": exhibition_list,
         "educations": [
             {
                 "type": "工作坊",

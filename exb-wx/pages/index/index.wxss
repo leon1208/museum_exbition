@@ -11,9 +11,15 @@
   min-height: 420rpx;
 }
 
+.hero-swiper {
+  width: 100%;
+  height: 100%;
+}
+
 .hero-bg {
   width: 100%;
   height: 100%;
+  display: block;
 }
 
 .hero-mask {
@@ -177,6 +183,11 @@
 .exhibit-desc {
   font-size: 24rpx;
   color: #666;
+
+  /* 单行文本截断 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* ===== Education ===== */

@@ -111,6 +111,14 @@ Page({
       tabIndex: index
     });
   },
+
+  // Swiper 滑动事件
+  onSwiperChange(e) {
+    this.setData({
+      swiperCurrent: e.detail.current
+    });
+  },
+  
   //以下暂时无用
   bindViewTap() {
     wx.navigateTo({

@@ -2,10 +2,12 @@
 
 <!-- 顶部封面 -->
 <view class="hero">
-  <image class="hero-bg"
-    src="{{static_url}}{{museum.bgImage}}"
-    mode="aspectFill"
-  />
+  <swiper class="hero-swiper" indicator-dots="true" autoplay="true" interval="3000" duration="500" circular="true" bindchange="onSwiperChange" touchable="true" disable-touch="false">
+    <swiper-item wx:for="{{museum.bgImageList}}" wx:key="index">
+      <image class="hero-bg" src="{{static_url}}{{item}}" mode="aspectFill" />
+    </swiper-item>
+  </swiper>
+  
   <view class="hero-mask" />
 
   <!-- 顶部按钮 -->
@@ -32,7 +34,7 @@
 <!-- 馆藏精选 -->
 <view class="section">
   <view class="section-header">
-    <text class="section-title">馆藏精选</text>
+    <text class="section-title">馆藏珍选</text>
     <text class="more">查看更多 ></text>
   </view>
 
