@@ -90,6 +90,23 @@
           :row-class-name="tableRowClassName"
           @selection-change="handleSelectionChange"
         >
+          <el-table-column type="expand">
+            <template slot-scope="scope">
+              <div>导览词:{{ scope.row.guideText }}</div>
+              <div v-if="scope.row.mediaList && scope.row.mediaList.length > 0" class="media-list">
+                <el-image 
+                  v-for="(media, index) in scope.row.mediaList" 
+                  :key="media.mediaId" 
+                  :src="minioBase + media.mediaUrl" 
+                  :preview-src-list="scope.row.mediaList.map(m => minioBase + m.mediaUrl)"
+                  fit="cover"
+                  style="width: 100px; height: 100px; margin-right: 10px; margin-bottom: 10px; cursor: pointer;"
+                ></el-image>
+              </div>
+              <span v-else>暂无媒体</span>
+            </template>
+          </el-table-column>
+
           <el-table-column type="selection" width="55" align="center" />
           <el-table-column label="单元名称" :show-overflow-tooltip="true" v-if="columns[0].visible" prop="unitName" />
           <el-table-column label="单元类型" align="center" :show-overflow-tooltip="true" v-if="columns[1].visible" prop="unitType" :formatter="dict_unitType_format" />
@@ -245,6 +262,7 @@ import { listMuseumHall } from "@/api/exb_museum/museum_hall";
 import { listCollection } from "@/api/exb_museum/collection";
 import { getExhibition } from "@/api/exb_museum/exhibition"; // 新增导入
 import MediaUpload from "@/components/MediaUpload";
+import { listMuseumMedia } from "@/api/exb_museum/museum_media";
 
 export default {
   name: "ExhibitionUnit",
@@ -295,6 +313,8 @@ export default {
       showCopyMediaCheckbox: false,
       // 章节选项列表
       sectionOptions: [], // 新增章节选项
+      // MinIO 基础URL
+      minioBase: process.env.VUE_APP_MINIO_BASE_URL,
       // 表格列信息
       columns: [
         { key: 0, label: '单元名称', visible: true },
@@ -373,8 +393,33 @@ export default {
       listExhibitionUnit(this.queryParams).then(response => {
         this.exhibitionUnitList = response.rows;
         this.total = response.total;
+
+      // 为每个展览单元获取媒体信息
+      this.exhibitionUnitList.forEach(unit => {
+        this.getUnitMedia(unit);
+      });
+
         this.groupExhibitionUnitsBySection(); // 按章节分组数据
         this.loading = false;
+      });
+    },
+    // 获取展览单元的媒体信息
+    getUnitMedia(unit) {
+      // 初始化媒体列表
+      if (!unit.mediaList) {
+        unit.mediaList = [];
+      }
+      
+      // 构造查询参数
+      const params = {
+        objectId: unit.unitId,
+        objectType: 'exhibition_unit', // 展览单元的对象类型
+        mediaType: 1 // 图片类型
+      };
+      
+      // 调用API获取媒体信息
+      listMuseumMedia(params).then(response => {
+        unit.mediaList = response.rows || [];
       });
     },
     /** 按展览章节分组数据 */
@@ -696,5 +741,10 @@ export default {
   min-width: 20px;
   text-align: center;
   font-weight: bold;
+}
+
+.media-list {
+  display: flex;
+  flex-wrap: wrap;
 }
 </style>
