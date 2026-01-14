@@ -167,7 +167,7 @@ size="mini"
           <el-input v-model="form.exhibitionName" placeholder="请输入展名" />
         </el-form-item>
         <el-form-item label="展览简介" prop="description">
-          <el-input v-model="form.description" placeholder="请输入展览简介" />
+          <el-input v-model="form.description" placeholder="请输入展览简介" type="textarea" :rows="4" :autosize="{ minRows: 4, maxRows: 8 }"/>
         </el-form-item>
         <el-form-item label="所属博物馆" prop="museumId">
           <el-select v-model="form.museumId" placeholder="请选择所属博物馆" @change="handleMuseumChange">
