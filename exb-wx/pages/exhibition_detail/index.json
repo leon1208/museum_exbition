@@ -1,4 +1,11 @@
 {
-  "navigationStyle": "custom",
-  "usingComponents": {}
+  "navigationBarTitleText": "展览详情",
+  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#FFFFFF",
+  "enablePullDownRefresh": false,
+  "backgroundTextStyle": "dark",
+  "usingComponents": {
+    "mp-icon": "weui-miniprogram/icon/icon"
+  }
 }
