@@ -113,12 +113,20 @@ Page({
   },
 
   // Swiper 滑动事件
-  onSwiperChange(e) {
+  onSwiperChange: function (e) {
     this.setData({
       swiperCurrent: e.detail.current
     });
   },
   
+  // 跳转展览详情页
+goToExhibitionDetail: function (e) {
+    const exhibition = e.currentTarget.dataset.exhibition;
+    wx.navigateTo({
+      url: '../exhibition_detail/index?exhibition=' + JSON.stringify(exhibition)
+    });
+  },
+
   //以下暂时无用
   bindViewTap() {
     wx.navigateTo({

@@ -59,6 +59,8 @@
         class="exhibit-card"
         wx:for="{{exhibitions}}"
         wx:key="title"
+        bindtap="goToExhibitionDetail"
+        data-exhibition="{{item}}"
       >
         <view class="exhibit-img-wrap">
           <image class="exhibit-img" src="{{static_url}}{{item.img}}" mode="aspectFill" />

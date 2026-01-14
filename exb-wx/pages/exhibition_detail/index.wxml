@@ -1,0 +1,71 @@
+<!-- pages/exhibition-detail/index.wxml -->
+<view class="page">
+
+  <!-- 顶部导航栏 -->
+  <view class="header">
+    <view class="icon-btn" bindtap="onBack">←</view>
+    <text class="header-title {{showTitle ? 'show' : ''}}">
+      展览详情
+    </text>
+    <view class="header-actions">
+      <view class="icon-btn">♡</view>
+      <view class="icon-btn">⤴</view>
+    </view>
+  </view>
+
+  <!-- 可滚动内容 -->
+  <scroll-view
+    class="content"
+    scroll-y
+    bindscroll="onScroll"
+  >
+
+    <!-- 顶部封面 -->
+    <view class="cover"
+      style="background-image:url('https://lh3.googleusercontent.com/aida-public/AB6AXuDOsVc6E-dJonR6oVUH-r_80LAmb1nh5CE_akyva1ikvUN7GawgqcEDmD9tFfV8LCfAbsPa52xiAABlX8v8lW9wuQPIsyptsYSUF5vpcfYYgcSkzfLxtbH6UNlapKtXWH40EjzwiluvWmt_2Fb-cjrHIaR0zkmdil5xqV8up-iKRU6bCytIuMWCOMenQLbcrv9J7kgWAIxdScUBG4eWXQC6PdeF3l4XyFNxORyLNI8XTsSqoo6m3J3vf_ZFhgJ3oYfvKHHJd0XPfw')">
+    </view>
+
+    <!-- 标题 -->
+    <view class="section">
+      <text class="title">文艺复兴：伟大的大师们</text>
+
+      <view class="tags">
+        <text class="tag primary">特展</text>
+        <text class="tag">油画</text>
+        <text class="tag">历史</text>
+      </view>
+    </view>
+
+    <!-- 信息块 -->
+    <view class="info-item">
+      <text class="info-label">展览时间</text>
+      <text class="info-value">2023.10.01 - 2024.01.15</text>
+      <text class="info-sub">周二至周日 09:00 - 17:00</text>
+    </view>
+
+    <view class="info-item">
+      <text class="info-label">展览地点</text>
+      <text class="info-value">西翼画廊 A厅</text>
+    </view>
+
+    <!-- 展览介绍 -->
+    <view class="section">
+      <text class="section-title">展览介绍</text>
+      <text class="desc">
+        本次展览汇集了15世纪至16世纪文艺复兴时期的众多杰作，旨在探索那个时代艺术、科学与人文精神的辉煌交汇……
+      </text>
+      <view class="more">阅读更多 ▼</view>
+    </view>
+
+    <!-- 底部占位 -->
+    <view style="height:120rpx"></view>
+  </scroll-view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-bar">
+    <view class="audio-btn">
+      🎧 语音导览
+    </view>
+  </view>
+
+</view>

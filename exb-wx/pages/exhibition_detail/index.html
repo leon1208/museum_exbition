@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>展览详情</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;family=Noto+Sans+SC:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4299f0",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Lexend", "Noto Sans SC", "sans-serif"],
+                        "body": ["Noto Sans SC", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased transition-colors duration-200">
+<div class="relative flex flex-col min-h-screen w-full max-w-md mx-auto bg-white dark:bg-slate-900 shadow-2xl overflow-hidden">
+<div class="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md max-w-md mx-auto">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-900 dark:text-white">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-base font-bold opacity-0 transition-opacity duration-300" id="scroll-title">展览详情</h2>
+<div class="flex gap-2">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-900 dark:text-white">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-900 dark:text-white">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto pt-16 pb-24">
+<div class="relative w-full aspect-[4/3] bg-slate-200 dark:bg-slate-800">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Renaissance art exhibition poster with classical painting details" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDOsVc6E-dJonR6oVUH-r_80LAmb1nh5CE_akyva1ikvUN7GawgqcEDmD9tFfV8LCfAbsPa52xiAABlX8v8lW9wuQPIsyptsYSUF5vpcfYYgcSkzfLxtbH6UNlapKtXWH40EjzwiluvWmt_2Fb-cjrHIaR0zkmdil5xqV8up-iKRU6bCytIuMWCOMenQLbcrv9J7kgWAIxdScUBG4eWXQC6PdeF3l4XyFNxORyLNI8XTsSqoo6m3J3vf_ZFhgJ3oYfvKHHJd0XPfw");'>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+</div>
+<div class="px-5 pt-6">
+<div class="mb-4">
+<h1 class="text-2xl font-bold leading-tight mb-3 text-slate-900 dark:text-white">文艺复兴：伟大的大师们</h1>
+<div class="flex flex-wrap gap-2">
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary dark:bg-primary/20 dark:text-blue-300">
+                            特展
+                        </span>
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                            油画
+                        </span>
+<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                            历史
+                        </span>
+</div>
+</div>
+<div class="h-px w-full bg-slate-100 dark:bg-slate-800 my-6"></div>
+<div class="grid grid-cols-1 gap-5 mb-6">
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined">calendar_month</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">展览时间</p>
+<p class="text-sm font-medium text-slate-900 dark:text-white">2023.10.01 - 2024.01.15</p>
+<p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">周二至周日 09:00 - 17:00</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">展览地点</p>
+<p class="text-sm font-medium text-slate-900 dark:text-white">西翼画廊 A厅</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-10 h-10 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 dark:text-slate-400 mb-0.5">策展人</p>
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 rounded-full bg-cover bg-center" data-alt="Portrait of curator Maria Rossi" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBHNwC0MmW6wlEl_WOyQ5Wv--xkVABD-dMuCtb5Aezz1TKW53qR4YDdZalthji75M0ThsS-UY9Djv3YlFYkiR9hKxT5YWTIY0F03M1dQiQMkLHLREtM5HGwKmKmqCZKtqUUjJKDh5e81Pe0Vd5v1RLH4X1l5bcidbhJMfs1NQxvLz7yKt7YaxgIJIxpLoBZB-snr2Gx6UKcctdwDJu3DbCwP61cvaHEeJO2ZInmyYzT7_jP_HZN6UmJxZAoyJyjmGQGRJnS8cfR9g");'></div>
+<p class="text-sm font-medium text-slate-900 dark:text-white">Maria Rossi</p>
+</div>
+</div>
+</div>
+</div>
+<div class="mb-8">
+<h3 class="text-base font-bold text-slate-900 dark:text-white mb-2">展览介绍</h3>
+<p class="text-sm leading-relaxed text-slate-600 dark:text-slate-300 font-body">
+                        本次展览汇集了15世纪至16世纪文艺复兴时期的众多杰作，旨在探索那个时代艺术、科学与人文精神的辉煌交汇。观众将有机会近距离欣赏到包括达·芬奇、米开朗基罗等大师的真迹手稿与经典油画...
+                    </p>
+<button class="text-primary text-sm font-medium mt-2 flex items-center gap-1">
+                        阅读更多 <span class="material-symbols-outlined text-[16px]">expand_more</span>
+</button>
+</div>
+<div class="mb-6">
+<div class="flex items-center justify-between mb-4">
+<h3 class="text-base font-bold text-slate-900 dark:text-white">主要展品</h3>
+</div>
+<div class="columns-2 gap-4 space-y-4">
+<div class="break-inside-avoid relative group cursor-pointer mb-4">
+<div class="w-full h-48 rounded-xl overflow-hidden mb-2 bg-slate-100 dark:bg-slate-800 relative">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Mona Lisa painting close up" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCK7GfHBPKV728h3x1Z7dzpQfMT4Pt05XTOk7seCvHKgcs_C9RFjyRqVTzLthCKIvKR1vzZxdrynFoQ7-j20F306_br73yNdIThQT_i8qL3P84pW0q00IICT4GMdv1y6bDS3mc-e_HH3zdPdGXxiY3CXpXzL5ZsB2QFliIJgOEtoTia8tfkTCIV-_jnqiVGxV31Mgmso_8-WavHptSKI5sAgRc6ZSpowVpsDkXEpKAXZ2CKd9ZyIoWtesYq4VhR-2wp5mPUdJyMwg");'>
+</div>
+<div class="absolute bottom-2 right-2 w-6 h-6 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[14px]">headphones</span>
+</div>
+</div>
+<p class="text-sm font-medium text-slate-900 dark:text-white truncate">蒙娜丽莎</p>
+<p class="text-xs text-slate-500 dark:text-slate-400 truncate">列奥纳多·达·芬奇</p>
+</div>
+<div class="break-inside-avoid relative group cursor-pointer mb-4">
+<div class="w-full h-64 rounded-xl overflow-hidden mb-2 bg-slate-100 dark:bg-slate-800 relative">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Statue of David close up" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAP25tFoh71U3C_KitnEw-FmzyQaAorgVJsZVNfCbnAZMjjl-A4qcnJjaaOAUT6wEn9oap6u8ggns9DtLJuzJoTvNTiwRh3vhur3SIPhVREnYiu5KnU_UpsXGOPyn_lVUmWBp58bT9Jz4txRr1z4mKDrz1cHYjIALGX0vjyLmFY6mDi0C4U45iFGQ3HsOpb892Yz9Ec-P4cBA9blIvy612jNEM32venHNhbtO7AaONOxtTRE8b4ENvcOZkKkHNbEzLugupS346fWQ");'>
+</div>
+</div>
+<p class="text-sm font-medium text-slate-900 dark:text-white truncate">大卫像</p>
+<p class="text-xs text-slate-500 dark:text-slate-400 truncate">米开朗基罗</p>
+</div>
+<div class="break-inside-avoid relative group cursor-pointer mb-4">
+<div class="w-full h-40 rounded-xl overflow-hidden mb-2 bg-slate-100 dark:bg-slate-800 relative">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Vitruvian Man sketch" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBPTeJtPpnZl23VHDH59zhLy8gWimo5Q1P4ow077qDh1ylYjEEZzgI94CLZiz23JMYHYP1G7XUHw9WG_SXHTcSibBRtGQaFCRTSlnIO5L_SmIaQTNzbIc1hu2sYqXhoKAJsf_6IO2EfzZm-rW8dv1bkWgd3oimRE8qRiSamP9itpPfQzEwrNwBfzlAeALyJhAZP1fz7PTtdGCAGYWOA--cndPQ2_IAiavKoGYUvkpEZYdwhHQqn3ufopSiYhdDShiSncth-8653RQ");'>
+</div>
+<div class="absolute bottom-2 right-2 w-6 h-6 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[14px]">headphones</span>
+</div>
+</div>
+<p class="text-sm font-medium text-slate-900 dark:text-white truncate">维特鲁威人</p>
+<p class="text-xs text-slate-500 dark:text-slate-400 truncate">列奥纳多·达·芬奇</p>
+</div>
+<div class="break-inside-avoid relative group cursor-pointer mb-4">
+<div class="w-full h-56 rounded-xl overflow-hidden mb-2 bg-slate-100 dark:bg-slate-800 relative">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="The Birth of Venus painting detail" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCDQpDQbqN-G94aBNOI5Gk0-HfYub_ayYLoYtvuVRo71iAT1b8Twlb5XRQffc6O35NNNtpn_7CzrZ8_LLntDGXGddZagkdZz7GJVefcCaMfkKLUzJRqwoiiy4iEb_WSA1yodYiFfOmd-nT3cfSZo47M0zn36t_h7s1OiCn8SO_MmUYb6dZzBxxc1ruvdc32FXI7DklgiZRpJgC0u7_VYe9OfwCKcjrtigx5AUXR1RNKwsRImeY3H7Nsu6TMzWoj6AvwxkxELrn-vg");'>
+</div>
+</div>
+<p class="text-sm font-medium text-slate-900 dark:text-white truncate">维纳斯的诞生</p>
+<p class="text-xs text-slate-500 dark:text-slate-400 truncate">波提切利</p>
+</div>
+<div class="break-inside-avoid relative group cursor-pointer mb-4">
+<div class="w-full h-44 rounded-xl overflow-hidden mb-2 bg-slate-100 dark:bg-slate-800 relative">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDOsVc6E-dJonR6oVUH-r_80LAmb1nh5CE_akyva1ikvUN7GawgqcEDmD9tFfV8LCfAbsPa52xiAABlX8v8lW9wuQPIsyptsYSUF5vpcfYYgcSkzfLxtbH6UNlapKtXWH40EjzwiluvWmt_2Fb-cjrHIaR0zkmdil5xqV8up-iKRU6bCytIuMWCOMenQLbcrv9J7kgWAIxdScUBG4eWXQC6PdeF3l4XyFNxORyLNI8XTsSqoo6m3J3vf_ZFhgJ3oYfvKHHJd0XPfw");'>
+</div>
+</div>
+<p class="text-sm font-medium text-slate-900 dark:text-white truncate">最后的晚餐</p>
+<p class="text-xs text-slate-500 dark:text-slate-400 truncate">列奥纳多·达·芬奇</p>
+</div>
+<div class="break-inside-avoid relative group cursor-pointer mb-4">
+<div class="w-full h-52 rounded-xl overflow-hidden mb-2 bg-slate-100 dark:bg-slate-800 relative">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBHNwC0MmW6wlEl_WOyQ5Wv--xkVABD-dMuCtb5Aezz1TKW53qR4YDdZalthji75M0ThsS-UY9Djv3YlFYkiR9hKxT5YWTIY0F03M1dQiQMkLHLREtM5HGwKmKmqCZKtqUUjJKDh5e81Pe0Vd5v1RLH4X1l5bcidbhJMfs1NQxvLz7yKt7YaxgIJIxpLoBZB-snr2Gx6UKcctdwDJu3DbCwP61cvaHEeJO2ZInmyYzT7_jP_HZN6UmJxZAoyJyjmGQGRJnS8cfR9g");'>
+</div>
+</div>
+<p class="text-sm font-medium text-slate-900 dark:text-white truncate">创造亚当</p>
+<p class="text-xs text-slate-500 dark:text-slate-400 truncate">米开朗基罗</p>
+</div>
+</div>
+<div class="flex justify-center py-6">
+<span class="material-symbols-outlined animate-spin text-slate-400">progress_activity</span>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-100 dark:border-slate-800 max-w-md mx-auto">
+<div class="flex gap-3">
+<button class="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white font-medium h-12 rounded-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm">
+<span class="material-symbols-outlined">headphones</span>
+<span>语音导览</span>
+</button>
+</div>
+</div>
+<script>
+        const scrollContainer = document.querySelector('.overflow-y-auto');
+        const title = document.getElementById('scroll-title');
+        scrollContainer.addEventListener('scroll', () => {
+            if (scrollContainer.scrollTop > 200) {
+                title.classList.remove('opacity-0');
+            } else {
+                title.classList.add('opacity-0');
+            }
+        });
+    </script>
+</div>
+</body></html>
