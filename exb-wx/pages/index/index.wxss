@@ -26,6 +26,7 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(to top, rgba(0,0,0,.8), rgba(0,0,0,.3), transparent);
+  pointer-events: none; /* 添加这行代码，允许触摸事件穿透遮罩层 */
 }
 
 .hero-top {
@@ -163,8 +164,11 @@
   color: #fff;
   border-radius: 6rpx;
 }
-.badge.hot {
-  background: rgba(0,0,0,.6);
+.badge.ongoing {
+  background: rgba(0, 255, 255, 0.6);
+}
+.badge.ended {
+  background: rgba(255, 0, 0, 0.6);
 }
 .badge.upcoming {
   background: #38bdf8;
