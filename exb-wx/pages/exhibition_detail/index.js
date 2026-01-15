@@ -1,5 +1,6 @@
 // 展览详情页面逻辑
 import { api } from '../../utils/api.js';
+import config from '../../config/index.js';
 
 Page({
   /**
@@ -10,6 +11,7 @@ Page({
     showTitle: false,
     isFavorite: false,
     isLoading: true,
+    static_url: config.STATIC_URL, //静态资源地址
     exhibition: {
       id: '',
       title: '',
@@ -25,7 +27,9 @@ Page({
       galleryImages: []
     },
     units: [],
-    collections: [] // 从展览单元中提取的主要展品
+    collections: [], // 从展览单元中提取的主要展品
+    showFullIntro: false,
+    introText: ''
   },
 
   /**
@@ -36,7 +40,6 @@ Page({
     // const exhibitionId = options.id || options.exhibition.id;
     const exhibition = JSON.parse(options.exhibition);
     const exhibitionId = exhibition.id
-    console.log('传递的展览ID参数:', exhibition.id);
     
     if (!exhibitionId) {
       console.error('缺少展览ID参数');
@@ -49,6 +52,24 @@ Page({
 
     // 加载展览详情数据
     this.loadExhibitionDetail(exhibitionId);
+  },
+
+  /**
+   * 更新展览介绍显示
+   */
+  updateIntroDisplay: function(description) {
+    const maxLength = 100;
+    let introText = '';
+    
+    if (description && description.length > maxLength) {
+      introText = this.data.showFullIntro ? description : description.substring(0, maxLength) + '...';
+    } else {
+      introText = description || '暂无介绍';
+    }
+    
+    this.setData({
+      introText: introText
+    });
   },
 
   /**
@@ -73,7 +94,7 @@ Page({
             organizer: exhibitionData.organizer || '',
             hall: exhibitionData.hall || '',
             exhibitionType: exhibitionData.exhibitionType || '',
-            contentTags: exhibitionData.contentTags || '',
+            contentTags: exhibitionData.contentTags ? exhibitionData.contentTags.split(',') : [],
             sections: exhibitionData.sections || '',
             coverImg: exhibitionData.coverImg || 'https://via.placeholder.com/400x300',
             galleryImages: exhibitionData.galleryImages || []
@@ -82,6 +103,9 @@ Page({
           collections: this.extractCollectionsFromUnits(units),
           isLoading: false
         });
+        
+        // 更新展览介绍显示
+        this.updateIntroDisplay(exhibitionData.description);
       } else {
         throw new Error(response.msg || '获取展览详情失败');
       }
@@ -244,6 +268,9 @@ Page({
     this.setData({
       showFullIntro: !this.data.showFullIntro
     });
+    
+    // 更新展览介绍显示
+    this.updateIntroDisplay(this.data.exhibition.description);
   },
 
   /**

@@ -26,7 +26,7 @@
 
     <!-- 展览封面图 -->
     <view class="cover-container" wx:if="{{!isLoading}}">
-      <image class="cover-img" src="{{exhibition.coverImg}}" mode="aspectFill"></image>
+      <image class="cover-img" src="{{static_url}}{{exhibition.coverImg}}" mode="aspectFill"></image>
       <view class="cover-gradient"></view>
     </view>
 
@@ -35,8 +35,8 @@
       <view class="title-section">
         <text class="exhibition-title">{{exhibition.title}}</text>
         <view class="tag-container">
-          <text class="tag tag-primary">{{exhibition.exhibitionType || '展览'}}</text>
-          <text class="tag tag-secondary" wx:if="{{exhibition.contentTags}}">{{exhibition.contentTags.split(',')[0] || ''}}</text>
+          <text wx:for="{{exhibition.contentTags}}" 
+            class="{{index === 0 ? 'tag tag-primary' : 'tag tag-secondary'}}">{{item}}</text>
         </view>
       </view>
 
@@ -80,10 +80,10 @@
       <!-- 展览介绍 -->
       <view class="intro-section">
         <text class="section-title">展览介绍</text>
-        <text class="intro-text">{{exhibition.description || '暂无介绍'}}</text>
+        <text class="intro-text">{{introText || '暂无介绍'}}</text>
         <!-- 如果介绍过长可以添加展开收起按钮 -->
-        <button class="read-more-btn" bindtap="toggleIntro" wx:if="{{exhibition.description.length > 100}}" style="margin-left: 0rpx;">
-          <text>{{showFullIntro ? '收起' : '阅读更多'}}</text>
+        <button class="read-more-btn" bindtap="toggleIntro" wx:if="{{exhibition.description && exhibition.description.length > 100}}" style="margin-left: 0rpx;">
+          <text>{{showFullIntro ? '收起' : '更多'}}</text>
           <mp-icon type="field" icon="{{showFullIntro ? 'back' : 'arrow'}}" color="#4299f0" size="{{10}}"></mp-icon>
         </button>
       </view>
@@ -97,7 +97,7 @@
         <view class="collections-grid">
           <view class="collection-item" wx:for="{{collections}}" wx:key="index" bindtap="viewCollectionDetail" data-index="{{index}}">
             <view class="collection-img-container">
-              <image class="collection-img" src="{{item.image}}" mode="widthFix"></image>
+              <image class="collection-img" src="{{static_url}}{{item.image}}" mode="widthFix"></image>
               <view class="audio-icon" wx:if="{{item.hasAudio}}">
                 <mp-icon type="field" icon="voice" color="white" size="{{30}}"></mp-icon>
               </view>
