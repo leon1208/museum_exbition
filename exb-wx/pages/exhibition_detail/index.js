@@ -27,6 +27,8 @@ Page({
       galleryImages: []
     },
     units: [],
+    sections: [], // 添加这个字段用于保存章节顺序
+    groupedUnits: [], // 按section分组的展览单元
     collections: [], // 从展览单元中提取的主要展品
     showFullIntro: false,
     introText: ''
@@ -81,7 +83,10 @@ Page({
       
       if (response.code === 200) {
         const exhibitionData = response.data.exhibition;
-        const units = response.data.units;
+        const units = response.data.units || [];
+        
+        // 按section分组展览单元
+        const groupedUnits = this.groupUnitsBySection(units, exhibitionData.sections);
         
         // 更新展览基本信息
         this.setData({
@@ -95,11 +100,12 @@ Page({
             hall: exhibitionData.hall || '',
             exhibitionType: exhibitionData.exhibitionType || '',
             contentTags: exhibitionData.contentTags ? exhibitionData.contentTags.split(',') : [],
-            sections: exhibitionData.sections || '',
+            sections: exhibitionData.sections ? exhibitionData.sections.split(',') : [],
             coverImg: exhibitionData.coverImg || 'https://via.placeholder.com/400x300',
             galleryImages: exhibitionData.galleryImages || []
           },
           units: units,
+          groupedUnits: groupedUnits,
           collections: this.extractCollectionsFromUnits(units),
           isLoading: false
         });
@@ -135,7 +141,7 @@ Page({
             id: collection.id,
             name: collection.name,
             artist: collection.author || collection.material || '未知',
-            image: collection.imageUrl || collection.mediaList[0]?.url || 'https://via.placeholder.com/200x200',
+            image: collection.imageUrl || collection.mediaList[0]?.url || '/wx_static/tmp_images/placeholder_image.png',
             hasAudio: collection.mediaList?.some(media => media.type === '2') || false, // 假设type为2表示音频
             description: collection.description || ''
           });
@@ -144,6 +150,41 @@ Page({
     });
     
     return collections;
+  },
+
+  /**
+   * 按section分组展览单元
+   */
+  groupUnitsBySection: function(units, sections) {
+    const grouped = {};
+    
+    units.forEach(unit => {
+      const section = unit.section || '默认章节'; // 如果没有指定section，默认为"默认章节"
+      
+      if (!grouped[section]) {
+        grouped[section] = [];
+      }
+      
+      grouped[section].push(unit);
+    });
+    
+    // 从sections中提取章节名称
+    const sectionNames = sections? JSON.parse(sections).map(section => section.content) : ['默认章节'];
+    const sorted_sections = sectionNames ? sectionNames : ['默认章节'];
+    // 转换为数组格式便于wxml遍历
+    const groupedArray = [];
+    for (const idx in sorted_sections) {
+      const section = sorted_sections[idx];
+      groupedArray.push({
+        sectionName: section,
+        units: grouped[section]
+      });
+    }
+    
+    // 按section名称排序
+    // groupedArray.sort((a, b) => a.sectionName.localeCompare(b.sectionName, 'zh-CN'));
+    
+    return groupedArray;
   },
 
   /**
@@ -274,16 +315,23 @@ Page({
   },
 
   /**
-   * 查看展品详情
+   * 查看展览单元详情
    */
-  viewCollectionDetail: function (e) {
-    const index = e.currentTarget.dataset.index;
-    const collection = this.data.collections[index];
+  viewUnitDetail: function (e) {
+    const dataset = e.currentTarget.dataset;
+    const sectionIndex = dataset.sectionIndex;
+    const unitIndex = dataset.index;
     
-    if (!collection) return;
+    // 从分组数据中获取对应单元
+    const sectionUnits = this.data.groupedUnits[sectionIndex];
+    if (!sectionUnits) return;
+    
+    const unit = sectionUnits.units[unitIndex];
+    
+    if (!unit) return;
     
     wx.navigateTo({
-      url: `/pages/collection_detail/index?id=${collection.id}&name=${encodeURIComponent(collection.name)}&artist=${encodeURIComponent(collection.artist)}`
+      url: `/pages/unit_detail/index?id=${unit.id}&name=${encodeURIComponent(unit.title || unit.name)}&description=${encodeURIComponent(unit.description || '')}`
     });
   },
 
