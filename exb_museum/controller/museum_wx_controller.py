@@ -11,13 +11,14 @@ from werkzeug.datastructures import FileStorage
 from exb_museum.service.museum_media_service import MuseumMediaService
 from exb_museum.service.collection_service import CollectionService
 from exb_museum.service.exhibition_service import ExhibitionService
+from exb_museum.service.exhibition_unit_service import ExhibitionUnitService  # 添加展览单元服务导入
 from ruoyi_common.base.model import AjaxResponse, TableResponse
 from ruoyi_common.constant import HttpStatus
 from ruoyi_common.descriptor.serializer import BaseSerializer, JsonSerializer
 from ruoyi_common.descriptor.validator import QueryValidator, FileUploadValidator
 from ruoyi_framework.descriptor.permission import HasPerm, PreAuthorize
 
-from exb_museum.domain.entity import MuseumMedia, Museum, Collection, Exhibition
+from exb_museum.domain.entity import MuseumMedia, Museum, Collection, Exhibition, ExhibitionUnit
 from exb_museum.service.museum_media_service import MuseumMediaService
 from exb_museum.service.museum_service import MuseumService
 
@@ -141,3 +142,115 @@ def museum_home(app_id: str):
         ]
     }
     return AjaxResponse.from_success(data=home_data)
+
+
+@reg.api.route('/wx/museum/exhibition/detail/<int:exhibition_id>', methods=["GET"])
+@JsonSerializer()
+def exhibition_detail(exhibition_id: int):
+    """获取展览详情，包括展览信息和展览单元信息"""
+    # 获取服务实例
+    exhibition_service = ExhibitionService()
+    exhibition_unit_service = ExhibitionUnitService()
+    media_service = MuseumMediaService()
+    collection_service = CollectionService()
+
+    # 获取展览信息
+    exhibition = exhibition_service.select_exhibition_by_id(exhibition_id)
+    if not exhibition:
+        return AjaxResponse.from_error(msg="展览不存在")
+
+    # 获取展览媒体
+    exhibition_medias = media_service.select_museum_media_list(
+        object_id=exhibition_id, 
+        object_type='exhibition', 
+        media_type='1'
+    )
+
+    # 获取该展览的所有展览单元
+    exhibition_units = exhibition_unit_service.select_exhibition_units_by_exhibition_id(exhibition_id)
+
+    # 处理展览信息
+    exhibition_data = {
+        "id": exhibition.exhibition_id,
+        "title": exhibition.exhibition_name or "",
+        "description": exhibition.description or "",
+        "startDate": exhibition.start_time.strftime('%Y-%m-%d') if exhibition.start_time else "",
+        "endDate": exhibition.end_time.strftime('%Y-%m-%d') if exhibition.end_time else "",
+        "organizer": exhibition.organizer or "",
+        "hall": exhibition.hall or "",
+        "exhibitionType": exhibition.exhibition_type or "",
+        "contentTags": exhibition.content_tags or "",
+        "sections": exhibition.sections or "",
+        "coverImg": exhibition_medias[0].media_url if exhibition_medias else "",
+        "galleryImages": [media.media_url for media in exhibition_medias] if exhibition_medias else []
+    }
+
+    # 处理展览单元信息
+    units_data = []
+    for unit in exhibition_units:
+        unit_data = {
+            "id": unit.unit_id,
+            "name": unit.unit_name or "",
+            "type": unit.unit_type,  # 0展品单元 1文字单元 2多媒体单元
+            "section": unit.section or "",
+            "sortOrder": unit.sort_order or 0,
+            "exhibitLabel": unit.exhibit_label or "",
+            "guideText": unit.guide_text or "",
+            "collections": unit.collections or "",  # JSON字符串格式的藏品ID列表
+            "mediaList": []  # 初始化媒体列表
+        }
+
+        # 如果是展品单元，获取关联的藏品信息和媒体
+        if unit.unit_type == 0 and unit.collections:
+            import json
+            try:
+                collection_ids = json.loads(unit.collections) if unit.collections else []
+                if collection_ids:
+                    # 获取藏品详细信息
+                    collection_list = []
+                    for col_id in collection_ids:
+                        collection = collection_service.select_collection_by_id(col_id)
+                        if collection:
+                            # 获取藏品媒体
+                            col_medias = media_service.select_museum_media_list(
+                                object_id=col_id, 
+                                object_type='collection', 
+                                media_type='1'
+                            )
+                            
+                            collection_data = {
+                                "id": collection.collection_id,
+                                "name": collection.collection_name or "",
+                                "age": collection.age or "",
+                                "description": collection.description or "",
+                                "material": collection.material or "",
+                                "sizeInfo": collection.size_info or "",
+                                "author": collection.author or "",
+                                "type": collection.collection_type or "",
+                                "imageUrl": col_medias[0].media_url if col_medias else "",
+                                "mediaList": [{"url": media.media_url, "type": media.media_type} for media in col_medias]
+                            }
+                            collection_list.append(collection_data)
+                    
+                    unit_data["collectionsDetail"] = collection_list
+            except Exception as e:
+                print(f"解析藏品ID列表时出错: {str(e)}")
+                unit_data["collectionsDetail"] = []
+
+        # 获取展览单元的媒体
+        unit_medias = media_service.select_museum_media_list(
+            object_id=unit.unit_id, 
+            object_type='exhibition_unit', 
+            media_type='1'
+        )
+        unit_data["mediaList"] = [{"url": media.media_url, "type": media.media_type} for media in unit_medias]
+
+        units_data.append(unit_data)
+
+    # 构建返回数据
+    detail_data = {
+        "exhibition": exhibition_data,
+        "units": units_data
+    }
+
+    return AjaxResponse.from_success(data=detail_data)

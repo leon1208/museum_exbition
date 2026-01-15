@@ -223,3 +223,25 @@ class ExhibitionUnitMapper:
         )
         results = db.session.execute(stmt).scalars().all()
         return [ExhibitionUnit.model_validate(po) for po in results]
+
+    @staticmethod
+    def select_exhibition_units_by_exhibition_id(exhibition_id: int) -> List[ExhibitionUnit]:
+        """
+        根据展览ID查询所有展览单元，按章节和排序值升序排列
+        
+        Args:
+            exhibition_id (int): 展览ID
+            
+        Returns:
+            List[ExhibitionUnit]: 展览单元列表
+        """
+        stmt = (
+            select(ExhibitionUnitPo)
+            .where(
+                ExhibitionUnitPo.exhibition_id == exhibition_id,
+                ExhibitionUnitPo.del_flag == 0
+            )
+            .order_by(ExhibitionUnitPo.section.asc(), ExhibitionUnitPo.sort_order.asc(), ExhibitionUnitPo.unit_id.asc())
+        )
+        results = db.session.execute(stmt).scalars().all()
+        return [ExhibitionUnit.model_validate(po) for po in results]

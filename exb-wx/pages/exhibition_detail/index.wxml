@@ -18,21 +18,25 @@
   </view> -->
 
   <!-- 滚动内容区域 -->
-  <scroll-view class="content" scroll-y="true" bindscroll="onScroll" scroll-top="{{scrollTop}}">
+  <scroll-view class="content" scroll-y="true" bindscroll="onScroll" scroll-top="{{scrollTop}}" enable-back-to-top="true">
+    <!-- 加载状态 -->
+    <view class="loading-container" wx:if="{{isLoading}}">
+      <text class="loading-text">加载中...</text>
+    </view>
+
     <!-- 展览封面图 -->
-    <view class="cover-container">
-      <image class="cover-img" src="https://wp1.telecomsh.cn/minio/museum/media/2026/01/14/a7df8f5f16c6470ea0a983a9cb7c67d8.jpeg" mode="aspectFill"></image>
+    <view class="cover-container" wx:if="{{!isLoading}}">
+      <image class="cover-img" src="{{exhibition.coverImg}}" mode="aspectFill"></image>
       <view class="cover-gradient"></view>
     </view>
 
     <!-- 展览信息 -->
-    <view class="info-section">
+    <view class="info-section" wx:if="{{!isLoading}}">
       <view class="title-section">
-        <text class="exhibition-title">文艺复兴：伟大的大师们</text>
+        <text class="exhibition-title">{{exhibition.title}}</text>
         <view class="tag-container">
-          <text class="tag tag-primary">特展</text>
-          <text class="tag tag-secondary">油画</text>
-          <text class="tag tag-secondary">历史</text>
+          <text class="tag tag-primary">{{exhibition.exhibitionType || '展览'}}</text>
+          <text class="tag tag-secondary" wx:if="{{exhibition.contentTags}}">{{exhibition.contentTags.split(',')[0] || ''}}</text>
         </view>
       </view>
 
@@ -46,8 +50,7 @@
           </view>
           <view class="detail-content">
             <text class="label">展览时间</text>
-            <text class="value">2023.10.01 - 2024.01.15</text>
-            <!-- <text class="sub-value">周二至周日 09:00 - 17:00</text> -->
+            <text class="value">{{exhibition.startDate}} - {{exhibition.endDate}}</text>
           </view>
         </view>
 
@@ -57,7 +60,7 @@
           </view>
           <view class="detail-content">
             <text class="label">展览地点</text>
-            <text class="value">西翼画廊 A厅</text>
+            <text class="value">{{exhibition.hall || '待定'}}</text>
           </view>
         </view>
 
@@ -68,7 +71,7 @@
           <view class="detail-content">
             <text class="label">主办方</text>
             <view class="curator-info">
-              <text class="value">Maria Rossi</text>
+              <text class="value">{{exhibition.organizer || '未知'}}</text>
             </view>
           </view>
         </view>
@@ -77,8 +80,9 @@
       <!-- 展览介绍 -->
       <view class="intro-section">
         <text class="section-title">展览介绍</text>
-        <text class="intro-text">{{introText}}</text>
-        <button class="read-more-btn" bindtap="toggleIntro" style="margin-left: 0rpx;">
+        <text class="intro-text">{{exhibition.description || '暂无介绍'}}</text>
+        <!-- 如果介绍过长可以添加展开收起按钮 -->
+        <button class="read-more-btn" bindtap="toggleIntro" wx:if="{{exhibition.description.length > 100}}" style="margin-left: 0rpx;">
           <text>{{showFullIntro ? '收起' : '阅读更多'}}</text>
           <mp-icon type="field" icon="{{showFullIntro ? 'back' : 'arrow'}}" color="#4299f0" size="{{10}}"></mp-icon>
         </button>
@@ -91,7 +95,7 @@
         </view>
         
         <view class="collections-grid">
-          <view class="collection-item" wx:for="{{collections}}" wx:key="index" bindtap="viewCollectionDetail">
+          <view class="collection-item" wx:for="{{collections}}" wx:key="index" bindtap="viewCollectionDetail" data-index="{{index}}">
             <view class="collection-img-container">
               <image class="collection-img" src="{{item.image}}" mode="widthFix"></image>
               <view class="audio-icon" wx:if="{{item.hasAudio}}">
@@ -103,15 +107,15 @@
           </view>
         </view>
         
-        <!-- <view class="loading-indicator" wx:if="{{isLoading}}">
-          <text class="icon loading-spin">progress_activity</text>
-        </view> -->
+        <view class="no-collections" wx:if="{{collections.length === 0}}">
+          <text>暂无展品信息</text>
+        </view>
       </view>
     </view>
   </scroll-view>
 
   <!-- 底部操作栏 -->
-  <view class="bottom-bar">
+  <view class="bottom-bar" wx:if="{{!isLoading}}">
     <button class="action-btn" bindtap="startAudioGuide" style="width: 100%;">
       <mp-icon type="field" icon="play2" color="gray" size="{{40}}"></mp-icon>
       <text>语音导览</text>

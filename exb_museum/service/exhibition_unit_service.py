@@ -42,6 +42,18 @@ class ExhibitionUnitService:
         """
         return ExhibitionUnitMapper.select_exhibition_unit_by_id(unit_id)
     
+    def select_exhibition_units_by_exhibition_id(self, exhibition_id: int) -> List[ExhibitionUnit]:
+        """
+        根据展览ID查询所有展览单元
+
+        Args:
+            exhibition_id (int): 展览ID
+
+        Returns:
+            List[ExhibitionUnit]: 展览单元列表
+        """
+        return ExhibitionUnitMapper.select_exhibition_units_by_exhibition_id(exhibition_id)
+    
     @Transactional(db.session)
     def insert_exhibition_unit(self, exhibition_unit: ExhibitionUnit) -> int:
         """

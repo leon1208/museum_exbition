@@ -1,4 +1,6 @@
 // 展览详情页面逻辑
+import { api } from '../../utils/api.js';
+
 Page({
   /**
    * 页面的初始数据
@@ -7,54 +9,117 @@ Page({
     scrollTop: 0,
     showTitle: false,
     isFavorite: false,
-    introText: '本次展览汇集了15世纪至16世纪文艺复兴时期的众多杰作，旨在探索那个时代艺术、科学与人文精神的辉煌交汇。观众将有机会近距离欣赏到包括达·芬奇、米开朗基罗等大师的真迹手稿与经典油画...',
-    fullIntroText: '本次展览汇集了15世纪至16世纪文艺复兴时期的众多杰作，旨在探索那个时代艺术、科学与人文精神的辉煌交汇。观众将有机会近距离欣赏到包括达·芬奇、米开朗基罗等大师的真迹手稿与经典油画，感受那个时代无与伦比的艺术成就。展览通过精心策划的展示路径，引导观众穿越时空，体验文艺复兴时期的人文主义精神与创新理念。展品涵盖了绘画、雕塑、手稿等多个艺术门类，全面展现了文艺复兴时期艺术的多样性与深度。',
-    showFullIntro: false,
     isLoading: true,
-    collections: [
-      {
-        name: "蒙娜丽莎",
-        artist: "列奥纳多·达·芬奇",
-        image: "https://wp1.telecomsh.cn/minio/museum/media/2026/01/14/135ab02fbb7b43b38e7e298d38729516.JPG",
-        hasAudio: true
-      },
-      {
-        name: "大卫像",
-        artist: "米开朗基罗",
-        image: "https://wp1.telecomsh.cn/minio/museum/media/2026/01/14/3fb9ac26173b428ab49113cb431356c4.JPG",
-        hasAudio: false
-      },
-      {
-        name: "维特鲁威人",
-        artist: "列奥纳多·达·芬奇",
-        image: "https://wp1.telecomsh.cn/minio/museum/media/2026/01/14/275ae8a4675c49cea53bd8e3b450d6e7.JPG",
-        hasAudio: true
-      },
-      {
-        name: "维纳斯的诞生",
-        artist: "波提切利",
-        image: "https://wp1.telecomsh.cn/minio/museum/media/2026/01/14/275ae8a4675c49cea53bd8e3b450d6e7.JPG",
-        hasAudio: false
-      },
-      {
-        name: "最后的晚餐",
-        artist: "列奥纳多·达·芬奇",
-        image: "https://wp1.telecomsh.cn/minio/museum/media/2026/01/14/135ab02fbb7b43b38e7e298d38729516.JPG",
-        hasAudio: false
-      },
-    ]
+    exhibition: {
+      id: '',
+      title: '',
+      description: '',
+      startDate: '',
+      endDate: '',
+      organizer: '',
+      hall: '',
+      exhibitionType: '',
+      contentTags: '',
+      sections: '',
+      coverImg: '',
+      galleryImages: []
+    },
+    units: [],
+    collections: [] // 从展览单元中提取的主要展品
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-    // 模拟加载数据
-    setTimeout(() => {
+    // 获取传递的展览ID参数
+    // const exhibitionId = options.id || options.exhibition.id;
+    const exhibition = JSON.parse(options.exhibition);
+    const exhibitionId = exhibition.id
+    console.log('传递的展览ID参数:', exhibition.id);
+    
+    if (!exhibitionId) {
+      console.error('缺少展览ID参数');
+      wx.showToast({
+        title: '参数错误',
+        icon: 'error'
+      });
+      return;
+    }
+
+    // 加载展览详情数据
+    this.loadExhibitionDetail(exhibitionId);
+  },
+
+  /**
+   * 加载展览详情数据
+   */
+  loadExhibitionDetail: async function(exhibitionId) {
+    try {
+      const response = await api.getExhibitionDetail(exhibitionId);
+      
+      if (response.code === 200) {
+        const exhibitionData = response.data.exhibition;
+        const units = response.data.units;
+        
+        // 更新展览基本信息
+        this.setData({
+          exhibition: {
+            id: exhibitionData.id,
+            title: exhibitionData.title || '',
+            description: exhibitionData.description || '',
+            startDate: exhibitionData.startDate || '',
+            endDate: exhibitionData.endDate || '',
+            organizer: exhibitionData.organizer || '',
+            hall: exhibitionData.hall || '',
+            exhibitionType: exhibitionData.exhibitionType || '',
+            contentTags: exhibitionData.contentTags || '',
+            sections: exhibitionData.sections || '',
+            coverImg: exhibitionData.coverImg || 'https://via.placeholder.com/400x300',
+            galleryImages: exhibitionData.galleryImages || []
+          },
+          units: units,
+          collections: this.extractCollectionsFromUnits(units),
+          isLoading: false
+        });
+      } else {
+        throw new Error(response.msg || '获取展览详情失败');
+      }
+    } catch (error) {
+      console.error('加载展览详情失败:', error);
+      wx.showToast({
+        title: '加载失败',
+        icon: 'error'
+      });
       this.setData({
         isLoading: false
       });
-    }, 1500);
+    }
+  },
+
+  /**
+   * 从展览单元中提取主要展品
+   */
+  extractCollectionsFromUnits: function(units) {
+    const collections = [];
+    
+    units.forEach(unit => {
+      if (unit.type === 0 && unit.collectionsDetail && Array.isArray(unit.collectionsDetail)) {
+        // 展品单元类型，提取其中的藏品信息
+        unit.collectionsDetail.forEach(collection => {
+          collections.push({
+            id: collection.id,
+            name: collection.name,
+            artist: collection.author || collection.material || '未知',
+            image: collection.imageUrl || collection.mediaList[0]?.url || 'https://via.placeholder.com/200x200',
+            hasAudio: collection.mediaList?.some(media => media.type === '2') || false, // 假设type为2表示音频
+            description: collection.description || ''
+          });
+        });
+      }
+    });
+    
+    return collections;
   },
 
   /**
@@ -89,7 +154,12 @@ Page({
    * 页面相关事件处理函数--监听用户下拉动作
    */
   onPullDownRefresh: function () {
-
+    // 重新加载当前展览详情
+    const exhibitionId = this.data.exhibition.id;
+    if (exhibitionId) {
+      this.loadExhibitionDetail(exhibitionId);
+      wx.stopPullDownRefresh();
+    }
   },
 
   /**
@@ -104,8 +174,8 @@ Page({
    */
   onShareAppMessage: function () {
     return {
-      title: '文艺复兴：伟大的大师们',
-      path: '/pages/exhibition_detail/index'
+      title: this.data.exhibition.title || '展览详情',
+      path: `/pages/exhibition_detail/index?id=${this.data.exhibition.id}`
     };
   },
 
@@ -183,8 +253,10 @@ Page({
     const index = e.currentTarget.dataset.index;
     const collection = this.data.collections[index];
     
+    if (!collection) return;
+    
     wx.navigateTo({
-      url: `/pages/collection_detail/index?name=${encodeURIComponent(collection.name)}&artist=${encodeURIComponent(collection.artist)}`
+      url: `/pages/collection_detail/index?id=${collection.id}&name=${encodeURIComponent(collection.name)}&artist=${encodeURIComponent(collection.artist)}`
     });
   },
 
