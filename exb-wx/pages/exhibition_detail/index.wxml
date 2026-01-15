@@ -47,7 +47,7 @@
           <view class="detail-content">
             <text class="label">展览时间</text>
             <text class="value">2023.10.01 - 2024.01.15</text>
-            <text class="sub-value">周二至周日 09:00 - 17:00</text>
+            <!-- <text class="sub-value">周二至周日 09:00 - 17:00</text> -->
           </view>
         </view>
 
@@ -93,7 +93,7 @@
         <view class="collections-grid">
           <view class="collection-item" wx:for="{{collections}}" wx:key="index" bindtap="viewCollectionDetail">
             <view class="collection-img-container">
-              <image class="collection-img" src="{{item.image}}" mode="aspectFill"></image>
+              <image class="collection-img" src="{{item.image}}" mode="widthFix"></image>
               <view class="audio-icon" wx:if="{{item.hasAudio}}">
                 <mp-icon type="field" icon="voice" color="white" size="{{30}}"></mp-icon>
               </view>
@@ -112,7 +112,7 @@
 
   <!-- 底部操作栏 -->
   <view class="bottom-bar">
-    <button class="action-btn" bindtap="startAudioGuide">
+    <button class="action-btn" bindtap="startAudioGuide" style="width: 100%;">
       <mp-icon type="field" icon="play2" color="gray" size="{{40}}"></mp-icon>
       <text>语音导览</text>
     </button>
