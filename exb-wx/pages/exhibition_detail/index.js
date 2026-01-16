@@ -336,6 +336,57 @@ Page({
   },
 
   /**
+   * 播放藏品音频
+   */
+  playUnitAudio: function (e) {
+    const audioUrl = e.currentTarget.dataset.audioUrl;
+    
+    if (!audioUrl) {
+      wx.showToast({
+        title: '暂无音频',
+        icon: 'none'
+      });
+      return;
+    }
+    
+    // 创建内部 audio 上下文 InnerAudioContext 对象。
+    const innerAudioContext = wx.createInnerAudioContext();
+    
+    // 设置音频文件的路径
+    innerAudioContext.src = audioUrl;
+    
+    // 监听音频播放事件
+    innerAudioContext.onPlay(() => {
+      console.log('音频开始播放');
+      wx.showToast({
+        title: '音频播放中...',
+        icon: 'none'
+      });
+    });
+    
+    // 监听音频播放结束事件
+    innerAudioContext.onEnded(() => {
+      console.log('音频播放结束');
+      wx.showToast({
+        title: '音频播放完毕',
+        icon: 'none'
+      });
+    });
+    
+    // 监听音频播放错误事件
+    innerAudioContext.onError((res) => {
+      console.log('音频播放失败', res.errMsg, res.errCode);
+      wx.showToast({
+        title: '音频播放失败',
+        icon: 'error'
+      });
+    });
+    
+    // 播放音频
+    innerAudioContext.play();
+  },
+
+  /**
    * 开始语音导览
    */
   startAudioGuide: function () {

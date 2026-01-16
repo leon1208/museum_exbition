@@ -197,7 +197,9 @@ def exhibition_detail(exhibition_id: int):
             "exhibitLabel": unit.exhibit_label or "",
             "guideText": unit.guide_text or "",
             "collections": unit.collections or "",  # JSON字符串格式的藏品ID列表
-            "mediaList": []  # 初始化媒体列表
+            "mediaList": [],  # 初始化媒体列表,
+            "hasAudio": False,
+            "audioUrl": ""
         }
 
         # 如果是展品单元，获取关联的藏品信息和媒体
@@ -241,10 +243,15 @@ def exhibition_detail(exhibition_id: int):
         unit_medias = media_service.select_museum_media_list(
             object_id=unit.unit_id, 
             object_type='exhibition_unit', 
-            media_type='1'
+            media_type=[1, 3]
         )
-        unit_data["mediaList"] = [{"url": media.media_url, "type": media.media_type} for media in unit_medias]
+        unit_data["mediaList"] = [{"url": media.media_url, "type": media.media_type} for media in unit_medias if media.media_type in [1]]
 
+        # 检查是否有音频
+        unit_data["hasAudio"] = any(media.media_type == 3 for media in unit_medias)
+        if unit_data["hasAudio"]:
+            unit_data["audioUrl"] = next((media.media_url for media in unit_medias if media.media_type == 3), "")
+        
         units_data.append(unit_data)
 
     # 构建返回数据

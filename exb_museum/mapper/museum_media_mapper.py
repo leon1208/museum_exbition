@@ -3,7 +3,7 @@
 # @FileName: museum_media_mapper.py
 # @Time    : 2024-05-20 14:00:00
 
-from typing import List, Optional
+from typing import List, Optional, Union
 from datetime import datetime
 from sqlalchemy import and_, or_, func
 from exb_museum.domain.po import MuseumMediaPo
@@ -17,13 +17,14 @@ class MuseumMediaMapper:
     """
     
     @staticmethod
-    def select_museum_media_list(object_id: int = None, object_type: str = None, media_type: str = None) -> List[MuseumMedia]:
+    def select_museum_media_list(object_id: int = None, object_type: str = None, media_type: Union[str, List[str], None] = None) -> List[MuseumMedia]:
         """
         查询博物馆媒体列表
         
         Args:
-            museum_id (int, optional): 博物馆ID
-            media_type (str, optional): 媒体类型
+            object_id (int, optional): 对象ID
+            object_type (str, optional): 对象类型
+            media_type (str or List[str], optional): 媒体类型，支持单个类型或多个类型
             
         Returns:
             List[MuseumMediaPo]: 博物馆媒体列表
@@ -34,7 +35,11 @@ class MuseumMediaMapper:
             query = query.filter(and_(MuseumMediaPo.object_id == object_id, MuseumMediaPo.object_type == object_type))
         
         if media_type:
-            query = query.filter(MuseumMediaPo.media_type == media_type)
+            # 支持单个类型(str)或多个类型(List[str])
+            if isinstance(media_type, list):
+                query = query.filter(MuseumMediaPo.media_type.in_(media_type))
+            else:
+                query = query.filter(MuseumMediaPo.media_type == media_type)
         
         result = query.order_by(MuseumMediaPo.sort.asc(), MuseumMediaPo.create_time.desc()).all()
         return [MuseumMedia.model_validate(item) for item in result] if result else []
