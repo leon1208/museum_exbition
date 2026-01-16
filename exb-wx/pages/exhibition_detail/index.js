@@ -401,7 +401,7 @@ Page({
     
     // 监听音频播放事件
     innerAudioContext.onPlay(() => {
-      console.log('音频开始播放');
+      // console.log('音频开始播放');
       this.setData({
         audioState: 'playing',
         currentAudioUrl: audioUrl,
@@ -416,7 +416,7 @@ Page({
     
     // 监听音频暂停事件
     innerAudioContext.onPause(() => {
-      console.log('音频已暂停');
+      // console.log('音频已暂停');
       this.setData({
         audioState: 'paused'
       });
@@ -424,7 +424,7 @@ Page({
     
     // 监听音频停止事件
     innerAudioContext.onStop(() => {
-      console.log('音频已停止');
+      // console.log('音频已停止');
       this.setData({
         audioState: 'stopped',
         currentAudioUrl: '',
@@ -434,7 +434,7 @@ Page({
     
     // 监听音频播放结束事件
     innerAudioContext.onEnded(() => {
-      console.log('音频播放结束');
+      // console.log('音频播放结束');
       this.setData({
         audioState: 'stopped',
         currentAudioUrl: '',
@@ -448,7 +448,7 @@ Page({
     
     // 监听音频播放错误事件
     innerAudioContext.onError((res) => {
-      console.log('音频播放失败', res.errMsg, res.errCode);
+      // console.log('音频播放失败', res.errMsg, res.errCode);
       this.setData({
         audioState: 'stopped',
         currentAudioUrl: '',

@@ -334,10 +334,12 @@
 .collection-artist {
   font-size: 24rpx;
   color: #64748b;
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+   display: -webkit-box;
+   -webkit-box-orient: vertical;
+   -webkit-line-clamp: 1; 
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: normal; 
 }
 
 .loading-indicator {

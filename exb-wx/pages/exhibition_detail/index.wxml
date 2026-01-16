@@ -107,7 +107,7 @@
                 </view>
               </view>
               <text class="collection-name">{{item.title || item.name}}</text>
-              <text class="collection-artist">{{item.description}}</text>
+              <text class="collection-artist">{{item.guideText || '暂无介绍'}}</text>
             </view>
           </view>
           
