@@ -102,7 +102,7 @@
             <view class="collection-item" wx:for="{{item.units}}" wx:key="id" bindtap="viewUnitDetail" data-index="{{index}}" data-section-index="{{sectionIndex}}">
               <view class="collection-img-container">
                 <image class="collection-img" src="{{static_url}}{{item.mediaList[0].url || item.image || '/wx_static/tmp_images/placeholder_image.png'}}" mode="widthFix"></image>
-                <view class="audio-icon" wx:if="{{item.hasAudio}}" bindtap="playUnitAudio" data-audio-url="{{static_url}}{{item.audioUrl}}">
+                <view class="audio-icon" wx:if="{{item.hasAudio}}" bindtap="playUnitAudio" data-audio-url="{{static_url}}{{item.audioUrl}}" data-audio-name="{{item.title || item.name}}">
                   <mp-icon type="field" icon="voice" color="lightgray" size="{{30}}"></mp-icon>
                 </view>
               </view>
@@ -122,8 +122,8 @@
   <!-- 底部操作栏 -->
   <view class="bottom-bar" wx:if="{{!isLoading}}">
     <button class="action-btn" bindtap="startAudioGuide" style="width: 100%;">
-      <mp-icon type="field" icon="play2" color="gray" size="{{40}}"></mp-icon>
-      <text>语音导览</text>
+      <mp-icon type="field" icon="{{audioState === 'playing' ? 'pause' : 'play2'}}" color="gray" size="{{40}}"></mp-icon>
+      <text>{{audioState === 'playing' ? (currentAudioName + ' - 暂停') : (currentAudioName || '语音导览')}}</text>
     </button>
   </view>
 </view>

@@ -31,7 +31,13 @@ Page({
     groupedUnits: [], // 按section分组的展览单元
     collections: [], // 从展览单元中提取的主要展品
     showFullIntro: false,
-    introText: ''
+    introText: '',
+    // 新增音频相关数据
+    audioContext: null,
+    isAudioPlaying: false,
+    currentAudioUrl: '',
+    currentAudioName: '',
+    audioState: 'stopped' // 'playing', 'paused', 'stopped'
   },
 
   /**
@@ -340,6 +346,7 @@ Page({
    */
   playUnitAudio: function (e) {
     const audioUrl = e.currentTarget.dataset.audioUrl;
+    const audioName = e.currentTarget.dataset.audioName || '未知音频';
     
     if (!audioUrl) {
       wx.showToast({
@@ -349,8 +356,45 @@ Page({
       return;
     }
     
+    // 如果当前正在播放同一个音频，则切换暂停/继续
+    if (this.data.currentAudioUrl === audioUrl && this.data.audioContext) {
+      if (this.data.audioState === 'playing') {
+        // 暂停当前音频
+        this.data.audioContext.pause();
+        this.setData({
+          audioState: 'paused'
+        });
+        wx.showToast({
+          title: '已暂停',
+          icon: 'none'
+        });
+      } else if (this.data.audioState === 'paused') {
+        // 继续播放当前音频
+        this.data.audioContext.play();
+        this.setData({
+          audioState: 'playing'
+        });
+        wx.showToast({
+          title: '继续播放',
+          icon: 'none'
+        });
+      }
+      return;
+    }
+    
+    // 如果有其他音频正在播放，停止它
+    if (this.data.audioContext && this.data.audioState === 'playing') {
+      this.data.audioContext.stop();
+    }
+    
     // 创建内部 audio 上下文 InnerAudioContext 对象。
     const innerAudioContext = wx.createInnerAudioContext();
+
+    // 关键配置：设置是否遵循系统静音开关，iOS静音模式下仍可播放
+    innerAudioContext.autoplay = false
+    innerAudioContext.loop = false
+    innerAudioContext.obeyMuteSwitch = false;
+    innerAudioContext.audioCategory = 'playback' 
     
     // 设置音频文件的路径
     innerAudioContext.src = audioUrl;
@@ -358,15 +402,44 @@ Page({
     // 监听音频播放事件
     innerAudioContext.onPlay(() => {
       console.log('音频开始播放');
+      this.setData({
+        audioState: 'playing',
+        currentAudioUrl: audioUrl,
+        currentAudioName: audioName,
+        audioContext: innerAudioContext
+      });
       wx.showToast({
         title: '音频播放中...',
         icon: 'none'
       });
     });
     
+    // 监听音频暂停事件
+    innerAudioContext.onPause(() => {
+      console.log('音频已暂停');
+      this.setData({
+        audioState: 'paused'
+      });
+    });
+    
+    // 监听音频停止事件
+    innerAudioContext.onStop(() => {
+      console.log('音频已停止');
+      this.setData({
+        audioState: 'stopped',
+        currentAudioUrl: '',
+        currentAudioName: ''
+      });
+    });
+    
     // 监听音频播放结束事件
     innerAudioContext.onEnded(() => {
       console.log('音频播放结束');
+      this.setData({
+        audioState: 'stopped',
+        currentAudioUrl: '',
+        currentAudioName: ''
+      });
       wx.showToast({
         title: '音频播放完毕',
         icon: 'none'
@@ -376,6 +449,11 @@ Page({
     // 监听音频播放错误事件
     innerAudioContext.onError((res) => {
       console.log('音频播放失败', res.errMsg, res.errCode);
+      this.setData({
+        audioState: 'stopped',
+        currentAudioUrl: '',
+        currentAudioName: ''
+      });
       wx.showToast({
         title: '音频播放失败',
         icon: 'error'
@@ -390,6 +468,37 @@ Page({
    * 开始语音导览
    */
   startAudioGuide: function () {
+    // 检查是否有正在进行的音频播放
+    if (this.data.audioState === 'playing') {
+      // 如果正在播放，则暂停
+      if (this.data.audioContext) {
+        this.data.audioContext.pause();
+        this.setData({
+          audioState: 'paused'
+        });
+        wx.showToast({
+          title: '语音导览已暂停',
+          icon: 'none'
+        });
+      }
+      return;
+    } else if (this.data.audioState === 'paused') {
+      // 如果已暂停，则继续播放
+      if (this.data.audioContext) {
+        this.data.audioContext.play();
+        this.setData({
+          audioState: 'playing',
+          currentAudioName: '语音导览' // 设置语音导览的名称
+        });
+        wx.showToast({
+          title: '语音导览继续播放',
+          icon: 'none'
+        });
+      }
+      return;
+    }
+    
+    // 如果是停止状态或没有音频在播放，开始新的语音导览
     wx.showModal({
       title: '语音导览',
       content: '是否开始语音导览？',
@@ -407,9 +516,25 @@ Page({
               title: '语音导览已启动',
               icon: 'success'
             });
+            
+            // 在实际应用中，这里应该播放预设的语音导览音频
+            // 设置语音导览的名称
+            this.setData({
+              currentAudioName: '语音导览'
+            });
           }, 1500);
         }
       }
     });
+  },
+
+  /**
+   * 生命周期函数--监听页面卸载
+   */
+  onUnload: function () {
+    // 销毁音频上下文，释放资源
+    if (this.data.audioContext) {
+      this.data.audioContext.destroy();
+    }
   }
 });
