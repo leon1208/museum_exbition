@@ -218,6 +218,16 @@
   display: block;
 }
 
+.section-header-content {
+  display: flex;
+  align-items: top;
+  gap: 10rpx;
+}
+
+.section-title-with-icon {
+  margin-bottom: 0;
+}
+
 .intro-text {
   font-size: 28rpx;
   line-height: 1.5;

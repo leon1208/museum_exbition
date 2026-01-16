@@ -92,8 +92,10 @@
       <view class="collections-section">
         <view wx:for="{{groupedUnits}}" wx:key="sectionName" class="section-group">
           <view class="section-header">
-            <!-- <mp-icon type="field" icon="folder" color="gray" size="{{50}}"></mp-icon> -->
-            <text class="section-title">{{item.sectionName}}</text>
+            <view class="section-header-content">
+              <mp-icon type="field" icon="folder" color="#4299f0" size="{{20}}"></mp-icon>
+              <text class="section-title section-title-with-icon">{{item.sectionName}}</text>
+            </view>
           </view>
           
           <view class="collections-grid">
