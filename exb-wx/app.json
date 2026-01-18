@@ -5,8 +5,9 @@
     "pages/logs/logs"
   ],
   "window": {
-    "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "展慧",
+    "navigationStyle": "custom",
+    "navigationBarTextStyle1": "black",
+    "navigationBarTitleText1": "展慧",
     "navigationBarBackgroundColor": "#ffffff",
     "pageOrientation": "portrait"
   },

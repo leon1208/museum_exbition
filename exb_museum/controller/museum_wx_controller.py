@@ -13,7 +13,7 @@ from exb_museum.service.collection_service import CollectionService
 from exb_museum.service.exhibition_service import ExhibitionService
 from exb_museum.service.exhibition_unit_service import ExhibitionUnitService  # 添加展览单元服务导入
 from ruoyi_common.base.model import AjaxResponse, TableResponse
-from ruoyi_common.constant import HttpStatus
+from ruoyi_common.constant import HttpStatus, Constants
 from ruoyi_common.descriptor.serializer import BaseSerializer, JsonSerializer
 from ruoyi_common.descriptor.validator import QueryValidator, FileUploadValidator
 from ruoyi_framework.descriptor.permission import HasPerm, PreAuthorize
@@ -21,11 +21,82 @@ from ruoyi_framework.descriptor.permission import HasPerm, PreAuthorize
 from exb_museum.domain.entity import MuseumMedia, Museum, Collection, Exhibition, ExhibitionUnit
 from exb_museum.service.museum_media_service import MuseumMediaService
 from exb_museum.service.museum_service import MuseumService
+from exb_museum.service.wx_auth_service import WxAuthService
+from functools import wraps
+
 
 from .. import reg
 
+def require_wx_token(f):
+    """
+    微信用户认证装饰器
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = None
+        
+        # 从请求头获取token
+        auth_header = request.headers.get(Constants.TOKEN_HEADER)
+        if auth_header and auth_header.startswith(Constants.TOKEN_PREFIX):
+            token = auth_header[len(Constants.TOKEN_PREFIX):]
+        elif auth_header:  # 如果没有Bearer前缀，直接使用
+            token = auth_header
+        
+        if not token:
+            return JsonSerializer().serialize(f, AjaxResponse.from_error(msg="缺少认证令牌"))
+            
+        # 验证token
+        auth_service = WxAuthService()
+        payload = auth_service.verify_access_token(token)
+        if not payload:
+            return JsonSerializer().serialize(f, AjaxResponse.from_error(msg="无效或过期的令牌"))
+        
+        # 获取签名的相关参数
+        method = request.method
+        url = request.url
+        body = request.get_data(as_text=True) or ''
+        timestamp = int(request.headers.get('X-Timestamp', 0))
+        nonce = request.headers.get('X-Nonce', '')
+        sign = request.headers.get('X-Sign', '')
+
+        # 验证请求签名
+        auth_service = WxAuthService()
+        auth_service.verify_request(method, url, body, timestamp, nonce, sign, token)
+            # return JsonSerializer().serialize(f, AjaxResponse.from_error(msg="无效的请求签名"))
+
+        # 将用户信息存储到全局对象中
+        # g.wx_user_id = payload.get('user_id')
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+@reg.api.route('/wx/auth/login', methods=["POST"])
+@JsonSerializer()
+def wx_login():
+    """
+    微信登录接口
+    小程序端调用wx.login()获取code后发送到此接口
+    """
+    data = request.get_json()
+    if not data or 'code' not in data or 'app_id' not in data:
+        return AjaxResponse.from_error(msg="缺少登录凭证code或者应用ID")
+    
+    code = data['code']
+    app_id = data['app_id']
+    
+    # 使用code进行登录
+    auth_service = WxAuthService()
+    open_id = auth_service.get_or_create_wx_user(app_id, code)
+    if not open_id:
+        return AjaxResponse.from_error(msg="登录失败，请重试")
+    access_token = auth_service.generate_access_token(open_id)
+    if not access_token:
+        return AjaxResponse.from_error(msg="登录失败，请重试")
+        
+    return AjaxResponse.from_success(data={"access_token": access_token}, msg="登录成功")
 
 @reg.api.route('/wx/museum/home/<string:app_id>', methods=["GET"])
+@require_wx_token
 @JsonSerializer()
 def museum_home(app_id: str):
     """获取博物馆首页数据"""
@@ -145,6 +216,7 @@ def museum_home(app_id: str):
 
 
 @reg.api.route('/wx/museum/exhibition/detail/<int:exhibition_id>', methods=["GET"])
+@require_wx_token
 @JsonSerializer()
 def exhibition_detail(exhibition_id: int):
     """获取展览详情，包括展览信息和展览单元信息"""
@@ -174,6 +246,7 @@ def exhibition_detail(exhibition_id: int):
         "id": exhibition.exhibition_id,
         "title": exhibition.exhibition_name or "",
         "description": exhibition.description or "",
+        "date": f"{exhibition.start_time.strftime('%Y年%m月%d日') if exhibition.start_time else ''} 至 {exhibition.end_time.strftime('%Y年%m月%d日') if exhibition.end_time else ''}",
         "startDate": exhibition.start_time.strftime('%Y-%m-%d') if exhibition.start_time else "",
         "endDate": exhibition.end_time.strftime('%Y-%m-%d') if exhibition.end_time else "",
         "organizer": exhibition.organizer or "",

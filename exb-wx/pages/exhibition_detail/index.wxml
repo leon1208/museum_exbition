@@ -19,6 +19,11 @@
 
   <!-- 滚动内容区域 -->
   <scroll-view class="content" scroll-y="true" bindscroll="onScroll" scroll-top="{{scrollTop}}" enable-back-to-top="true">
+    <!-- 返回按钮 -->
+    <button class="back-btn" bindtap="goBack">
+      <mp-icon type="field" icon="back" color="black" size="{{15}}"></mp-icon>
+    </button>
+    
     <!-- 加载状态 -->
     <view class="loading-container" wx:if="{{isLoading}}">
       <text class="loading-text">加载中...</text>
@@ -50,7 +55,7 @@
           </view>
           <view class="detail-content">
             <text class="label">展览时间</text>
-            <text class="value">{{exhibition.startDate}} - {{exhibition.endDate}}</text>
+            <text class="value">{{exhibition.date}}</text>
           </view>
         </view>
 

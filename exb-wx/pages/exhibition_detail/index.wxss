@@ -458,3 +458,23 @@
   background-color: #1e293b;
   color: #f1f5f9;
 }
+
+
+/* 悬浮返回按钮样式 */
+.back-btn {
+  position: absolute;
+  top: 110rpx;
+  left: -30rpx;
+  width: 50rpx;
+  height: 50rpx;
+  background-color: rgba(255, 255, 255, 0.0);
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  z-index: 100;
+  border: none;
+}
+
+.back-btn::after {
+  border: none; /* 移除微信小程序默认按钮边框 */
+}

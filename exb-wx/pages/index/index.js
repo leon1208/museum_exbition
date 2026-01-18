@@ -17,8 +17,12 @@ Page({
   },
 
   onLoad: function () {
-    // 页面加载时请求数据
-    this.getMuseumData();
+    // 等待登录完成后再请求数据
+    const app = getApp();
+    app.waitForLogin(() => {
+      // 页面加载时请求数据
+      this.getMuseumData();
+    });
   },
 
   // 加载博物馆数据

@@ -97,3 +97,9 @@ class MuseumPo(db.Model):
         nullable=True,
         comment='小程序AppID'
     )
+    app_secret: Mapped[Optional[str]] = mapped_column(
+        'app_secret',
+        String(100),
+        nullable=True,
+        comment='小程序AppSecret'
+    )
