@@ -27,7 +27,7 @@ from functools import wraps
 
 from .. import reg
 
-def require_wx_token(f):
+def require_wx_token(f, check_sign=False):
     """
     微信用户认证装饰器
     """
@@ -53,16 +53,15 @@ def require_wx_token(f):
         
         # 获取签名的相关参数
         method = request.method
-        url = request.url
+        path = request.path
         body = request.get_data(as_text=True) or ''
         timestamp = int(request.headers.get('X-Timestamp', 0))
         nonce = request.headers.get('X-Nonce', '')
         sign = request.headers.get('X-Sign', '')
 
         # 验证请求签名
-        auth_service = WxAuthService()
-        auth_service.verify_request(method, url, body, timestamp, nonce, sign, token)
-            # return JsonSerializer().serialize(f, AjaxResponse.from_error(msg="无效的请求签名"))
+        if check_sign and not auth_service.verify_request(method, path, body, timestamp, nonce, sign, token):
+            return JsonSerializer().serialize(f, AjaxResponse.from_error(msg="无效的请求签名"))
 
         # 将用户信息存储到全局对象中
         # g.wx_user_id = payload.get('user_id')

@@ -1,5 +1,5 @@
 import config from '../config/index.js'
-import sha256 from './sha256'
+import sha256 from './sha256.js'
 
 
 // API配置文件
@@ -51,27 +51,18 @@ export const authenticatedRequest = (url, method = 'GET', data = {}, customHeade
   const token = wx.getStorageSync('access_token');
   const timestamp = Math.floor(Date.now() / 1000)
   const nonce = Math.random().toString(36).slice(2, 12)
-  const bodyStr = data ? JSON.stringify(data) : ''
+  const path = url.substring(baseUrl.length)
+  const bodyStr = data && Object.keys(data).length !== 0 ? JSON.stringify(data) : ''
 
   const signStr = [
     method.toUpperCase(),
-    url,
-    // bodyStr,
+    path,
+    bodyStr,
     timestamp,
     nonce,
     token
   ].join('\n')
   const sign = sha256(signStr)
-
-  // console.log('signStr', signStr)
-  // console.log('method', method.toUpperCase())
-  // console.log('url', url)
-  // console.log('bodyStr', bodyStr)
-  // console.log('timestamp', timestamp)
-  // console.log('nonce', nonce)
-  // console.log('token', token)
-  console.log('signStr', signStr)
-  console.log('sign', sign)
   
   const header = {
     'Authorization': `Bearer ${token}`,

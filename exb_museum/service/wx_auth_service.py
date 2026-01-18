@@ -102,15 +102,16 @@ class WxAuthService:
             logger.warning("无效令牌")
             return None
     
-    def verify_request(self, method: str, url: str, body: str, timestamp: int, nonce: str, sign: str, token: str):
+    def verify_request(self, method: str, path: str, body: str, timestamp: int, nonce: str, sign: str, token: str):
         # ts = int(req.headers['X-Timestamp'])
         # nonce = req.headers['X-Nonce']
         # sign = req.headers['X-Sign']
 
         # 1. 时间窗口（5 分钟）
-        # now = int(time.time())
-        # if abs(now - ts) > 300:
-        #     raise Exception("timestamp expired")
+        now = int(datetime.now(timezone.utc).timestamp())
+        if abs(now - timestamp) > 300:
+            return False
+            # raise Exception("timestamp expired")
 
         # 2. nonce 是否已使用
         # if redis.exists(f"nonce:{payload['openid']}:{nonce}"):
@@ -120,8 +121,8 @@ class WxAuthService:
         # body = req.get_data(as_text=True) or ''
         sign_str = "\n".join([
             method,
-            url,
-            # body,
+            path,
+            body,
             str(timestamp),
             nonce,
             token
@@ -129,19 +130,17 @@ class WxAuthService:
         from hashlib import sha256
         expected = sha256(sign_str.encode('utf-8')).hexdigest()
 
-        print(sign_str)
-        print(expected)
-        
         if sign != expected:
             return False
             # raise Exception("invalid signature")
-        return True
         # 4. 记录 nonce（TTL = 时间窗口）
         # redis.setex(
         #     f"nonce:{payload['openid']}:{nonce}",
         #     300,
         #     1
         # )
+
+        return True
 
     def get_or_create_wx_user(self, app_id: str, code: str) -> str:
         """
