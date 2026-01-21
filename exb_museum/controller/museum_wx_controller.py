@@ -333,3 +333,86 @@ def exhibition_detail(exhibition_id: int):
     }
 
     return AjaxResponse.from_success(data=detail_data)
+
+
+@reg.api.route('/wx/museum/exhibition/unit/detail/<int:unit_id>', methods=["GET"])
+@require_wx_token
+@JsonSerializer()
+def unit_detail(unit_id: int):
+    """获取展览单元详情，包括媒体列表"""
+    # 获取服务实例
+    exhibition_unit_service = ExhibitionUnitService()
+    media_service = MuseumMediaService()
+    collection_service = CollectionService()
+
+    # 获取展览单元信息
+    unit = exhibition_unit_service.select_exhibition_unit_by_id(unit_id)
+    if not unit:
+        return AjaxResponse.from_error(msg="展览单元不存在")
+
+    # 获取关联的展览信息
+    exhibition_service = ExhibitionService()
+    exhibition = exhibition_service.select_exhibition_by_id(unit.exhibition_id)
+    
+    # 获取展览单元的媒体
+    unit_medias = media_service.select_museum_media_list(
+        object_id=unit_id, 
+        object_type='exhibition_unit', 
+        media_type=[1, 3]  # 1为图片，3为音频
+    )
+    
+    # 构建单元详情数据
+    unit_data = {
+        "id": unit.unit_id,
+        "name": unit.unit_name or "",
+        "type": unit.unit_type,  # 0展品单元 1文字单元 2多媒体单元
+        "section": unit.section or "",
+        "sortOrder": unit.sort_order or 0,
+        "exhibitLabel": unit.exhibit_label or "",
+        "guideText": unit.guide_text or "",
+        "collections": unit.collections or "",  # JSON字符串格式的藏品ID列表
+        "exhibitionId": unit.exhibition_id,
+        "exhibitionName": exhibition.exhibition_name if exhibition else "",
+        "mediaList": [{"url": media.media_url, "type": media.media_type} for media in unit_medias],
+        "hasAudio": any(media.media_type == 3 for media in unit_medias),
+        "audioUrl": next((media.media_url for media in unit_medias if media.media_type == 3), "")
+    }
+
+    # 如果是展品单元，获取关联的藏品信息和媒体
+    if unit.unit_type == 0 and unit.collections:
+        import json
+        try:
+            collection_ids = json.loads(unit.collections) if unit.collections else []
+            if collection_ids:
+                # 获取藏品详细信息
+                collection_list = []
+                for col_id in collection_ids:
+                    collection = collection_service.select_collection_by_id(col_id)
+                    if collection:
+                        # 获取藏品媒体
+                        col_medias = media_service.select_museum_media_list(
+                            object_id=col_id, 
+                            object_type='collection', 
+                            media_type='1'
+                        )
+                        
+                        collection_data = {
+                            "id": collection.collection_id,
+                            "name": collection.collection_name or "",
+                            "age": collection.age or "",
+                            "description": collection.description or "",
+                            "material": collection.material or "",
+                            "sizeInfo": collection.size_info or "",
+                            "author": collection.author or "",
+                            "type": collection.collection_type or "",
+                            "imageUrl": col_medias[0].media_url if col_medias else "",
+                            "mediaList": [{"url": media.media_url, "type": media.media_type} for media in col_medias]
+                        }
+                        collection_list.append(collection_data)
+                
+                unit_data["collectionsDetail"] = collection_list
+        except Exception as e:
+            print(f"解析藏品ID列表时出错: {str(e)}")
+            unit_data["collectionsDetail"] = []
+
+    return AjaxResponse.from_success(data=unit_data)

@@ -4,8 +4,5 @@
   "navigationBarTextStyle": "black",
   "backgroundColor": "#FFFFFF",
   "enablePullDownRefresh": false,
-  "backgroundTextStyle": "dark",
-  "usingComponents": {
-    "mp-icon": "weui-miniprogram/icon/icon"
-  }
+  "backgroundTextStyle": "dark"
 }

@@ -95,16 +95,16 @@
 
       <!-- 主要展品 -->
       <view class="collections-section">
-        <view wx:for="{{groupedUnits}}" wx:key="sectionName" class="section-group">
+        <view wx:for="{{groupedUnits}}" wx:key="sectionName" wx:for-item="section" wx:for-index="sectionIndex" class="section-group">
           <view class="section-header">
             <view class="section-header-content">
               <mp-icon type="field" icon="folder" color="#4299f0" size="{{20}}"></mp-icon>
-              <text class="section-title section-title-with-icon">{{item.sectionName}}</text>
+              <text class="section-title section-title-with-icon">{{section.sectionName}}</text>
             </view>
           </view>
           
           <view class="collections-grid">
-            <view class="collection-item" wx:for="{{item.units}}" wx:key="id" bindtap="viewUnitDetail" data-index="{{index}}" data-section-index="{{sectionIndex}}">
+            <view class="collection-item" wx:for="{{section.units}}" wx:key="id" bindtap="viewUnitDetail" data-index="{{index}}" data-section-index="{{sectionIndex}}" data-unit-id="{{item.id}}">
               <view class="collection-img-container">
                 <image class="collection-img" src="{{static_url}}{{item.mediaList[0].url || item.image || '/wx_static/tmp_images/placeholder_image.png'}}" mode="widthFix"></image>
                 <view class="audio-icon" wx:if="{{item.hasAudio}}" bindtap="playUnitAudio" data-audio-url="{{static_url}}{{item.audioUrl}}" data-audio-name="{{item.title || item.name}}">
@@ -116,7 +116,7 @@
             </view>
           </view>
           
-          <view class="no-collections" wx:if="{{item.units.length === 0}}">
+          <view class="no-collections" wx:if="{{section.units.length === 0}}">
             <text>暂无展品信息</text>
           </view>
         </view>

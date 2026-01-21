@@ -12,7 +12,8 @@ const appId = accountInfo.miniProgram.appId;
 export const apiUrls = {
   museum: {
     home: `${baseUrl}/wx/museum/home/${appId}`,
-    exhibition_detail: `${baseUrl}/wx/museum/exhibition/detail/`  // 新增展览详情接口
+    exhibition_detail: `${baseUrl}/wx/museum/exhibition/detail/`,  // 新增展览详情接口
+    unit_detail: `${baseUrl}/wx/museum/exhibition/unit/detail/`  // 新增展览单元详情接口
     // 可以添加更多API地址
   },
   auth: {
@@ -85,6 +86,10 @@ export const api = {
   // 获取展览详情数据
   getExhibitionDetail(exhibitionId) {
     return authenticatedRequest(`${apiUrls.museum.exhibition_detail}${exhibitionId}`);
+  },
+  // 获取展览单元详情数据
+  getUnitDetail(unitId) {
+    return authenticatedRequest(`${apiUrls.museum.unit_detail}${unitId}`);
   },
   // 微信登录
   login(code) {

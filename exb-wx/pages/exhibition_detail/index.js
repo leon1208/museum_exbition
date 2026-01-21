@@ -327,9 +327,10 @@ Page({
    */
   viewUnitDetail: function (e) {
     const dataset = e.currentTarget.dataset;
-    const sectionIndex = dataset.sectionIndex;
+    const unitId = dataset.unitId;
     const unitIndex = dataset.index;
-    
+    const sectionIndex = dataset.sectionIndex;
+
     // 从分组数据中获取对应单元
     const sectionUnits = this.data.groupedUnits[sectionIndex];
     if (!sectionUnits) return;
@@ -337,9 +338,9 @@ Page({
     const unit = sectionUnits.units[unitIndex];
     
     if (!unit) return;
-    
+
     wx.navigateTo({
-      url: `/pages/unit_detail/index?id=${unit.id}&name=${encodeURIComponent(unit.title || unit.name)}&description=${encodeURIComponent(unit.description || '')}`
+      url: `/pages/unit_detail/index?id=${unit.id}&name=${encodeURIComponent(unit.name || unit.unit_name || '')}&description=${encodeURIComponent(unit.description || unit.guideText || unit.guide_text || '')}`
     });
   },
 

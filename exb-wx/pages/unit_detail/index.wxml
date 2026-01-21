@@ -1,0 +1,97 @@
+<!-- 展览单元详情页面 -->
+<view class="container">
+  <!-- 返回按钮 -->
+  <button class="back-btn" bindtap="goBack">
+    <mp-icon type="field" icon="back" color="black" size="{{15}}"></mp-icon>
+  </button>
+  
+  <!-- 加载状态 -->
+  <view class="loading-container" wx:if="{{isLoading}}">
+    <text class="loading-text">加载中...</text>
+  </view>
+
+  <!-- 滚动内容区域 -->
+  <scroll-view class="content" scroll-y="true" bindscroll="onScroll" scroll-top="{{scrollTop}}" enable-back-to-top="true">
+    <!-- 展览单元图片轮播 -->
+    <view class="swiper-container" wx:if="{{!isLoading && unit.images.length > 0}}">
+      <swiper class="swiper" 
+              indicator-dots="{{true}}" 
+              autoplay="{{false}}" 
+              interval="5000" 
+              duration="500"
+              bindchange="onSwiperChange"
+              circular="{{true}}">
+        <swiper-item wx:for="{{unit.images}}" wx:key="index">
+          <view class="swiper-item">
+            <image class="slide-image" 
+                   src="{{static_url}}{{item}}" 
+                   mode="aspectFill"
+                   bindtap="previewImage"
+                   data-index="{{index}}"></image>
+          </view>
+        </swiper-item>
+      </swiper>
+      <!-- 轮播图指示器 -->
+      <view class="swiper-pagination">
+        <text class="pagination-text">{{currentIndex + 1}} / {{unit.images.length}}</text>
+      </view>
+    </view>
+
+    <!-- 默认封面图（如果没有图片） -->
+    <view class="cover-container" wx:if="{{!isLoading && unit.images.length === 0}}">
+      <image class="cover-img" src="{{static_url}}/wx_static/tmp_images/placeholder_image.png" mode="aspectFill"></image>
+      <view class="cover-gradient"></view>
+    </view>
+
+    <!-- 展览单元信息 -->
+    <view class="info-section" wx:if="{{!isLoading}}">
+      <view class="title-section">
+        <text class="unit-title">{{unit.name}}</text>
+        <view class="tag-container">
+          <!-- 根据单元类型显示标签 -->
+          <text class="tag tag-primary" wx:if="{{unit.unitType === 0}}">展品单元</text>
+          <text class="tag tag-secondary" wx:elif="{{unit.unitType === 1}}">文字单元</text>
+          <text class="tag tag-accent" wx:elif="{{unit.unitType === 2}}">多媒体单元</text>
+          <text class="tag tag-section" wx:if="{{unit.section}}">{{unit.section}}</text>
+        </view>
+      </view>
+
+      <view class="divider"></view>
+
+      <!-- 展签信息 -->
+      <view class="detail-list" wx:if="{{unit.exhibitLabel}}">
+        <view class="detail-item">
+          <view class="icon-container">
+            <mp-icon type="field" icon="info" color="#4299f0" size="{{30}}"></mp-icon>
+          </view>
+          <view class="detail-content">
+            <text class="label">展签</text>
+            <text class="value">{{unit.exhibitLabel}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 导览词 -->
+      <view class="intro-section">
+        <text class="section-title">导览词</text>
+        <text class="intro-text">{{introText || '暂无导览词'}}</text>
+        <!-- 如果导览词过长可以添加展开收起按钮 -->
+        <button class="read-more-btn" bindtap="toggleIntro" wx:if="{{unit.guideText && unit.guideText.length > 100}}" style="margin-left: 0rpx;">
+          <text>{{showFullIntro ? '收起' : '更多'}}</text>
+          <mp-icon type="field" icon="{{showFullIntro ? 'back' : 'arrow'}}" color="#4299f0" size="{{10}}"></mp-icon>
+        </button>
+      </view>
+
+      <!-- 音频播放按钮 -->
+      <view class="audio-section" wx:if="{{unit.hasAudio}}">
+        <view class="section-header">
+          <text class="section-title">语音导览</text>
+        </view>
+        <button class="audio-btn" bindtap="playAudio">
+          <mp-icon type="field" icon="{{audioState === 'playing' ? 'pause' : 'play2'}}" color="#4299f0" size="{{40}}"></mp-icon>
+          <text>{{audioState === 'playing' ? '暂停播放' : '点击播放'}}</text>
+        </button>
+      </view>
+    </view>
+  </scroll-view>
+</view>

@@ -2,6 +2,7 @@
   "pages": [
     "pages/index/index",
     "pages/exhibition_detail/index",
+    "pages/unit_detail/index",
     "pages/logs/logs"
   ],
   "window": {
@@ -17,6 +18,9 @@
   "lazyCodeLoading": "requiredComponents",
   "useExtendedLib": {
     "weui": true
+  },
+  "usingComponents": {
+    "mp-icon": "weui-miniprogram/icon/icon"
   }
 }
 

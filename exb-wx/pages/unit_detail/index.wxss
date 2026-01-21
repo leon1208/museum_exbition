@@ -1,0 +1,339 @@
+/* 展览单元详情页面样式 */
+.container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 750rpx;
+  margin: 0 auto;
+  background-color: #ffffff;
+  color: #1e293b;
+}
+
+.content {
+  flex: 1;
+  padding-top: 0rpx;
+  padding-bottom: 50rpx;
+  background-color: #ffffff;
+}
+
+/* 轮播图容器样式 */
+.swiper-container {
+  position: relative;
+  width: 100%;
+  height: 600rpx;
+  background-color: #e2e8f0;
+}
+
+.swiper {
+  width: 100%;
+  height: 100%;
+}
+
+.swiper-item {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slide-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.swiper-pagination {
+  position: absolute;
+  bottom: 20rpx;
+  right: 20rpx;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 10rpx 20rpx;
+  border-radius: 30rpx;
+  font-size: 24rpx;
+  z-index: 10;
+}
+
+.pagination-text {
+  color: white;
+}
+
+/* 默认封面图样式 */
+.cover-container {
+  position: relative;
+  width: 100%;
+  height: 600rpx;
+  background-color: #e2e8f0;
+}
+
+.cover-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cover-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.2), transparent);
+}
+
+.info-section {
+  padding: 40rpx;
+}
+
+.title-section {
+  margin-bottom: 60rpx;
+}
+
+.unit-title {
+  font-size: 40rpx;
+  font-weight: bold;
+  line-height: 1.2;
+  margin-bottom: 30rpx;
+  display: block;
+}
+
+.tag-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 15rpx 30rpx;
+  border-radius: 16rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+}
+
+.tag-primary {
+  background-color: rgba(66, 153, 240, 0.1);
+  color: #4299f0;
+}
+
+.tag-secondary {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+.tag-accent {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.tag-section {
+  background-color: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+
+.divider {
+  height: 2rpx;
+  width: 100%;
+  background-color: #f1f5f9;
+  margin: 30rpx 0;
+}
+
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin-bottom: 80rpx;
+}
+
+.detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 40rpx;
+}
+
+.icon-container {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 20rpx;
+  background-color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4299f0;
+  flex-shrink: 0;
+}
+
+.detail-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.label {
+  font-size: 24rpx;
+  color: #64748b;
+  margin-bottom: 10rpx;
+}
+
+.value {
+  font-size: 28rpx;
+  font-weight: 500;
+  margin-bottom: 10rpx;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.intro-section {
+  margin-bottom: 60rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.section-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #1e293b;
+  margin-bottom: 20rpx;
+  display: block;
+}
+
+.intro-text {
+  font-size: 28rpx;
+  line-height: 1.5;
+  color: #475569;
+  margin-bottom: 20rpx;
+  font-family: 'Noto Sans SC', sans-serif;
+  white-space: pre-wrap;
+}
+
+.read-more-btn {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  color: #4299f0;
+  font-size: 28rpx;
+  font-weight: 500;
+  margin-top: 10rpx;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.read-more-btn::after {
+  border: none;
+}
+
+.audio-section {
+  margin-bottom: 60rpx;
+}
+
+.audio-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20rpx;
+  background-color: #f1f5f9;
+  color: #1e293b;
+  font-weight: 500;
+  height: 96rpx;
+  border-radius: 24rpx;
+  transition: all 0.2s;
+  border: none;
+  width: 100%;
+}
+
+.audio-btn::after {
+  border: none;
+}
+
+.audio-btn:active {
+  transform: scale(0.98);
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 600rpx;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #64748b;
+}
+
+/* 悬浮返回按钮样式 */
+.back-btn {
+  position: absolute;
+  top: 110rpx;
+  left: -30rpx;
+  width: 50rpx;
+  height: 50rpx;
+  background-color: rgba(255, 255, 255, 0.0);
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  z-index: 100;
+  border: none;
+}
+
+.back-btn::after {
+  border: none; /* 移除微信小程序默认按钮边框 */
+}
+
+/* 暗色主题支持 */
+.container.dark {
+  background-color: #0f172a;
+  color: #f1f5f9;
+}
+
+.container.dark .swiper-container {
+  background-color: #1e293b;
+}
+
+.container.dark .cover-container {
+  background-color: #1e293b;
+}
+
+.container.dark .tag-secondary {
+  background-color: #1e293b;
+  color: #94a3b8;
+}
+
+.container.dark .divider {
+  background-color: #1e293b;
+}
+
+.container.dark .icon-container {
+  background-color: #1e293b;
+}
+
+.container.dark .label {
+  color: #94a3b8;
+}
+
+.container.dark .value {
+  color: #f1f5f9;
+}
+
+.container.dark .intro-text {
+  color: #cbd5e1;
+}
+
+.container.dark .audio-btn {
+  background-color: #1e293b;
+  color: #f1f5f9;
+}
