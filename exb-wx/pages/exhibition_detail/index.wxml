@@ -107,8 +107,14 @@
             <view class="collection-item" wx:for="{{section.units}}" wx:key="id" bindtap="viewUnitDetail" data-index="{{index}}" data-section-index="{{sectionIndex}}" data-unit-id="{{item.id}}">
               <view class="collection-img-container">
                 <image class="collection-img" src="{{static_url}}{{item.mediaList[0].url || item.image || '/wx_static/tmp_images/placeholder_image.png'}}" mode="widthFix"></image>
-                <view class="audio-icon" wx:if="{{item.hasAudio}}" bindtap="playUnitAudio" data-audio-url="{{static_url}}{{item.audioUrl}}" data-audio-name="{{item.title || item.name}}">
-                  <mp-icon type="field" icon="voice" color="lightgray" size="{{30}}"></mp-icon>
+                <!-- 音频图标 -->
+                <view class="audio-icon" wx:if="{{item.hasAudio}}" catchtap="playUnitAudio" 
+                      data-audio-url="{{static_url}}{{item.audioUrl}}" 
+                      data-audio-name="{{item.title || item.name}}"
+                      data-album-name="{{section.sectionName}}"
+                      data-artist-name="{{exhibition.title}}"
+                      data-cover-url="{{static_url}}{{item.mediaList[0].url || item.image || '/wx_static/tmp_images/placeholder_image.png'}}">
+                  <mp-icon type="field" icon="voice" color="lightgray" size="{{35}}"></mp-icon>
                 </view>
               </view>
               <text class="collection-name">{{item.title || item.name}}</text>

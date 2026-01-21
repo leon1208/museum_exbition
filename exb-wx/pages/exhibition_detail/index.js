@@ -1,6 +1,7 @@
 // 展览详情页面逻辑
 import { api } from '../../utils/api.js';
 import config from '../../config/index.js';
+import audioManager from '../../utils/audioManager.js'; // 导入全局音频管理器
 
 Page({
   /**
@@ -33,9 +34,7 @@ Page({
     collections: [], // 从展览单元中提取的主要展品
     showFullIntro: false,
     introText: '',
-    // 新增音频相关数据
-    audioContext: null,
-    isAudioPlaying: false,
+    // 音频相关数据
     currentAudioUrl: '',
     currentAudioName: '',
     audioState: 'stopped' // 'playing', 'paused', 'stopped'
@@ -46,9 +45,8 @@ Page({
    */
   onLoad: function (options) {
     // 获取传递的展览ID参数
-    // const exhibitionId = options.id || options.exhibition.id;
     const exhibition = JSON.parse(options.exhibition);
-    const exhibitionId = exhibition.id
+    const exhibitionId = exhibition.id;
     
     if (!exhibitionId) {
       console.error('缺少展览ID参数');
@@ -61,6 +59,65 @@ Page({
 
     // 加载展览详情数据
     this.loadExhibitionDetail(exhibitionId);
+    
+    // 初始化音频管理器回调
+    this.initAudioCallbacks();
+  },
+  
+  /**
+   * 初始化音频管理器回调
+   */
+  initAudioCallbacks: function() {
+    // 注册音频播放事件回调
+    audioManager.on('onPlay', () => {
+      this.setData({
+        audioState: 'playing',
+        currentAudioUrl: audioManager.getCurrentAudioUrl(),
+        currentAudioName: audioManager.getCurrentAudioName()
+      });
+    });
+    
+    // 注册音频暂停事件回调
+    audioManager.on('onPause', () => {
+      this.setData({
+        audioState: 'paused'
+      });
+    });
+    
+    // 注册音频停止事件回调
+    audioManager.on('onStop', () => {
+      this.setData({
+        audioState: 'stopped',
+        currentAudioUrl: '',
+        currentAudioName: ''
+      });
+    });
+    
+    // 注册音频播放结束事件回调
+    audioManager.on('onEnded', () => {
+      this.setData({
+        audioState: 'stopped',
+        currentAudioUrl: '',
+        currentAudioName: ''
+      });
+      wx.showToast({
+        title: '音频播放完毕',
+        icon: 'none'
+      });
+    });
+    
+    // 注册音频播放错误事件回调
+    audioManager.on('onError', (res) => {
+      this.setData({
+        audioState: 'stopped',
+        currentAudioUrl: '',
+        currentAudioName: ''
+      });
+      wx.showToast({
+        title: '音频播放失败',
+        icon: 'error'
+      });
+    });
   },
 
   /**
@@ -145,12 +202,16 @@ Page({
       if (unit.type === 0 && unit.collectionsDetail && Array.isArray(unit.collectionsDetail)) {
         // 展品单元类型，提取其中的藏品信息
         unit.collectionsDetail.forEach(collection => {
+          // 查找音频媒体
+          const audioMedia = collection.mediaList?.find(media => media.type === 2);
+          
           collections.push({
             id: collection.id,
             name: collection.name,
             artist: collection.author || collection.material || '未知',
             image: collection.imageUrl || collection.mediaList[0]?.url || '/wx_static/tmp_images/placeholder_image.png',
-            hasAudio: collection.mediaList?.some(media => media.type === '2') || false, // 假设type为2表示音频
+            hasAudio: !!audioMedia, // 假设type为2表示音频
+            audioUrl: audioMedia?.url || '', // 添加音频URL
             description: collection.description || ''
           });
         });
@@ -189,9 +250,6 @@ Page({
       });
     }
     
-    // 按section名称排序
-    // groupedArray.sort((a, b) => a.sectionName.localeCompare(b.sectionName, 'zh-CN'));
-    
     return groupedArray;
   },
 
@@ -206,7 +264,12 @@ Page({
    * 生命周期函数--监听页面显示
    */
   onShow: function () {
-
+    // 页面显示时更新音频状态
+    this.setData({
+      audioState: audioManager.getState(),
+      currentAudioUrl: audioManager.getCurrentAudioUrl(),
+      currentAudioName: audioManager.getCurrentAudioName()
+    });
   },
 
   /**
@@ -220,7 +283,7 @@ Page({
    * 生命周期函数--监听页面卸载
    */
   onUnload: function () {
-
+    // 页面卸载时不需要销毁音频管理器，因为它是全局的
   },
 
   /**
@@ -350,6 +413,9 @@ Page({
   playUnitAudio: function (e) {
     const audioUrl = e.currentTarget.dataset.audioUrl;
     const audioName = e.currentTarget.dataset.audioName || '未知音频';
+    const albumName = e.currentTarget.dataset.albumName || '';
+    const artistName = e.currentTarget.dataset.artistName || '';
+    const coverUrl = e.currentTarget.dataset.coverUrl || '';
     
     if (!audioUrl) {
       wx.showToast({
@@ -359,112 +425,8 @@ Page({
       return;
     }
     
-    // 如果当前正在播放同一个音频，则切换暂停/继续
-    if (this.data.currentAudioUrl === audioUrl && this.data.audioContext) {
-      if (this.data.audioState === 'playing') {
-        // 暂停当前音频
-        this.data.audioContext.pause();
-        this.setData({
-          audioState: 'paused'
-        });
-        wx.showToast({
-          title: '已暂停',
-          icon: 'none'
-        });
-      } else if (this.data.audioState === 'paused') {
-        // 继续播放当前音频
-        this.data.audioContext.play();
-        this.setData({
-          audioState: 'playing'
-        });
-        wx.showToast({
-          title: '继续播放',
-          icon: 'none'
-        });
-      }
-      return;
-    }
-    
-    // 如果有其他音频正在播放，停止它
-    if (this.data.audioContext && this.data.audioState === 'playing') {
-      this.data.audioContext.stop();
-    }
-    
-    // 创建内部 audio 上下文 InnerAudioContext 对象。
-    const innerAudioContext = wx.createInnerAudioContext();
-
-    // 关键配置：设置是否遵循系统静音开关，iOS静音模式下仍可播放
-    innerAudioContext.autoplay = false
-    innerAudioContext.loop = false
-    innerAudioContext.obeyMuteSwitch = false;
-    innerAudioContext.audioCategory = 'playback' 
-    
-    // 设置音频文件的路径
-    innerAudioContext.src = audioUrl;
-    
-    // 监听音频播放事件
-    innerAudioContext.onPlay(() => {
-      // console.log('音频开始播放');
-      this.setData({
-        audioState: 'playing',
-        currentAudioUrl: audioUrl,
-        currentAudioName: audioName,
-        audioContext: innerAudioContext
-      });
-      wx.showToast({
-        title: '音频播放中...',
-        icon: 'none'
-      });
-    });
-    
-    // 监听音频暂停事件
-    innerAudioContext.onPause(() => {
-      // console.log('音频已暂停');
-      this.setData({
-        audioState: 'paused'
-      });
-    });
-    
-    // 监听音频停止事件
-    innerAudioContext.onStop(() => {
-      // console.log('音频已停止');
-      this.setData({
-        audioState: 'stopped',
-        currentAudioUrl: '',
-        currentAudioName: ''
-      });
-    });
-    
-    // 监听音频播放结束事件
-    innerAudioContext.onEnded(() => {
-      // console.log('音频播放结束');
-      this.setData({
-        audioState: 'stopped',
-        currentAudioUrl: '',
-        currentAudioName: ''
-      });
-      wx.showToast({
-        title: '音频播放完毕',
-        icon: 'none'
-      });
-    });
-    
-    // 监听音频播放错误事件
-    innerAudioContext.onError((res) => {
-      // console.log('音频播放失败', res.errMsg, res.errCode);
-      this.setData({
-        audioState: 'stopped',
-        currentAudioUrl: '',
-        currentAudioName: ''
-      });
-      wx.showToast({
-        title: '音频播放失败',
-        icon: 'error'
-      });
-    });
-    
-    // 播放音频
-    innerAudioContext.play();
+    // 使用全局音频管理器播放音频，传递专辑名、作者和封面图
+    audioManager.play(audioUrl, audioName, albumName, artistName, coverUrl);
   },
 
   /**
@@ -474,30 +436,19 @@ Page({
     // 检查是否有正在进行的音频播放
     if (this.data.audioState === 'playing') {
       // 如果正在播放，则暂停
-      if (this.data.audioContext) {
-        this.data.audioContext.pause();
-        this.setData({
-          audioState: 'paused'
-        });
-        wx.showToast({
-          title: '语音导览已暂停',
-          icon: 'none'
-        });
-      }
+      audioManager.pause();
+      wx.showToast({
+        title: '语音导览已暂停',
+        icon: 'none'
+      });
       return;
     } else if (this.data.audioState === 'paused') {
       // 如果已暂停，则继续播放
-      if (this.data.audioContext) {
-        this.data.audioContext.play();
-        this.setData({
-          audioState: 'playing',
-          currentAudioName: '语音导览' // 设置语音导览的名称
-        });
-        wx.showToast({
-          title: '语音导览继续播放',
-          icon: 'none'
-        });
-      }
+      audioManager.resume();
+      wx.showToast({
+        title: '语音导览继续播放',
+        icon: 'none'
+      });
       return;
     }
     
@@ -521,10 +472,8 @@ Page({
             });
             
             // 在实际应用中，这里应该播放预设的语音导览音频
-            // 设置语音导览的名称
-            this.setData({
-              currentAudioName: '语音导览'
-            });
+            // 使用全局音频管理器播放语音导览
+            // audioManager.play(guideAudioUrl, '语音导览');
           }, 1500);
         }
       }
@@ -535,9 +484,6 @@ Page({
    * 生命周期函数--监听页面卸载
    */
   onUnload: function () {
-    // 销毁音频上下文，释放资源
-    if (this.data.audioContext) {
-      this.data.audioContext.destroy();
-    }
+    // 页面卸载时不需要销毁音频管理器，因为它是全局的
   }
 });
