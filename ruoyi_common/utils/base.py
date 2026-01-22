@@ -773,7 +773,7 @@ class DateUtil:
 
 class FileUploadUtil:
 
-    DEFAULT_MAX_SIZE = 50 * 1024 * 1024
+    DEFAULT_MAX_SIZE = 500 * 1024 * 1024
 
     DEFAULT_FILE_NAME_LENGTH = 100
 
