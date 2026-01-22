@@ -1,0 +1,77 @@
+<!-- 展览列表页面 -->
+<view class="container">
+  <button class="back-btn" bindtap="goBack">
+    <mp-icon type="field" icon="back" color="black" size="{{15}}"></mp-icon>
+  </button>
+  <!-- 顶部导航栏 -->
+  <!-- <view class="nav-bar">
+    <button class="nav-btn" bindtap="goBack">
+      <text class="icon">arrow_back</text>
+    </button>
+    <text class="nav-title">正在展出</text>
+    <view class="nav-right">
+      <view class="nav-spacer"></view>
+    </view>
+  </view> -->
+
+  <!-- 筛选标签（Chip） -->
+  <view class="filter-chips">
+    <scroll-view class="chips-container" scroll-x="true" show-scrollbar="{{false}}">
+      <!-- 全部标签 -->
+      <view class="chip {{currentFilter === '全部' ? 'chip-active' : 'chip-inactive'}}" bindtap="changeFilter" data-filter="全部">
+        <text class="chip-text">全部</text>
+      </view>
+      
+      <!-- 其他标签 -->
+      <view class="chip {{currentFilter === '艺术' ? 'chip-active' : 'chip-inactive'}}" bindtap="changeFilter" data-filter="艺术">
+        <text class="chip-text">艺术</text>
+      </view>
+      
+      <view class="chip {{currentFilter === '历史' ? 'chip-active' : 'chip-inactive'}}" bindtap="changeFilter" data-filter="历史">
+        <text class="chip-text">历史</text>
+      </view>
+      
+      <view class="chip {{currentFilter === '科学' ? 'chip-active' : 'chip-inactive'}}" bindtap="changeFilter" data-filter="科学">
+        <text class="chip-text">科学</text>
+      </view>
+      
+      <view class="chip {{currentFilter === '文化' ? 'chip-active' : 'chip-inactive'}}" bindtap="changeFilter" data-filter="文化">
+        <text class="chip-text">文化</text>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 展览列表 -->
+  <scroll-view class="exhibition-list" scroll-y="true" enable-back-to-top="true">
+    <view class="loading-container" wx:if="{{isLoading}}">
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <view class="exhibition-card" wx:for="{{exhibitions}}" wx:key="id" bindtap="viewExhibitionDetail" data-exhibition="{{item}}">
+      <view class="card-image-container">
+        <image class="card-image" src="{{static_url}}{{item.img}}" mode="aspectFill"></image>
+        <view class="category-tag">
+          <text class="category-text">{{item.contentTags || '展览'}}</text>
+        </view>
+      </view>
+      <view class="card-content">
+        <view class="card-header">
+          <text class="exhibition-title">{{item.title}}</text>
+        </view>
+        <view class="date-info">
+          <mp-icon type="field" icon="info" color="#4299f0" size="{{30}}"></mp-icon>
+          <text class="date-text">{{item.date || item.startDate + ' - ' + item.endDate}}</text>
+        </view>
+        <text class="exhibition-description">{{item.desc}}</text>
+        <view class="detail-button">
+          <text class="detail-text">查看详情</text>
+          <mp-icon type="field" icon="arrow" color="#4299f0" size="{{15}}"></mp-icon>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty-container" wx:if="{{exhibitions.length === 0 && !isLoading}}">
+      <text class="empty-text">暂无展览信息</text>
+    </view>
+  </scroll-view>
+</view>

@@ -124,10 +124,17 @@ Page({
   },
   
   // 跳转展览详情页
-goToExhibitionDetail: function (e) {
+  goToExhibitionDetail: function (e) {
     const exhibition = e.currentTarget.dataset.exhibition;
     wx.navigateTo({
       url: '../exhibition_detail/index?exhibition=' + JSON.stringify(exhibition)
+    });
+  },
+
+  // 跳转展览清单页面
+  goToExhibitionList: function() {
+    wx.navigateTo({
+      url: '../exhibition/index?museumId=' + this.data.museum.id
     });
   },
 

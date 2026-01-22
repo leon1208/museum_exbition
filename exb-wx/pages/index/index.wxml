@@ -51,7 +51,7 @@
 <view class="section">
     <view class="section-header">
       <text class="section-title">精彩展览</text>
-      <text class="more">查看更多 ></text>
+      <text class="more" bindtap="goToExhibitionList">查看更多 ></text>
     </view>
 
     <scroll-view scroll-x class="h-scroll">

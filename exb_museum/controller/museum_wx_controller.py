@@ -187,6 +187,7 @@ def museum_home(app_id: str):
     # 构建首页数据
     home_data = {
         "museum": {
+            "id": museum.museum_id,
             "name": museum.museum_name,
             "description": museum.description,
             "openStatus": "今日开放",
@@ -212,6 +213,62 @@ def museum_home(app_id: str):
         ]
     }
     return AjaxResponse.from_success(data=home_data)
+
+
+@reg.api.route('/wx/museum/exhibition/<int:museum_id>', methods=["GET"])
+@require_wx_token
+@JsonSerializer()
+def exhibition_list_by_museum(museum_id: int):
+    """根据博物馆ID获取展览列表"""
+    # 从数据库获取真实数据
+    media_service = MuseumMediaService()
+    exhibition_service = ExhibitionService()
+
+    # 获取该博物馆下的展览列表
+    exhibition = Exhibition()
+    exhibition.museum_id = museum_id
+    exhibition.status = 0  # 只获取正常状态的展览
+    exhibitions = exhibition_service.select_exhibition_list(exhibition)
+
+    # 转换展览数据格式
+    exhibition_list = []
+    for exh in exhibitions:
+        exhibition_item = {
+            "id": exh.exhibition_id,
+            "title": exh.exhibition_name or "",
+            "desc": exh.description or "",
+            "date": f"{exh.start_time.strftime('%Y年%m月%d日') if exh.start_time else ''} 至 {exh.end_time.strftime('%Y年%m月%d日') if exh.end_time else ''}",
+            "place": exh.hall or "",
+            "status": "",
+            "statusText": "",
+            "img": "",  # 后续可以从媒体表获取图片
+            "organizer": exh.organizer or "",
+            "startTime": exh.start_time.strftime('%Y-%m-%d') if exh.start_time else "",
+            "endTime": exh.end_time.strftime('%Y-%m-%d') if exh.end_time else "",
+            "category": exh.exhibition_type or "",
+            "contentTags": exh.content_tags or ""
+        }
+        # 从媒体表获取展览图片
+        medias = media_service.select_museum_media_list(object_id=exh.exhibition_id, object_type='exhibition', media_type='1')
+        if medias:
+            exhibition_item["img"] = medias[0].media_url
+        
+        # 通过当前时间和展览时间判断展览状态
+        from datetime import datetime
+        now = datetime.now()
+        if now < exh.start_time:
+            exhibition_item["status"] = "upcoming"
+            exhibition_item["statusText"] = "即将开始"
+        elif now > exh.end_time:
+            exhibition_item["status"] = "ended"
+            exhibition_item["statusText"] = "已结束"
+        else:
+            exhibition_item["status"] = "ongoing"
+            exhibition_item["statusText"] = "正在热展"
+
+        exhibition_list.append(exhibition_item)
+
+    return AjaxResponse.from_success(data=exhibition_list)
 
 
 @reg.api.route('/wx/museum/exhibition/detail/<int:exhibition_id>', methods=["GET"])

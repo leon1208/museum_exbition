@@ -12,6 +12,7 @@ const appId = accountInfo.miniProgram.appId;
 export const apiUrls = {
   museum: {
     home: `${baseUrl}/wx/museum/home/${appId}`,
+    exhibitions: `${baseUrl}/wx/museum/exhibition/`,
     exhibition_detail: `${baseUrl}/wx/museum/exhibition/detail/`,  // 新增展览详情接口
     unit_detail: `${baseUrl}/wx/museum/exhibition/unit/detail/`  // 新增展览单元详情接口
     // 可以添加更多API地址
@@ -82,6 +83,10 @@ export const api = {
   // 获取博物馆首页数据
   getMuseumHomeData() {
     return authenticatedRequest(apiUrls.museum.home);
+  },
+  // 获取展览列表数据
+  getExhibitions(museumId) {
+    return authenticatedRequest(`${apiUrls.museum.exhibitions}${museumId}`);
   },
   // 获取展览详情数据
   getExhibitionDetail(exhibitionId) {

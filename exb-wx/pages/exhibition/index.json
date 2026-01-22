@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "正在展出",
+  "navigationBarBackgroundColor": "#f6f7f8",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#f6f7f8",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark"
+}
