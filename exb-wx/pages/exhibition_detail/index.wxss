@@ -462,7 +462,7 @@
 
 /* 悬浮返回按钮样式 */
 .back-btn {
-  position: absolute;
+  position: fixed;
   top: 110rpx;
   left: -30rpx;
   width: 50rpx;

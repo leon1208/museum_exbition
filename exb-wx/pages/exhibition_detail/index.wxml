@@ -17,18 +17,19 @@
     </view>
   </view> -->
 
+  <!-- 返回按钮 -->
+  <button class="back-btn" bindtap="goBack">
+    <mp-icon type="field" icon="back" color="black" size="{{15}}"></mp-icon>
+  </button>
+
+  <!-- 加载状态 -->
+  <view class="loading-container" wx:if="{{isLoading}}">
+    <text class="loading-text">加载中...</text>
+  </view>
+
   <!-- 滚动内容区域 -->
   <scroll-view class="content" scroll-y="true" bindscroll="onScroll" scroll-top="{{scrollTop}}" enable-back-to-top="true">
-    <!-- 返回按钮 -->
-    <button class="back-btn" bindtap="goBack">
-      <mp-icon type="field" icon="back" color="black" size="{{15}}"></mp-icon>
-    </button>
     
-    <!-- 加载状态 -->
-    <view class="loading-container" wx:if="{{isLoading}}">
-      <text class="loading-text">加载中...</text>
-    </view>
-
     <!-- 展览封面图 -->
     <view class="cover-container" wx:if="{{!isLoading}}">
       <image class="cover-img" src="{{static_url}}{{exhibition.coverImg}}" mode="aspectFill"></image>

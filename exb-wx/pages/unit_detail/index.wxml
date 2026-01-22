@@ -61,8 +61,13 @@
       <!-- 音频播放按钮 -->
       <view class="audio-section" wx:if="{{unit.hasAudio}}">
         <view class="detail-item">
-          <view class="icon-container">
-              <mp-icon type="field" icon="{{audioState === 'playing' ? 'pause' : 'play2'}}" color="#4299f0" size="{{30}}" bindtap="playAudio"></mp-icon>
+          <view class="icon-container" bindtap="playUnitAudio"
+            data-audio-url="{{static_url}}{{unit.audioUrl}}" 
+            data-audio-name="{{unit.name || '展览单元音频'}}"
+            data-album-name="{{unit.section}}"
+            data-artist-name="{{exhibition.title}}"
+            data-cover-url="{{static_url}}{{unit.images[0] || '/wx_static/tmp_images/placeholder_image.png'}}">
+             <mp-icon type="field" icon="{{audioState === 'playing' ? 'pause' : 'play2'}}" color="#4299f0" size="{{30}}"></mp-icon>
           </view>
           <view class="detail-content">
             <text class="label">语音导览</text>
