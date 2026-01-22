@@ -24,7 +24,7 @@
         <swiper-item wx:for="{{unit.images}}" wx:key="index">
           <view class="swiper-item">
             <image class="slide-image" 
-                   src="{{static_url}}{{item}}" 
+                   src="{{static_url}}{{item.url}}" 
                    mode="aspectFill"
                    bindtap="previewImage"
                    data-index="{{index}}"></image>
@@ -66,7 +66,7 @@
             data-audio-name="{{unit.name || '展览单元音频'}}"
             data-album-name="{{unit.section}}"
             data-artist-name="{{exhibition.title}}"
-            data-cover-url="{{static_url}}{{unit.images[0] || '/wx_static/tmp_images/placeholder_image.png'}}">
+            data-cover-url="{{static_url}}{{unit.images[0].url || '/wx_static/tmp_images/placeholder_image.png'}}">
              <mp-icon type="field" icon="{{audioState === 'playing' ? 'pause' : 'play2'}}" color="#4299f0" size="{{30}}"></mp-icon>
           </view>
           <view class="detail-content">

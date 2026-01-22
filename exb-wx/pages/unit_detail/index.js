@@ -161,8 +161,8 @@ Page({
         
         if (unitData.mediaList && Array.isArray(unitData.mediaList)) {
           unitData.mediaList.forEach(media => {
-            if (media.type === 1) { // 图片类型
-              images.push(media.url);
+            if (media.type === 1 || media.type === 2) { // 图片和视频类型
+              images.push(media);
             } else if (media.type === 3) { // 音频类型
               audioUrl = media.url;
               hasAudio = true;
@@ -221,12 +221,35 @@ Page({
     const images = this.data.unit.images;
     
     // 为每个图片URL添加static_url前缀
-    const fullUrls = images.map(image => this.data.static_url + image);
-    
-    wx.previewImage({
-      current: fullUrls[index], // 当前预览的图片URL
-      urls: fullUrls // 所有预览的图片URL数组
+    // const fullUrls = images.map(image => this.data.static_url + image.mediaUrl);
+    const media_src = images.map(image => ({
+      url: this.data.static_url + image.mediaUrl,
+      type: image.type===1?'image':'video',
+      poster: this.data.static_url + image.url
+    }));
+    wx.previewMedia({
+      sources: media_src,
+      current: index,
+      showmenu: true
     });
+    
+    // if (images[index].type === 2 || images[index].type === 1) { // 视频类型
+    //   // 视频类型不支持全屏预览，直接播放
+    //   wx.previewMedia({
+    //     sources: [{
+    //         url: fullUrls[index],
+    //         type: images[index].type===1?'image':'video',
+    //         poster: images[0] ? this.data.static_url + images[index].url : '' // 使用第一张图片作为视频封面
+    //     }],
+    //     current: 0,
+    //     showmenu: true
+    //   });
+    // } else {
+    //   wx.previewImage({
+    //     current: fullUrls[index], // 当前预览的图片URL
+    //     urls: fullUrls // 所有预览的图片URL数组
+    //   });
+    // }
   },
 
   /**
