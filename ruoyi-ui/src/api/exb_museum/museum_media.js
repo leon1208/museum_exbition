@@ -17,6 +17,7 @@ export function uploadMuseumMedia(data) {
     headers: {
       'Content-Type': 'multipart/form-data'
     },
+    timeout: 60000,
     data: data
   })
 }
