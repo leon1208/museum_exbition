@@ -105,7 +105,7 @@ Page({
           unitData.mediaList.forEach(media => {
             if (media.type === 1) { // 图片类型
               images.push(media.url);
-            } else if (media.type === 2) { // 音频类型
+            } else if (media.type === 3) { // 音频类型
               audioUrl = media.url;
               hasAudio = true;
             }
@@ -120,11 +120,11 @@ Page({
             description: unitData.description || this.data.unit.description,
             guideText: unitData.guideText || unitData.guide_text || '',
             exhibitLabel: unitData.exhibitLabel || unitData.exhibit_label || '',
-            unitType: unitData.unitType || unitData.unit_type || 0,
+            unitType: unitData.type || 0,
             section: unitData.section || '',
             images: images,
-            audioUrl: audioUrl,
-            hasAudio: hasAudio
+            audioUrl: unitData.audioUrl || audioUrl,
+            hasAudio: unitData.hasAudio || hasAudio
           },
           isLoading: false
         });

@@ -57,12 +57,25 @@
       </view>
 
       <view class="divider"></view>
+      
+      <!-- 音频播放按钮 -->
+      <view class="audio-section" wx:if="{{unit.hasAudio}}">
+        <view class="detail-item">
+          <view class="icon-container">
+              <mp-icon type="field" icon="{{audioState === 'playing' ? 'pause' : 'play2'}}" color="#4299f0" size="{{30}}" bindtap="playAudio"></mp-icon>
+          </view>
+          <view class="detail-content">
+            <text class="label">语音导览</text>
+            <text class="value">{{audioState === 'playing' ? '正在播放' : '点击播放'}}</text>
+          </view>
+        </view>
+      </view>
 
       <!-- 展签信息 -->
       <view class="detail-list" wx:if="{{unit.exhibitLabel}}">
         <view class="detail-item">
           <view class="icon-container">
-            <mp-icon type="field" icon="info" color="#4299f0" size="{{30}}"></mp-icon>
+            <mp-icon type="field" icon="comment" color="#4299f0" size="{{30}}"></mp-icon>
           </view>
           <view class="detail-content">
             <text class="label">展签</text>
@@ -82,16 +95,6 @@
         </button>
       </view>
 
-      <!-- 音频播放按钮 -->
-      <view class="audio-section" wx:if="{{unit.hasAudio}}">
-        <view class="section-header">
-          <text class="section-title">语音导览</text>
-        </view>
-        <button class="audio-btn" bindtap="playAudio">
-          <mp-icon type="field" icon="{{audioState === 'playing' ? 'pause' : 'play2'}}" color="#4299f0" size="{{40}}"></mp-icon>
-          <text>{{audioState === 'playing' ? '暂停播放' : '点击播放'}}</text>
-        </button>
-      </view>
     </view>
   </scroll-view>
 </view>
