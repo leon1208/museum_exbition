@@ -315,9 +315,9 @@ def exhibition_detail(exhibition_id: int):
         unit_medias = media_service.select_museum_media_list(
             object_id=unit.unit_id, 
             object_type='exhibition_unit', 
-            media_type=[1, 3]
+            media_type=[1,2,3]
         )
-        unit_data["mediaList"] = [{"url": media.media_url, "type": media.media_type} for media in unit_medias if media.media_type in [1]]
+        unit_data["mediaList"] = [{"url": media.cover_url if media.media_type==2 else media.media_url, "type": media.media_type} for media in unit_medias if media.media_type in [1,2]]
 
         # 检查是否有音频
         unit_data["hasAudio"] = any(media.media_type == 3 for media in unit_medias)
@@ -358,7 +358,7 @@ def unit_detail(unit_id: int):
     unit_medias = media_service.select_museum_media_list(
         object_id=unit_id, 
         object_type='exhibition_unit', 
-        media_type=[1, 3]  # 1为图片，3为音频
+        media_type=[1,2,3]  # 1为图片，2为视频，3为音频
     )
     
     # 构建单元详情数据
@@ -373,7 +373,7 @@ def unit_detail(unit_id: int):
         "collections": unit.collections or "",  # JSON字符串格式的藏品ID列表
         "exhibitionId": unit.exhibition_id,
         "exhibitionName": exhibition.exhibition_name if exhibition else "",
-        "mediaList": [{"url": media.media_url, "type": media.media_type} for media in unit_medias],
+        "mediaList":[{"url": media.cover_url if media.media_type==2 else media.media_url, "type": media.media_type, 'mediaUrl':media.media_url} for media in unit_medias if media.media_type in [1,2]],
         "hasAudio": any(media.media_type == 3 for media in unit_medias),
         "audioUrl": next((media.media_url for media in unit_medias if media.media_type == 3), "")
     }
