@@ -3,6 +3,7 @@
   <button class="back-btn" bindtap="goBack">
     <mp-icon type="field" icon="back" color="black" size="{{15}}"></mp-icon>
   </button>
+  <view class="head-title">展览清单</view>
   <!-- 顶部导航栏 -->
   <!-- <view class="nav-bar">
     <button class="nav-btn" bindtap="goBack">

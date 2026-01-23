@@ -2,6 +2,7 @@
     <button class="back-btn" bindtap="goBack">
       <mp-icon type="field" icon="back" color="black" size="{{15}}"></mp-icon>
     </button>
+    <view class="head-title">藏品清单</view>
 
     <!-- 筛选标签区域 -->
     <scroll-view scroll-x="true" class="filter-container" show-scrollbar="{{false}}">

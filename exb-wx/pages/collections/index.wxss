@@ -29,6 +29,17 @@
   border: none; /* 移除微信小程序默认按钮边框 */
 }
 
+.head-title {
+  position: fixed;
+  top: 110rpx;
+  display: flex;
+  align-items: flex-start;
+  z-index: 100;
+  border: none;
+  font-size: large;
+  color: black;
+}
+
 /* 筛选标签容器 */
 .filter-chips {
   position: relative;

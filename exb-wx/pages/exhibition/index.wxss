@@ -16,6 +16,17 @@ page {
   overflow: hidden;
 }
 
+.head-title {
+  position: fixed;
+  top: 110rpx;
+  display: flex;
+  align-items: flex-start;
+  z-index: 100;
+  border: none;
+  font-size: large;
+  color: black;
+}
+
 .nav-bar {
   position: sticky;
   top: 0;
