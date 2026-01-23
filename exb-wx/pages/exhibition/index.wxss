@@ -178,13 +178,19 @@ page {
   object-fit: cover;
 }
 
-.category-tag {
+.category-tags-container {
   position: absolute;
   top: 30rpx;
   left: 30rpx;
+  display: flex;
+  gap: 10rpx;
+  flex-wrap: wrap;
+}
+
+.category-tag {
   background-color: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10rpx);
-  padding: 10rpx 30rpx;
+  padding: 1rpx 15rpx;
   border-radius: 24rpx;
 }
 

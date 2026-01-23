@@ -36,13 +36,20 @@ Page({
       this.setData({
         isLoading: true
       });
-
+  
       // 调用API获取展览列表
-      console.log('museumId:', this.data.museumId);
       const response = await api.getExhibitions(this.data.museumId);
-
+  
       if (response.code === 200) {
-        const exhibitions = response.data || [];
+        let exhibitions = response.data || [];
+        
+        // 将contentTags转换为数组
+        exhibitions = exhibitions.map(item => {
+          item.contentTagsArray = item.contentTags 
+            ? item.contentTags.split(',').map(tag => tag.trim()) 
+            : ['展览'];
+          return item;
+        });
         
         // 设置展览数据并应用当前筛选条件
         this.setData({
@@ -80,7 +87,6 @@ Page({
     return exhibitions.filter(item => {
       // 检查展览类型或分类是否匹配筛选条件
       return (
-        (item.category && item.category.includes(filter)) ||
         (item.contentTags && item.contentTags.includes(filter)) ||
         (item.exhibitionType && item.exhibitionType.includes(filter))
       );

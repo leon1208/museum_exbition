@@ -23,16 +23,16 @@
       </view>
       
       <!-- 其他标签 -->
-      <view class="chip {{currentFilter === '艺术' ? 'chip-active' : 'chip-inactive'}}" bindtap="changeFilter" data-filter="艺术">
-        <text class="chip-text">艺术</text>
+      <view class="chip {{currentFilter === '考古' ? 'chip-active' : 'chip-inactive'}}" bindtap="changeFilter" data-filter="考古">
+        <text class="chip-text">考古</text>
       </view>
       
       <view class="chip {{currentFilter === '历史' ? 'chip-active' : 'chip-inactive'}}" bindtap="changeFilter" data-filter="历史">
         <text class="chip-text">历史</text>
       </view>
       
-      <view class="chip {{currentFilter === '科学' ? 'chip-active' : 'chip-inactive'}}" bindtap="changeFilter" data-filter="科学">
-        <text class="chip-text">科学</text>
+      <view class="chip {{currentFilter === '临时' ? 'chip-active' : 'chip-inactive'}}" bindtap="changeFilter" data-filter="临时">
+        <text class="chip-text">临时</text>
       </view>
       
       <view class="chip {{currentFilter === '文化' ? 'chip-active' : 'chip-inactive'}}" bindtap="changeFilter" data-filter="文化">
@@ -47,11 +47,13 @@
       <text class="loading-text">加载中...</text>
     </view>
 
-    <view class="exhibition-card" wx:for="{{exhibitions}}" wx:key="id" bindtap="viewExhibitionDetail" data-exhibition="{{item}}">
+    <view class="exhibition-card" wx:for="{{filteredExhibitions}}" wx:key="id" bindtap="viewExhibitionDetail" data-exhibition="{{item}}">
       <view class="card-image-container">
         <image class="card-image" src="{{static_url}}{{item.img}}" mode="aspectFill"></image>
-        <view class="category-tag">
-          <text class="category-text">{{item.contentTags || '展览'}}</text>
+        <view class="category-tags-container">
+          <view class="category-tag" wx:for="{{item.contentTagsArray}}" wx:key="*this">
+            <text class="category-text">{{item}}</text>
+          </view>
         </view>
       </view>
       <view class="card-content">

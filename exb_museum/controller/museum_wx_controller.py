@@ -245,7 +245,7 @@ def exhibition_list_by_museum(museum_id: int):
             "organizer": exh.organizer or "",
             "startTime": exh.start_time.strftime('%Y-%m-%d') if exh.start_time else "",
             "endTime": exh.end_time.strftime('%Y-%m-%d') if exh.end_time else "",
-            "category": exh.exhibition_type or "",
+            "exhibitionType": "长期" if exh.exhibition_type == 0 else "临时" if exh.exhibition_type == 1 else "",
             "contentTags": exh.content_tags or ""
         }
         # 从媒体表获取展览图片
@@ -307,7 +307,7 @@ def exhibition_detail(exhibition_id: int):
         "endDate": exhibition.end_time.strftime('%Y-%m-%d') if exhibition.end_time else "",
         "organizer": exhibition.organizer or "",
         "hall": exhibition.hall or "",
-        "exhibitionType": exhibition.exhibition_type or "",
+        "exhibitionType": "长期" if exhibition.exhibition_type == 0 else "临时" if exhibition.exhibition_type == 1 else "",
         "contentTags": exhibition.content_tags or "",
         "sections": exhibition.sections or "",
         "coverImg": exhibition_medias[0].media_url if exhibition_medias else "",
