@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/collections/index",
     "pages/exhibition/index",
     "pages/exhibition_detail/index",
     "pages/unit_detail/index",

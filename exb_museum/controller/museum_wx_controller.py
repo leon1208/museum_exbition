@@ -473,3 +473,55 @@ def unit_detail(unit_id: int):
             unit_data["collectionsDetail"] = []
 
     return AjaxResponse.from_success(data=unit_data)
+
+
+@reg.api.route('/wx/museum/collection/<int:museum_id>', methods=["GET"])
+@require_wx_token
+@JsonSerializer()
+def collection_list_by_museum(museum_id: int):
+    """获取藏品列表，供小程序端使用"""
+    # 获取服务实例
+    collection_service = CollectionService()
+    media_service = MuseumMediaService()
+
+    # 从查询参数获取过滤条件
+    # page_num = request.args.get('pageNum', 1, type=int)
+    # page_size = request.args.get('pageSize', 10, type=int)
+    
+    # 构建查询条件
+    collection_query = Collection()
+    if museum_id > 0:
+        collection_query.museum_id = museum_id
+    collection_query.status = 0  # 只获取正常状态的藏品
+
+    # 获取藏品列表
+    collections = collection_service.select_collection_list(collection_query)
+    
+    # 转换藏品数据格式，适配小程序前端需求
+    collection_list = []
+    for col in collections:
+        collection_item = {
+            "id": col.collection_id,
+            "name": col.collection_name or "",
+            "type": col.collection_type or "",
+            "age": col.age or "",
+            "material": col.material or "",
+            "sizeInfo": col.size_info or "",
+            "author": col.author or "",
+            "description": col.description or "",
+            "imageUrl": "",  # 后续从媒体表获取图片
+            "museumId": col.museum_id
+        }
+        
+        # 从媒体表获取藏品图片
+        medias = media_service.select_museum_media_list(
+            object_id=col.collection_id, 
+            object_type='collection', 
+            media_type='1'
+        )
+        if medias:
+            collection_item["imageUrl"] = medias[0].media_url
+
+        collection_list.append(collection_item)
+
+    return AjaxResponse.from_success(data=collection_list)

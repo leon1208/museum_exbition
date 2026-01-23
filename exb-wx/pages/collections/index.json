@@ -1,6 +1,6 @@
 {
-  "navigationBarTitleText": "展览详情",
-  "navigationBarBackgroundColor": "#FFFFFF",
+  "navigationBarTitleText": "展品清单",
+  "navigationBarBackgroundColor": "#ffffff",
   "navigationBarTextStyle": "black",
   "backgroundColor": "#F5F5F5",
   "enablePullDownRefresh": false,

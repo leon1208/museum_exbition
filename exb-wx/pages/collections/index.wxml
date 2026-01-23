@@ -1,0 +1,55 @@
+<view class="container">
+    <button class="back-btn" bindtap="goBack">
+      <mp-icon type="field" icon="back" color="black" size="{{15}}"></mp-icon>
+    </button>
+
+    <!-- 筛选标签区域 -->
+    <scroll-view scroll-x="true" class="filter-container" show-scrollbar="{{false}}">
+      <view class="filter-scroll-content">
+        <view class="filter-chip {{selectedCategory == item ? 'active' : ''}}" 
+          data-category="{{item}}"
+          wx:for="{{categories}}" 
+          wx:key="index"
+          bindtap="onCategoryTap">
+          {{item}}
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- 展品列表区域 -->
+    <scroll-view 
+      class="collections-container" 
+      scroll-y="true" 
+      bindscrolltolower="onScrollToLower"
+      lower-threshold="50"
+    >
+    <!-- 展品瀑布流布局 -->
+    <view class="collections-grid">
+      <view 
+        class="collection-item" 
+        wx:for="{{filteredCollections}}" 
+        wx:key="collection_id"
+        bindtap="onCollectionTap"
+        data-collection="{{item}}"
+      >
+      <view class="collection-img-container">
+        <image class="collection-img" src="{{static_url}}{{item.imageUrl || '/static/images/default_collection.jpg'}}" mode="widthFix"/>
+      </view>
+      <view class="collection-info">
+        <text class="collection-name">{{item.name}}{{item.author?(' '+item.author):''}}</text>
+        <text class="collection-type">{{item.type}}{{item.age?(' '+item.age):''}}</text>
+      </view>
+      </view>
+    </view>
+
+    <!-- 加载提示 -->
+    <view class="loading-container" wx:if="{{isLoading}}">
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 没有更多数据提示 -->
+    <view class="no-more-container" wx:if="{{!hasMore}}">
+      <text class="no-more-text">没有更多展品了</text>
+    </view>
+    </scroll-view>
+</view>

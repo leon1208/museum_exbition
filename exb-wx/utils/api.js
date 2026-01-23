@@ -14,7 +14,8 @@ export const apiUrls = {
     home: `${baseUrl}/wx/museum/home/${appId}`,
     exhibitions: `${baseUrl}/wx/museum/exhibition/`,
     exhibition_detail: `${baseUrl}/wx/museum/exhibition/detail/`,  // 新增展览详情接口
-    unit_detail: `${baseUrl}/wx/museum/exhibition/unit/detail/`  // 新增展览单元详情接口
+    unit_detail: `${baseUrl}/wx/museum/exhibition/unit/detail/`,  // 新增展览单元详情接口
+    collections: `${baseUrl}/wx/museum/collection/`,  // 新增藏品列表接口
     // 可以添加更多API地址
   },
   auth: {
@@ -95,6 +96,10 @@ export const api = {
   // 获取展览单元详情数据
   getUnitDetail(unitId) {
     return authenticatedRequest(`${apiUrls.museum.unit_detail}${unitId}`);
+  },
+  // 获取藏品列表数据
+  getCollections(museumId) {
+    return authenticatedRequest(`${apiUrls.museum.collections}${museumId}`);
   },
   // 微信登录
   login(code) {

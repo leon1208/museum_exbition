@@ -131,6 +131,13 @@ Page({
     });
   },
 
+  // 跳转藏品清单页面
+  goToCollectionList: function() {
+    wx.navigateTo({
+      url: '../collections/index?museumId=' + this.data.museum.id
+    });
+  },
+
   // 跳转展览清单页面
   goToExhibitionList: function() {
     wx.navigateTo({

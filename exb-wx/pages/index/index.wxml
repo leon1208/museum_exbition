@@ -35,7 +35,7 @@
 <view class="section">
   <view class="section-header">
     <text class="section-title">馆藏珍选</text>
-    <text class="more">查看更多 ></text>
+    <text class="more" bindtap="goToCollectionList">查看更多 ></text>
   </view>
 
   <scroll-view scroll-x class="h-scroll">
