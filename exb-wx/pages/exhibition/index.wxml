@@ -62,7 +62,7 @@
           <text class="exhibition-title">{{item.title}}</text>
         </view>
         <view class="date-info">
-          <mp-icon type="field" icon="info" color="#4299f0" size="{{30}}"></mp-icon>
+          <text class="iconfont icon-calendar-days" style="font-size: 25px;"></text>
           <text class="date-text">{{item.date || item.startDate + ' - ' + item.endDate}}</text>
         </view>
         <text class="exhibition-description">{{item.desc}}</text>

@@ -52,7 +52,7 @@
       <view class="detail-list">
         <view class="detail-item">
           <view class="icon-container">
-            <mp-icon type="field" icon="info" color="#4299f0" size="{{30}}"></mp-icon>
+            <text class="iconfont icon-calendar-days" style="font-size: 25px;"></text>
           </view>
           <view class="detail-content">
             <text class="label">展览时间</text>
@@ -62,7 +62,7 @@
 
         <view class="detail-item">
           <view class="icon-container">
-            <mp-icon type="field" icon="location" color="#4299f0" size="{{30}}"></mp-icon>
+            <text class="iconfont icon-location-dot" style="font-size: 25px;"></text>
           </view>
           <view class="detail-content">
             <text class="label">展览地点</text>
@@ -72,7 +72,7 @@
 
         <view class="detail-item">
           <view class="icon-container">
-            <mp-icon type="field" icon="contacts" color="#4299f0" size="{{30}}"></mp-icon>
+            <text class="iconfont icon-chalkboard-user" style="font-size: 25px;"></text>
           </view>
           <view class="detail-content">
             <text class="label">主办方</text>
@@ -99,7 +99,7 @@
         <view wx:for="{{groupedUnits}}" wx:key="sectionName" wx:for-item="section" wx:for-index="sectionIndex" class="section-group">
           <view class="section-header">
             <view class="section-header-content">
-              <mp-icon type="field" icon="folder" color="#4299f0" size="{{20}}"></mp-icon>
+              <text class="iconfont icon-book-bookmark" style="font-size: 20px; color: gray"></text>
               <text class="section-title section-title-with-icon">{{section.sectionName}}</text>
             </view>
           </view>
