@@ -2,6 +2,7 @@
   "pages": [
     "pages/index/index",
     "pages/collections/index",
+    "pages/collection_detail/index",
     "pages/exhibition/index",
     "pages/exhibition_detail/index",
     "pages/unit_detail/index",

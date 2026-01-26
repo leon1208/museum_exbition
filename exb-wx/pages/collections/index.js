@@ -139,10 +139,10 @@ Page({
    */
   onCollectionTap: function (e) {
     const collection = e.currentTarget.dataset.collection;
-    // 这里可以跳转到展品详情页面，如果有的话
-    // wx.navigateTo({
-    //   url: `/pages/collection_detail/index?collectionId=${collection.collection_id}`
-    // });
+    // 跳转到藏品详情页面
+    wx.navigateTo({
+      url: '../collection_detail/index?collection=' + JSON.stringify(collection)
+    });
   },
 
   /**

@@ -145,6 +145,15 @@ Page({
     });
   },
 
+  // 跳转藏品详情页面
+  goToCollectionDetail: function (e) {
+    const collection = e.currentTarget.dataset.collection;
+    // 跳转到藏品详情页面
+    wx.navigateTo({
+      url: '../collection_detail/index?collection=' + JSON.stringify(collection)
+    });
+  },
+
   //以下暂时无用
   bindViewTap() {
     wx.navigateTo({

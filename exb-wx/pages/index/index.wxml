@@ -39,7 +39,7 @@
   </view>
 
   <scroll-view scroll-x class="h-scroll">
-    <view class="card" wx:for="{{collections}}" wx:key="title">
+    <view class="card" wx:for="{{collections}}" wx:key="title" bindtap="goToCollectionDetail" data-collection="{{item}}">
       <image class="card-img" src="{{static_url}}{{item.img}}" mode="aspectFill" />
       <view class="card-title">{{item.title}}</view>
       <view class="card-sub">{{item.period}}</view>
