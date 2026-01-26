@@ -1,5 +1,8 @@
 {
   "navigationBarTitleText": "藏品详情",
-  "enablePullDownRefresh": true,
+  "navigationBarBackgroundColor": "#fff",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#F5F5F5",
+  "enablePullDownRefresh": false,
   "backgroundTextStyle": "dark"
 }

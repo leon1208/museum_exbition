@@ -222,20 +222,17 @@ Page({
    */
   previewImage: function(e) {
     const index = e.currentTarget.dataset.index;
-    
-    // 为每个图片URL添加static_url前缀
-    // const fullUrls = images.map(image => this.data.static_url + image.mediaUrl);
-    // this.data.collection.mediaList.map(image => if (image.type===1 || image.type===2) {
-    //   url: this.data.static_url + image.url,
-    // });
-    // const media_src = {
-    //   url: this.data.static_url + image.url,
-    //   type: image.type===1?'image':'video',
-    //   poster: this.data.static_url + image.url
-    // };
+    const media_src = this.data.collection.mediaList
+      .filter(item=>item.type===0 || item.type===1)
+      .map(image=>({
+        url: this.data.static_url + image.url,
+        type: image.type===0?'image':'video',
+        poster: this.data.static_url + image.url
+      }));
+    console.log(media_src)
     wx.previewMedia({
       sources: media_src,
-      current: 0,
+      current: index,
       showmenu: true
     });
   },
