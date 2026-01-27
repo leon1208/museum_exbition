@@ -40,7 +40,7 @@ Page({
    */
   onLoad: function (options) {
     // 获取传递的藏品ID参数
-    console.log(options.collection);
+    // console.log(options.collection);
     const collection = JSON.parse(options.collection);
     const collectionId = collection.id;
     
@@ -141,79 +141,52 @@ Page({
    * 加载藏品详情数据
    */
   loadCollectionDetail: async function(collectionId) {
+    wx.showLoading({
+      title: '加载中...'
+    });
+  
     try {
-      // 使用模拟数据替代API调用
-      const mockCollectionData = {
-        id: collectionId,
-        name: '青花瓷瓶',
-        description: '这件青花瓷瓶制作于明代永乐年间，高约45厘米，口径12厘米，底径15厘米。瓶身绘有精美的缠枝莲纹，釉色莹润，青花发色纯正。此瓶造型端庄，纹饰精美，是明代青花瓷器的典型代表作品。',
-        type: '瓷器',
-        size: '高45cm × 口径12cm × 底径15cm',
-        material: '瓷',
-        age: '明代永乐年间',
-        author: '景德镇窑',
-        collector: '故宫博物院',
-        mediaList: [
-          {
-            id: 1,
-            type: 0, // 0 表示图片
-            url: '/museum/media/2026/01/16/4339f7e57eea40c4a4a8b8d361cded12.JPG',
-            description: '正面视图'
-          },
-          {
-            id: 2,
-            type: 0, // 0 表示图片
-            url: '/museum/media/2026/01/16/7b2acdaf01ab46c4b2bdee94f2932f3d.JPG',
-            description: '正面视图'
-          },
-          {
-            id: 4,
-            type: 2, // 2 表示音频
-            url: '/museum/media/2026/01/16/bcf5cd3d41294749a1f71f0d5715c805.wav',
-            description: '语音讲解'
-          }
-        ]
-      };
-  
-      // 检查是否有音频和图片媒体
-      let hasAudioMedia = false;
-      let hasImageMedia = false;
+      // 调用后端API获取藏品详情
+      const res = await api.getCollectionDetail(collectionId);
       
-      if (mockCollectionData.mediaList && Array.isArray(mockCollectionData.mediaList)) {
-        hasAudioMedia = mockCollectionData.mediaList.some(media => media.type === 2); // 假设type为2表示音频
-        hasImageMedia = mockCollectionData.mediaList.some(media => media.type === 0); // 假设type为0表示图片
+      if (res.code === 200) {
+        const collection = res.data;
+        
+        // 处理媒体列表
+        let mediaList = collection.mediaList || [];
+        
+        // 更新页面数据
+        this.setData({
+          collection: collection,
+          mediaList: mediaList,
+          hasAudioMedia: collection.hasAudioMedia || false,
+          hasImageMedia: collection.hasImageMedia || false,
+          audioUrl: collection.audioUrl || '',
+          currentIndex: 0,
+          isLoading: false
+        });
+        
+            // 更新藏品介绍显示
+        this.updateIntroDisplay(collection.description);
+        // console.log('藏品详情加载成功:', collection);
+        // console.log(mediaList)
+      } else {
+        throw new Error(res.msg || '获取藏品详情失败');
       }
-  
-      // 更新藏品基本信息
-      this.setData({
-        collection: {
-          id: mockCollectionData.id || collectionId,
-          name: mockCollectionData.name || mockCollectionData.title || '',
-          description: mockCollectionData.description || mockCollectionData.content || '',
-          type: mockCollectionData.type || mockCollectionData.category || '',
-          size: mockCollectionData.size || mockCollectionData.dimension || '',
-          material: mockCollectionData.material || '',
-          age: mockCollectionData.age || mockCollectionData.year || mockCollectionData.time || '',
-          author: mockCollectionData.author || mockCollectionData.creator || '',
-          collector: mockCollectionData.collector || mockCollectionData.museum || '',
-          mediaList: mockCollectionData.mediaList || []
-        },
-        hasAudioMedia: hasAudioMedia,
-        hasImageMedia: hasImageMedia,
-        isLoading: false
-      });
-      
-      // 更新藏品介绍显示
-      this.updateIntroDisplay(mockCollectionData.description || mockCollectionData.content);
     } catch (error) {
       console.error('加载藏品详情失败:', error);
       wx.showToast({
-        title: '加载失败',
-        icon: 'error'
+        title: error.message || '加载失败',
+        icon: 'none'
       });
+      
+      // 设置错误状态
       this.setData({
-        isLoading: false
+        loading: false,
+        error: true
       });
+    } finally {
+      wx.hideLoading();
     }
   },
 
@@ -223,10 +196,10 @@ Page({
   previewImage: function(e) {
     const index = e.currentTarget.dataset.index;
     const media_src = this.data.collection.mediaList
-      .filter(item=>item.type===0 || item.type===1)
+      .filter(item=>item.type===1 || item.type===2)
       .map(image=>({
         url: this.data.static_url + image.url,
-        type: image.type===0?'image':'video',
+        type: image.type===1?'image':'video',
         poster: this.data.static_url + image.url
       }));
     console.log(media_src)

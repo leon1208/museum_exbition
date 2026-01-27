@@ -16,7 +16,7 @@
     <!-- 图片轮播 -->
     <view class="carousel-container" wx:if="{{!isLoading}}">
       <swiper class="carousel-swiper" indicator-dots="{{true}}" indicator-color="rgba(255, 255, 255, 0.5)" indicator-active-color="#fff" autoplay="{{false}}" circular="{{false}}" interval="5000" duration="500">
-        <swiper-item wx:for="{{collection.mediaList}}" wx:key="index" wx:if="{{item.type === 0}}">
+        <swiper-item wx:for="{{mediaList}}" wx:key="index" wx:if="{{item.type === 1}}">
           <view class="carousel-item">
             <image class="carousel-image" src="{{static_url}}{{item.url}}"
               mode="aspectFill"
@@ -25,7 +25,7 @@
           </view>
         </swiper-item>
         <!-- 如果没有图片类型的媒体，使用占位图 -->
-        <swiper-item wx:if="{{!hasImageMedia || collection.mediaList.length === 0}}">
+        <swiper-item wx:if="{{!hasImageMedia || mediaList.length === 0}}">
           <view class="carousel-item">
             <image class="carousel-image" src="/wx_static/tmp_images/placeholder_image.png" mode="aspectFill"></image>
           </view>
@@ -39,7 +39,7 @@
         <view class="tag-container">
           <!-- 根据单元类型显示标签 -->
           <text class="tag tag-primary">{{collection.type}}</text>
-          <text class="tag tag-secondary">考古</text>
+          <!-- <text class="tag tag-secondary">考古</text> -->
           <!-- <text class="tag tag-accent" wx:elif="{{unit.unitType === 2}}">多媒体单元</text>
           <text class="tag tag-section" wx:if="{{unit.section}}">{{unit.section}}</text> -->
         </view>
@@ -105,24 +105,24 @@
         </view>
     
         <!-- 收藏单位 -->
-        <view class="detail-item" wx:if="{{collection.collector}}">
+        <view class="detail-item" wx:if="{{collection.museumName}}">
           <view class="icon-container">
             <text class="iconfont icon-location-dot" style="font-size: 20px;"></text>
           </view>
           <view class="detail-content">
             <text class="label">收藏单位</text>
-            <text class="value">{{collection.collector}}</text>
+            <text class="value">{{collection.museumName}}</text>
           </view>
         </view>
 
         <!-- 尺寸 -->
-        <view class="detail-item" wx:if="{{collection.size}}" style="grid-column: 1/-1">
+        <view class="detail-item" wx:if="{{collection.sizeInfo}}" style="grid-column: 1/-1">
           <view class="icon-container">
             <text class="iconfont icon-ruler-horizontal" style="font-size: 20px;"></text>
           </view>
           <view class="detail-content">
             <text class="label">尺寸</text>
-            <text class="value">{{collection.size}}</text>
+            <text class="value">{{collection.sizeInfo}}</text>
           </view>
         </view>
       </view>
@@ -146,10 +146,10 @@
   </scroll-view>
 
   <!-- 底部操作栏 -->
-  <view class="bottom-bar" wx:if="{{!isLoading && !hasAudioMedia}}">
+  <!-- <view class="bottom-bar" wx:if="{{!isLoading && !hasAudioMedia}}">
     <button class="action-btn" bindtap="collectCollection">
       <mp-icon type="field" icon="star" color="gray" size="{{40}}"></mp-icon>
       <text>收藏</text>
     </button>
-  </view>
+  </view> -->
 </view>

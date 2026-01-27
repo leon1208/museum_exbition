@@ -16,6 +16,7 @@ export const apiUrls = {
     exhibition_detail: `${baseUrl}/wx/museum/exhibition/detail/`,  // 新增展览详情接口
     unit_detail: `${baseUrl}/wx/museum/exhibition/unit/detail/`,  // 新增展览单元详情接口
     collections: `${baseUrl}/wx/museum/collection/`,  // 新增藏品列表接口
+    collection_detail: `${baseUrl}/wx/museum/collection/detail/`,  // 新增藏品详情接口
     // 可以添加更多API地址
   },
   auth: {
@@ -100,6 +101,10 @@ export const api = {
   // 获取藏品列表数据
   getCollections(museumId) {
     return authenticatedRequest(`${apiUrls.museum.collections}${museumId}`);
+  },
+  // 获取藏品详情数据
+  getCollectionDetail(collectionId) {
+    return authenticatedRequest(`${apiUrls.museum.collection_detail}${collectionId}`);
   },
   // 微信登录
   login(code) {

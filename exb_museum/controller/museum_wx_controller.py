@@ -525,3 +525,66 @@ def collection_list_by_museum(museum_id: int):
         collection_list.append(collection_item)
 
     return AjaxResponse.from_success(data=collection_list)
+
+
+@reg.api.route('/wx/museum/collection/detail/<int:collection_id>', methods=["GET"])
+@require_wx_token
+@JsonSerializer()
+def collection_detail(collection_id: int):
+    """获取藏品详情，供小程序端使用"""
+    # 获取服务实例
+    collection_service = CollectionService()
+    media_service = MuseumMediaService()
+
+    # 根据ID获取藏品信息
+    collection = collection_service.select_collection_by_id(collection_id)
+    if not collection:
+        return AjaxResponse.from_error(msg="藏品不存在")
+    
+    # 获取藏品媒体（包括图片、视频、音频）
+    medias = media_service.select_museum_media_list(
+        object_id=collection_id, 
+        object_type='collection', 
+        media_type=[1, 2, 3]  # 1为图片，2为视频，3为音频
+    )
+    
+    # 构建藏品详情数据
+    collection_detail = {
+        "id": collection.collection_id,
+        "name": collection.collection_name or "",
+        "type": collection.collection_type or "",
+        "age": collection.age or "",
+        "material": collection.material or "",
+        "sizeInfo": collection.size_info or "",
+        "author": collection.author or "",
+        "description": collection.description or "",
+        "museumId": collection.museum_id,
+        "museumName": "",  # 后续可从博物馆表获取名称
+        "intro": collection.description or "",  # 展品介绍
+        "mediaList": [
+            {
+                "url": media.cover_url if media.media_type == 1 else media.media_url,  # 视频使用封面图
+                "type": media.media_type,  # 1为图片，2为视频，3为音频
+                "mediaUrl": media.media_url  # 媒体原始URL
+            } 
+            for media in medias
+        ],
+        "hasAudioMedia": any(media.media_type == 3 for media in medias),  # 是否有音频
+        "hasImageMedia": any(media.media_type == 1 for media in medias),  # 是否有图片
+        "imageUrl": next((media.media_url for media in medias if media.media_type == 1), ""),  # 第一张图片作为主要图片
+        "videoUrl": next((media.media_url for media in medias if media.media_type == 2), ""),  # 第一个视频
+        "audioUrl": next((media.media_url for media in medias if media.media_type == 3), "")   # 第一个音频 
+    }
+    
+    # 如果需要博物馆名称，可以额外查询
+    try:
+        from exb_museum.service.museum_service import MuseumService
+        museum_service = MuseumService()
+        museum = museum_service.select_museum_by_id(collection.museum_id)
+        if museum:
+            collection_detail["museumName"] = museum.museum_name or ""
+    except Exception as e:
+        print(f"获取博物馆信息时出错: {str(e)}")
+        collection_detail["museumName"] = ""
+
+    return AjaxResponse.from_success(data=collection_detail)
