@@ -1,10 +1,16 @@
 <view class="page">
   <!-- 用户信息区域 -->
   <view class="user-section">
-    <view class="avatar-container" bindtap="handleLogin">
-      <!-- <image class="avatar" src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" /> -->
-      <text class="iconfont icon-user" style="font-size: 50px;"></text>
-      <text class="nickname">{{userInfo.nickName || '点击头像登录小程序'}}</text>
+    <view class="avatar-container">
+      <button class="avatar-button" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar" wx:if="{{!userInfo.avatarUrl}}">
+        <image class="avatar" src="{{defaultAvatarUrl}}" />
+        <text class="nickname">点击头像登录小程序</text>
+      </button>
+      <view wx:else class="user-info-display">
+        <image class="avatar" src="{{userInfo.avatarUrl}}" />
+        <input class="nickname" bindinput="onInputChange" type="nickname" value="{{userInfo.nickName || '修改昵称'}}"></input>
+        <!-- <button class="phone-button" open-type="getPhoneNumber" bind:getphonenumber="getPhoneNumber">获取手机号</button> -->
+      </view>
     </view>
   </view>
 
@@ -12,11 +18,11 @@
   <view class="menu-section">
     <view class="menu-item" bindtap="goToMyActivities">
       <text class="menu-text">我的活动预约</text>
-      <text class="arrow">></text>
+      <mp-icon type="field" icon="arrow" color="gray" size="{{15}}"></mp-icon>
     </view>
     <view class="menu-item" bindtap="goToSettings">
       <text class="menu-text">我的设置</text>
-      <text class="arrow">></text>
+      <mp-icon type="field" icon="arrow" color="gray" size="{{15}}"></mp-icon>
     </view>
   </view>
 

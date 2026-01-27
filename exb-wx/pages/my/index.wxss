@@ -4,20 +4,44 @@
   padding-bottom: 140rpx; /* 增加底部内边距，为底部切换栏留出空间 */
 }
 
+/* 用户信息区域 */
 .user-section {
-  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
-  padding: 60rpx 40rpx 40rpx;
-  text-align: center;
-  color: #fff;
-  position: relative;
+  padding: 40rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300rpx;
 }
 
 .avatar-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  cursor: pointer;
-  padding-top: 50rpx;
+  width: 100%;
+  padding-top: 20rpx;
+}
+
+.avatar-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.avatar-button::after {
+  border: none;
+}
+
+.user-info-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding-top: 20rpx;
 }
 
 .avatar {
@@ -28,25 +52,53 @@
   margin-bottom: 20rpx;
 }
 
-.nickname {
+
+/* 为input类型的.nickname添加特殊样式 */
+input.nickname {
+  color: white;
   font-size: 32rpx;
-  font-weight: 500;
+  font-weight: bold;
+  margin-bottom: 5rpx;
+  text-align: center; /* 让输入框内的文本居中 */
+  width: 200rpx; /* 设置固定宽度以便居中效果更明显 */
+  border: none;
+  background: transparent;
+  outline: none;
+  padding: 0;
 }
 
+/* 原有的.nickname样式保持不变（适用于text元素） */
+.nickname {
+  color: white;
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 5rpx;
+  text-align: center; /* 添加居中对齐 */
+}
+
+.phone-button {
+  background-color: #fff;
+  color: #333;
+  border-radius: 40rpx;
+  padding: 10rpx 30rpx;
+  font-size: 28rpx;
+  margin-top: 20rpx;
+}
+
+/* 功能菜单 */
 .menu-section {
-  background: #fff;
-  margin: 40rpx 24rpx;
-  border-radius: 16rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
-  overflow: hidden;
+  background: white;
+  margin: 20rpx;
+  border-radius: 12rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
 }
 
 .menu-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 32rpx 36rpx;
-  border-bottom: 1rpx solid #eee;
+  padding: 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
 }
 
 .menu-item:last-child {
@@ -59,18 +111,19 @@
 }
 
 .arrow {
-  font-size: 32rpx;
   color: #ccc;
+  font-size: 24rpx;
 }
 
+/* 版本信息 */
 .version-section {
+  padding: 40rpx 20rpx;
   text-align: center;
-  margin-top: 60rpx;
 }
 
 .version-text {
-  font-size: 24rpx;
   color: #999;
+  font-size: 24rpx;
 }
 
 /* 底部TabBar样式 - 与首页保持一致 */
@@ -101,4 +154,8 @@
 
 .tab-item.active {
   color: #38bdf8;
+}
+
+.tab-item text {
+  font-size: 24rpx;
 }
