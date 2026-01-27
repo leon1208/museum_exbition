@@ -111,9 +111,9 @@
     <view
       class="tab-item {{tabIndex === 0 ? 'active' : ''}}"
       bindtap="switchTab"
-      data-index="0"
+      data-index="{{0}}"
     >
-      <mp-icon type="field" icon="home" color="gray" size="{{30}}"></mp-icon>
+      <mp-icon type="field" icon="home" color="{{tabIndex === 0 ? '#38bdf8' : 'gray'}}" size="{{30}}"></mp-icon>
       <text>首页</text>
     </view>
 
@@ -129,9 +129,9 @@
     <view
       class="tab-item {{tabIndex === 2 ? 'active' : ''}}"
       bindtap="switchTab"
-      data-index="2"
+      data-index="{{2}}"
     >
-      <mp-icon type="field" icon="me" color="gray" size="{{30}}"></mp-icon>
+      <mp-icon type="field" icon="me" color="{{tabIndex === 2 ? '#38bdf8' : 'gray'}}" size="{{30}}"></mp-icon>
       <text>我的</text>
     </view>
   </view>

@@ -1,0 +1,104 @@
+.page {
+  background: #f0f9ff;
+  min-height: 100vh;
+  padding-bottom: 140rpx; /* 增加底部内边距，为底部切换栏留出空间 */
+}
+
+.user-section {
+  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+  padding: 60rpx 40rpx 40rpx;
+  text-align: center;
+  color: #fff;
+  position: relative;
+}
+
+.avatar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  padding-top: 50rpx;
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  border: 4rpx solid rgba(255, 255, 255, 0.5);
+  margin-bottom: 20rpx;
+}
+
+.nickname {
+  font-size: 32rpx;
+  font-weight: 500;
+}
+
+.menu-section {
+  background: #fff;
+  margin: 40rpx 24rpx;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.05);
+  overflow: hidden;
+}
+
+.menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32rpx 36rpx;
+  border-bottom: 1rpx solid #eee;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-text {
+  font-size: 30rpx;
+  color: #333;
+}
+
+.arrow {
+  font-size: 32rpx;
+  color: #ccc;
+}
+
+.version-section {
+  text-align: center;
+  margin-top: 60rpx;
+}
+
+.version-text {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 底部TabBar样式 - 与首页保持一致 */
+.tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120rpx;
+  background: rgba(255,255,255,.9);
+  display: flex;
+  justify-content: space-around;
+  padding-top: 12rpx;
+  z-index: 999;
+}
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 22rpx;
+  color: #999;
+}
+
+.tab-item .icon {
+  font-size: 40rpx;
+}
+
+.tab-item.active {
+  color: #38bdf8;
+}

@@ -111,9 +111,29 @@ Page({
   // 切换标签
   switchTab: function (e) {
     const index = e.currentTarget.dataset.index;
+    console.log(index)
     this.setData({
       tabIndex: index
     });
+    
+    // 根据索引跳转到相应页面
+    if (index === 0) {
+      return;
+      // 首页，回到首页
+      // if (getCurrentPages().length === 1) {
+      //   // 如果当前就在首页，则刷新数据
+      //   this.getMuseumData();
+      // } else {
+      //   // 否则跳转回首页
+      //   wx.switchTab({
+      //     url: '../index/index'
+      //   });
+      // }
+    } else if (index === 2) { // "我的"页面对应索引2
+      wx.navigateTo({
+        url: '../my/index'
+      });
+    }
   },
 
   // Swiper 滑动事件
