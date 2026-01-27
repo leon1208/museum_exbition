@@ -23,7 +23,8 @@ Page({
       section: '',
       images: [],
       audioUrl: '',
-      hasAudio: false
+      hasAudio: false,
+      collectionsDetail: [] // 新增：关联的藏品详情
     },
     currentIndex: 0, // 当前轮播图索引
     showFullIntro: false,
@@ -182,7 +183,8 @@ Page({
             section: unitData.section || '',
             images: images,
             audioUrl: unitData.audioUrl || audioUrl,
-            hasAudio: unitData.hasAudio || hasAudio
+            hasAudio: unitData.hasAudio || hasAudio,
+            collectionsDetail: unitData.collectionsDetail || [] // 添加关联藏品详情
           },
           isLoading: false
         });
@@ -272,6 +274,16 @@ Page({
     
     // 使用全局音频管理器播放音频
     audioManager.play(this.data.static_url + audioUrl, audioName, albumName, artistName, coverUrl);
+  },
+
+  /**
+   * 跳转到藏品详情页面
+   */
+  goToCollectionDetail: function(e) {
+    const collection = e.currentTarget.dataset.collection;
+    wx.navigateTo({
+      url: '../collection_detail/index?collection=' + JSON.stringify(collection)
+    });
   },
 
   /**

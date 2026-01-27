@@ -101,5 +101,19 @@
       </view>
 
     </view>
+    
+    <!-- 相关藏品区域 - 仅在展品单元且有关联藏品时显示 -->
+    <view class="related-collections-section" wx:if="{{unit.unitType === 0 && unit.collectionsDetail && unit.collectionsDetail.length > 0}}">
+      <view class="section-header">
+        <text class="section-title">相关藏品</text>
+      </view>
+      <scroll-view scroll-x class="h-scroll">
+        <view class="card" wx:for="{{unit.collectionsDetail}}" wx:key="id" bindtap="goToCollectionDetail" data-collection="{{item}}">
+          <image class="card-img" src="{{static_url}}{{item.imageUrl}}" mode="aspectFill" />
+          <view class="card-title">{{item.name}}</view>
+          <view class="card-sub">{{item.age}}</view>
+        </view>
+      </scroll-view>
+    </view>
   </scroll-view>
 </view>

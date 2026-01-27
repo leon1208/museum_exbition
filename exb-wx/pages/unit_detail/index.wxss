@@ -200,6 +200,51 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 20rpx;
+  padding: 0 40rpx;
+}
+
+.section-title {
+  font-size: 34rpx;
+  font-weight: bold;
+}
+
+/* 相关藏品区域样式 */
+.related-collections-section {
+  margin-top: 20rpx;
+}
+
+.h-scroll {
+  white-space: nowrap;
+  padding-left: 24rpx;
+}
+
+.card {
+  width: 300rpx;
+  display: inline-block;
+  margin-right: 24rpx;
+}
+
+.card-img {
+  width: 100%;
+  height: 400rpx;
+  border-radius: 16rpx;
+}
+
+.card-title {
+  font-weight: bold;
+  margin-top: 12rpx;
+  font-size: 28rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-sub {
+  font-size: 24rpx;
+  color: #888;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .section-title {
