@@ -18,9 +18,10 @@ from ruoyi_common.descriptor.serializer import BaseSerializer, JsonSerializer
 from ruoyi_common.descriptor.validator import QueryValidator, FileUploadValidator
 from ruoyi_framework.descriptor.permission import HasPerm, PreAuthorize
 
-from exb_museum.domain.entity import MuseumMedia, Museum, Collection, Exhibition, ExhibitionUnit
+from exb_museum.domain.entity import MuseumMedia, Museum, Collection, Exhibition, ExhibitionUnit, Activity  # 添加活动实体导入
 from exb_museum.service.museum_media_service import MuseumMediaService
 from exb_museum.service.museum_service import MuseumService
+from exb_museum.service.activity_service import ActivityService  # 添加活动服务导入
 from exb_museum.service.wx_auth_service import WxAuthService
 from functools import wraps
 
@@ -151,6 +152,13 @@ def museum_home(app_id: str):
     exhibition.status = 0  # 只获取正常状态的展览
     exhibitions = exhibition_service.select_exhibition_list(exhibition)
 
+    # 获取该博物馆下的活动列表
+    activity_service = ActivityService()
+    activity = Activity()
+    activity.museum_id = museum.museum_id
+    activity.status = 0  # 只获取正常状态的活动
+    activities = activity_service.select_activity_list(activity)
+
     # 构建返回数据
     # 转换藏品数据格式
     collection_list = []
@@ -208,7 +216,34 @@ def museum_home(app_id: str):
             exhibition_item["statusText"] = "正在热展"
 
         exhibition_list.append(exhibition_item)
+    # 转换活动数据格式
+    activity_list = []
+    for act in activities:
+        activity_item = {
+            "id": act.activity_id,
+            "title": act.activity_name or "",
+            "desc": act.introduction or "",
+            "type": act.activity_type or "",
+            "location": act.location or "",
+            "maxRegistration": act.max_registration or 0,
+            "registrationCount": act.registration_count or 0,
+            "presenter": act.presenter or "",
+            "targetAudience": act.target_audience or "",
+            "startTime": act.activity_start_time.strftime('%Y-%m-%d') if act.activity_start_time else "",
+            "endTime": act.activity_end_time.strftime('%Y-%m-%d') if act.activity_end_time else ""
+        }
 
+        # 从媒体表获取活动图片
+        medias = media_service.select_museum_media_list(object_id=act.activity_id, object_type='activity', media_type='1')
+        if medias:
+            activity_item["img"] = medias[0].media_url
+
+        # 日期格式
+        # 格式化时间为 '26年1月22日 12:00' 格式，如果有endTime, 则添加结束时间
+        activity_item["time"] = f"{act.activity_start_time.strftime('%y年%m月%d日 %H:%M') if act.activity_start_time else ''}{act.activity_end_time.strftime(' 至 %H:%M') if act.activity_end_time else ''}"
+
+        activity_list.append(activity_item)
+    
     # 构建首页数据
     home_data = {
         "museum": {
@@ -222,20 +257,7 @@ def museum_home(app_id: str):
         },
         "collections": collection_list,
         "exhibitions": exhibition_list,
-        "educations": [
-            {
-                "type": "工作坊",
-                "title": "陶艺体验大师课",
-                "time": "明日 10:00",
-                "img": "/wx_static/tmp_images/act01.png"
-            },
-            {
-                "type": "讲座",
-                "title": "策展人视角导览",
-                "time": "周日 14:00",
-                "img": "/wx_static/tmp_images/act02.png"
-            }
-        ]
+        "educations": activity_list,
     }
     return AjaxResponse.from_success(data=home_data)
 
