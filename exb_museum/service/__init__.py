@@ -7,3 +7,4 @@ from .museum_hall_service import MuseumHallService
 from .exhibition_service import ExhibitionService
 from .exhibition_unit_service import ExhibitionUnitService
 from .collection_service import CollectionService
+from .activity_service import ActivityService
