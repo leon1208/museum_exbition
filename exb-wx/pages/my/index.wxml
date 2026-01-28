@@ -6,11 +6,13 @@
         <image class="avatar" src="{{defaultAvatarUrl}}" />
         <text class="nickname">点击头像登录小程序</text>
       </button>
-      <view wx:else class="user-info-display">
+      <!-- <view wx:else class="user-info-display"> -->
+      <button class="avatar-button" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar" wx:else>
         <image class="avatar" src="{{userInfo.avatarUrl}}" />
-        <input class="nickname" bindinput="onInputChange" type="nickname" value="{{userInfo.nickName || '修改昵称'}}"></input>
         <!-- <button class="phone-button" open-type="getPhoneNumber" bind:getphonenumber="getPhoneNumber">获取手机号</button> -->
-      </view>
+      </button>
+      <input class="nickname" bindinput="onInputChange" type="nickname" value="{{userInfo.nickname || '修改昵称'}}"></input>
+      <!-- </view> -->
     </view>
   </view>
 

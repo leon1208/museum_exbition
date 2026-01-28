@@ -111,7 +111,6 @@ Page({
   // 切换标签
   switchTab: function (e) {
     const index = e.currentTarget.dataset.index;
-    console.log(index)
     this.setData({
       tabIndex: index
     });

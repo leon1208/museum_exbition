@@ -1,4 +1,5 @@
 // pages/my/index.js
+import { api } from '../../utils/api.js'
 Page({
   data: {
     defaultAvatarUrl: 'https://mmbiz.qpic.cn/mmbiz/icTdbqWNOwNRna42FI242Lcia07jQodd2FJGIYQfG0LAJGFxM4FbnQP6yfMxBgJ0F3YRqJCJ1aPAK2dQagdusBZg/0',
@@ -19,7 +20,7 @@ Page({
   loadUserInfo() {
     // 从全局数据或本地存储获取用户信息
     const app = getApp();
-    const userInfo = wx.getStorageSync('userInfo') || {};
+    const userInfo = wx.getStorageSync('user_info') || {};
     this.setData({
       userInfo: userInfo
     });
@@ -45,19 +46,63 @@ Page({
     });
     
     // 保存到本地缓存
-    wx.setStorageSync('userInfo', userInfo);
+    wx.setStorageSync('user_info', userInfo);
+  
+    // 调用API更新服务器上的用户信息
+    this.updateUserInfoToServer(userInfo.nickname, avatarUrl);
   },
-
+  
   onInputChange(e) {
-    const nickName = e.detail.value
+    const nickname = e.detail.value
     const userInfo = this.data.userInfo;
-    userInfo.nickName = nickName;
-
+    userInfo.nickname = nickname;
+  
     this.setData({
       userInfo: userInfo
     })
     // 保存到本地缓存
-    wx.setStorageSync('userInfo', userInfo);
+    wx.setStorageSync('user_info', userInfo);
+  
+    // 调用API更新服务器上的用户信息
+    this.updateUserInfoToServer(nickname, userInfo.avatarUrl);
+  },
+  
+  // 添加更新用户信息到服务器的方法
+  updateUserInfoToServer(nickname, avatarUrl) {
+    // 检查是否都有有效的值才发送请求
+    if (!nickname && !avatarUrl) {
+      return;
+    }
+  
+    wx.showLoading({
+      title: '更新中...',
+    });
+  
+    // 调用API更新用户信息
+    api.updateUser(nickname, avatarUrl)
+      .then(res => {
+        wx.hideLoading();
+        if (res.code === 200) {
+          wx.showToast({
+            title: '更新成功',
+            icon: 'success'
+          });
+        } else {
+          wx.showToast({
+            title: '更新失败',
+            icon: 'none'
+          });
+          console.error('更新用户信息失败:', res.msg || res.message);
+        }
+      })
+      .catch(err => {
+        wx.hideLoading();
+        wx.showToast({
+          title: '网络错误',
+          icon: 'none'
+        });
+        console.error('更新用户信息请求失败:', err);
+      });
   },
 
   // 获取用户手机号
@@ -107,7 +152,7 @@ Page({
           this.setData({
             userInfo: userInfo
           });
-          wx.setStorageSync('userInfo', userInfo);
+          wx.setStorageSync('user_info', userInfo);
         }
       }
     });

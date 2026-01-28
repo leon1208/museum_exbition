@@ -5,14 +5,16 @@ import requests
 # import json
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
-# from exb_museum.domain.entity.wx_user import WxUserPo
-# from ruoyi_admin.ext import db
+from exb_museum.domain.entity.wx_user import WxUser
 from ruoyi_framework.config import TokenConfig
 import jwt
 import logging
 # from ruoyi_admin.config.wx_config import WxConfig
+from ruoyi_common.sqlalchemy.transaction import Transactional
+from ruoyi_admin.ext import db
 
 from exb_museum.service.museum_service import MuseumService
+from exb_museum.mapper.wx_user_mapper import WxUserMapper
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +65,7 @@ class WxAuthService:
             logger.error(f"请求微信API失败: {str(e)}")
             return None
     
-    def generate_access_token(self, open_id: str) -> str:
+    def generate_access_token(self, open_id: str, app_id: str) -> str:
         """
         生成JWT访问令牌
         
@@ -74,7 +76,7 @@ class WxAuthService:
             JWT令牌字符串
         """
         payload = {
-            'openid': open_id,
+            'open_id': open_id, 'app_id': app_id,
             'exp': datetime.now(timezone.utc) + timedelta(seconds=self.token_config.expire_seconds()),
             'iat': datetime.now(timezone.utc)
         }
@@ -142,7 +144,8 @@ class WxAuthService:
 
         return True
 
-    def get_or_create_wx_user(self, app_id: str, code: str) -> str:
+    @Transactional(db.session)
+    def get_or_create_wx_user(self, app_id: str, code: str) -> WxUser:
         """
         通过code获取或创建微信用户
         
@@ -163,9 +166,52 @@ class WxAuthService:
         session_info = self.code_to_session(app_id, app_secret, code)
         if not session_info or 'openid' not in session_info:
             return None
-            
+        
+        # 从session_info中提取openid和session_key
+        session_key = session_info.get('session_key')
+        unionid = session_info.get('unionid')    
         openid = session_info['openid']
-        return openid
+
+        # 调用mapper，查询用户是否存在
+        wx_user = WxUserMapper.select_wx_user_by_app_id_and_open_id(app_id, openid)
+        if not wx_user:
+            # 调用mapper,upsert该用户信息
+            wx_user = WxUser(
+                app_id=app_id,
+                open_id=openid,
+                union_id=unionid,
+                session_key=session_key,
+            )
+            WxUserMapper.insert_wx_user(wx_user)
+        else:
+            # 更新用户信息
+            wx_user.session_key = session_key
+            WxUserMapper.update_wx_user(wx_user)
+
+        return wx_user
+    
+    @Transactional(db.session)
+    def update_wx_user_nickname_or_avatar(self, app_id: str, openid: str, nickname: str, avatar_url: str) -> bool:
+        """
+        更新微信用户昵称或头像
+        
+        Args:
+            wx_user: 微信用户对象
+            nickname: 新昵称
+            avatar_url: 新头像URL
+            
+        Returns:
+            是否更新成功
+        """
+        wx_user = WxUserMapper.select_wx_user_by_app_id_and_open_id(app_id, openid)
+        if not wx_user:
+            return False
+        if nickname and nickname != wx_user.nickname:
+            wx_user.nickname = nickname
+        if avatar_url and avatar_url != wx_user.avatar_url:
+            wx_user.avatar_url = avatar_url
+        WxUserMapper.update_wx_user(wx_user)
+        return True
         
         # # 查找或创建用户
         # wx_user = db.session.query(WxUserPo).filter_by(openid=openid).first()

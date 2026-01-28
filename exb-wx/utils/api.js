@@ -17,6 +17,7 @@ export const apiUrls = {
     unit_detail: `${baseUrl}/wx/museum/exhibition/unit/detail/`,  // 新增展览单元详情接口
     collections: `${baseUrl}/wx/museum/collection/`,  // 新增藏品列表接口
     collection_detail: `${baseUrl}/wx/museum/collection/detail/`,  // 新增藏品详情接口
+    update_user: `${baseUrl}/wx/my/update`,// 更新用户信息接口
     // 可以添加更多API地址
   },
   auth: {
@@ -119,6 +120,13 @@ export const api = {
     return request(apiUrls.auth.refresh, 'POST', { 
       access_token: token,
       app_id: appId 
+    });
+  },
+  // 更新用户信息
+  updateUser(nickname, avatarUrl) {
+    return authenticatedRequest(apiUrls.museum.update_user, 'POST', {
+      nickname: nickname,
+      avatarUrl: avatarUrl
     });
   }
   // 可以添加更多API方法

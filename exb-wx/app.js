@@ -30,9 +30,9 @@ App({
                 wx.setStorageSync('access_token', response.data.access_token);
                 
                 // 可以选择性地保存其他用户信息
-                // if (response.data.user_info) {
-                //   wx.setStorageSync('user_info', response.data.user_info);
-                // }
+                if (response.data.user_info) {
+                  wx.setStorageSync('user_info', response.data.user_info);
+                }
                 
                 console.log('登录成功', response);
                 

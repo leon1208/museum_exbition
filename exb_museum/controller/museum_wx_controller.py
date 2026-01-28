@@ -3,7 +3,7 @@
 # @FileName: museum_media_controller.py
 # @Time    : 2024-05-20 14:00:00
 
-from flask import request
+from flask import request, g
 from flask_login import login_required
 from typing import List
 from werkzeug.datastructures import FileStorage
@@ -64,7 +64,9 @@ def require_wx_token(f, check_sign=False):
             return JsonSerializer().serialize(f, AjaxResponse.from_error(msg="无效的请求签名"))
 
         # 将用户信息存储到全局对象中
-        # g.wx_user_id = payload.get('user_id')
+        g.wx_user_payload = payload
+        g.wx_open_id = payload.get('open_id')
+        g.wx_app_id = payload.get('app_id')
         return f(*args, **kwargs)
     return decorated_function
 
@@ -85,14 +87,37 @@ def wx_login():
     
     # 使用code进行登录
     auth_service = WxAuthService()
-    open_id = auth_service.get_or_create_wx_user(app_id, code)
-    if not open_id:
+    wx_user = auth_service.get_or_create_wx_user(app_id, code)
+    if not wx_user:
         return AjaxResponse.from_error(msg="登录失败，请重试")
-    access_token = auth_service.generate_access_token(open_id)
+    access_token = auth_service.generate_access_token(wx_user.open_id, app_id)
     if not access_token:
         return AjaxResponse.from_error(msg="登录失败，请重试")
-        
-    return AjaxResponse.from_success(data={"access_token": access_token}, msg="登录成功")
+    
+    user_info = {
+        "nickname": wx_user.nickname,
+        "avatarUrl": wx_user.avatar_url
+    }
+    return AjaxResponse.from_success(data={"access_token": access_token, "user_info": user_info}, msg="登录成功")
+
+
+@reg.api.route('/wx/my/update', methods=["POST"])
+@require_wx_token
+@JsonSerializer()
+def update_user_info():
+    """更新用户信息"""
+    data = request.get_json()
+    nickname = data.get('nickname')
+    avatar_url = data.get('avatarUrl')
+    
+    # 更新用户信息
+    auth_service = WxAuthService()
+    updated = auth_service.update_wx_user_nickname_or_avatar(g.wx_app_id, g.wx_open_id, nickname, avatar_url)
+    if not updated:
+        return AjaxResponse.from_error(msg="更新用户信息失败")
+    
+    return AjaxResponse.from_success(msg="用户信息更新成功")
+
 
 @reg.api.route('/wx/museum/home/<string:app_id>', methods=["GET"])
 @require_wx_token
