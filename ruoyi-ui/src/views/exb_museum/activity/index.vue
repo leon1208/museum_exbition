@@ -20,12 +20,14 @@
         </el-select>
       </el-form-item>
       <el-form-item label="活动类型" prop="activityType">
-        <el-input
+        <el-select
           v-model="queryParams.activityType"
           placeholder="请输入活动类型"
-          clearable
+          clearable=true
           @keyup.enter.native="handleQuery"
-        />
+        >
+          <el-option v-for="item in activityTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+        </el-select>
       </el-form-item>
       <el-form-item label="活动地点" prop="location">
         <el-input
@@ -121,7 +123,7 @@
       </el-table-column>
       <el-table-column label="报名人数" align="center" v-if="columns[7].visible" prop="registrationCount" />
       <el-table-column label="最大报名人数" align="center" v-if="columns[8].visible" prop="maxRegistration" />
-      <el-table-column label="主讲人或表演团队" align="center" :show-overflow-tooltip="true" v-if="columns[9].visible" prop="presenter" />
+      <el-table-column label="主讲人/表演团队" align="center" :show-overflow-tooltip="true" v-if="columns[9].visible" prop="presenter" />
       <el-table-column label="状态" align="center" :show-overflow-tooltip="true" v-if="columns[10].visible" prop="status" :formatter="dict_status_format" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
@@ -139,6 +141,13 @@
             @click="handleDelete(scope.row)"
             v-hasPermi="['exb_museum:activity:remove']"
           >删除</el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-picture-outline"
+            @click="openMediaDialog(scope.row)"
+            v-hasPermi="['exb_museum:media:add']"
+          >媒体管理</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -153,7 +162,7 @@
 
     <!-- 添加或修改活动信息表对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
-      <el-form ref="form" :model="form" :rules="rules" label-width="120px">
+      <el-form ref="form" :model="form" :rules="rules" label-width="150px">
         <el-form-item label="活动名称" prop="activityName">
           <el-input v-model="form.activityName" placeholder="请输入活动名称" />
         </el-form-item>
@@ -166,7 +175,9 @@
           </el-select>
         </el-form-item>
         <el-form-item label="活动类型" prop="activityType">
-          <el-input v-model="form.activityType" placeholder="请输入活动类型" />
+          <el-select v-model="form.activityType" placeholder="请选择活动类型" clearable=true>
+            <el-option v-for="item in activityTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
         </el-form-item>
         <el-form-item label="活动对象" prop="targetAudience">
           <el-input v-model="form.targetAudience" placeholder="请输入活动对象" />
@@ -183,15 +194,18 @@
           </el-date-picker>
         </el-form-item>
         <el-form-item label="活动结束时间" prop="activityEndTime">
-          <el-date-picker clearable
+          <el-time-picker clearable
             v-model="form.activityEndTime"
             type="datetime"
-            value-format="yyyy-MM-dd HH:mm:ss"
+            value-format="HH:mm:ss"
             placeholder="选择活动结束时间">
-          </el-date-picker>
+          </el-time-picker>
         </el-form-item>
-        <el-form-item label="主讲人或表演团队" prop="presenter">
+        <el-form-item label="主讲人/表演团队" prop="presenter">
           <el-input v-model="form.presenter" placeholder="请输入主讲人或表演团队" />
+        </el-form-item>
+        <el-form-item label="最大报名人数" prop="maxRegistration">
+          <el-input-number v-model="form.maxRegistration" placeholder="请输入最大报名人数" type="number" :min="0" />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status">
@@ -238,16 +252,23 @@
       </div>
     </el-dialog>
 
+    <!-- 媒体上传对话框 - 使用可复用组件 -->
+    <MediaUpload :objectType="'activity'" :objectId="currentActivityId" :visible.sync="mediaDialogVisible"/>
+
   </div>
 </template>
 
 <script>
 import { listActivity, getActivity, delActivity, addActivity, updateActivity } from "@/api/exb_museum/activity";
+import MediaUpload from "@/components/MediaUpload/index.vue"; // 导入媒体上传组件
 import { listMuseum } from "@/api/exb_museum/museum"; // 导入博物馆API
 import { getToken } from "@/utils/auth";
 
 export default {
   name: "Activity",
+  components: {
+    MediaUpload,
+  },
   data() {
     return {
       // 遮罩层
@@ -328,9 +349,9 @@ export default {
         activityStartTime: [
           { required: true, message: "活动开始时间不能为空", trigger: "blur" }
         ],
-        activityEndTime: [
-          { required: true, message: "活动结束时间不能为空", trigger: "blur" }
-        ],
+        // activityEndTime: [
+        //   { required: true, message: "活动结束时间不能为空", trigger: "blur" }
+        // ],
         status: [
           { required: true, message: "状态不能为空", trigger: "change" }
         ]
@@ -340,6 +361,17 @@ export default {
         { value: 0, label: '正常' },
         { value: 1, label: '停用' },
       ],
+      // 活动类型字典
+      activityTypeOptions: [
+        { value: '讲座', label: '讲座' },
+        { value: '表演', label: '表演' },
+        { value: '手工', label: '手工' },
+        { value: '短足', label: '短足' },
+        { value: '其他', label: '其他' },
+      ],
+      // 媒体上传相关
+      mediaDialogVisible: false,
+      currentActivityId: 0,
     };
   },
   created() {
@@ -446,6 +478,14 @@ export default {
           // 数据类型转换
           const submitData = { ...this.form };
           
+        // 如果结束时间是时间格式（HH:mm:ss），则与开始时间的日期部分合并
+        if (submitData.activityStartTime && submitData.activityEndTime && typeof submitData.activityEndTime === 'string' && submitData.activityEndTime.includes(':')) {
+            // 提取开始时间的日期部分
+            const startDatePart = submitData.activityStartTime.split(' ')[0];
+            // 合并日期和时间
+            submitData.activityEndTime = `${startDatePart} ${submitData.activityEndTime}`;
+        }
+
           // 将活动ID转为整数
           if (submitData.activityId !== null && submitData.activityId !== undefined && submitData.activityId !== "") {
             submitData.activityId = parseInt(submitData.activityId, 10);
@@ -550,6 +590,11 @@ export default {
     submitFileForm() {
       this.$modal.loading("导入中请稍后")
       this.$refs.upload.submit();
+    },
+    /** 打开媒体上传对话框 */
+    openMediaDialog(row) {
+      this.currentActivityId = row.activityId;
+      this.mediaDialogVisible = true;
     },
   }
 };

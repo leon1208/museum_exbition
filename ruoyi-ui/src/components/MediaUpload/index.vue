@@ -153,7 +153,7 @@ export default {
     objectType: {
       type: String,
       required: true,
-      validator: value => ['museum', 'exhibition', 'collection', 'exhibition_unit'].includes(value)
+      validator: value => ['museum', 'exhibition', 'collection', 'exhibition_unit', 'activity'].includes(value)
     },
     // 对象ID
     objectId: {
@@ -205,7 +205,8 @@ export default {
         museum: '博物馆',
         exhibition: '展览',
         collection: '藏品',
-        exhibition_unit: '展览单元'
+        exhibition_unit: '展览单元',
+        activity: '活动'
       };
       return `${typeMap[this.objectType]}多媒体管理`;
     },
