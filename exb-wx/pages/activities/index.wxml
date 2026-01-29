@@ -1,0 +1,70 @@
+<!-- 教育活动列表页面 -->
+<view class="container">
+  <button class="back-btn" bindtap="goBack">
+    <mp-icon type="field" icon="back" color="black" size="{{15}}"></mp-icon>
+  </button>
+  <view class="head-title">教育活动</view>
+  <!-- 顶部导航栏 -->
+  <!-- <view class="nav-bar">
+    <button class="nav-btn" bindtap="goBack">
+      <text class="icon">arrow_back</text>
+    </button>
+    <text class="nav-title">教育活动</text>
+    <view class="nav-right">
+      <view class="nav-spacer"></view>
+    </view>
+  </view> -->
+
+  <!-- 筛选标签（Chip） -->
+  <view class="filter-chips">
+    <scroll-view class="chips-container" scroll-x="true" show-scrollbar="{{false}}">
+      <view class="chip {{currentFilter == item ? 'chip-active' : 'chip-inactive'}}" 
+          data-filter="{{item}}"
+          wx:for="{{filters}}" 
+          wx:key="index"
+          bindtap="changeFilter">
+          <text class="chip-text">{{item}}</text>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 教育活动列表 -->
+  <scroll-view class="education-list" scroll-y="true" enable-back-to-top="true">
+    <view class="loading-container" wx:if="{{isLoading}}">
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <view class="education-card" wx:for="{{filteredEducations}}" wx:key="id" bindtap="viewEducationDetail" data-education="{{item}}">
+      <view class="card-image-container">
+        <image class="card-image" src="{{static_url}}{{item.img}}" mode="aspectFill"></image>
+        <view class="category-tags-container">
+          <view class="category-tag">
+            <text class="category-text">{{item.type}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="card-content">
+        <view class="card-header">
+          <text class="education-title">{{item.title}}</text>
+        </view>
+        <view class="date-info">
+          <text class="iconfont icon-calendar-days" style="font-size: 25px;"></text>
+          <text class="date-text">{{item.time || item.startTime + ' - ' + item.endTime}}</text>
+        </view>
+        <view class="location-info">
+          <text class="iconfont icon-location-dot" style="font-size: 25px;"></text>
+          <text class="location-text">{{item.location}}</text>
+        </view>
+        <text class="education-description">{{item.desc}}</text>
+        <view class="detail-button">
+          <text class="detail-text">查看详情</text>
+          <mp-icon type="field" icon="arrow" color="#4299f0" size="{{15}}"></mp-icon>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty-container" wx:if="{{educations.length === 0 && !isLoading}}">
+      <text class="empty-text">暂无教育活动信息</text>
+    </view>
+  </scroll-view>
+</view>

@@ -6,6 +6,8 @@
     "pages/exhibition/index",
     "pages/exhibition_detail/index",
     "pages/unit_detail/index",
+    "pages/activities/index",
+    "pages/activity_detail/index",
     "pages/my/index",
     "pages/logs/logs"
   ],

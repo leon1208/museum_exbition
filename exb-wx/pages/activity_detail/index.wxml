@@ -1,0 +1,62 @@
+<!-- 教育活动详情页面 -->
+<view class="container">
+  <button class="back-btn" bindtap="goBack">
+    <mp-icon type="field" icon="back" color="black" size="{{15}}"></mp-icon>
+  </button>
+
+  <!-- 活动封面图片 -->
+  <view class="cover-container">
+    <image class="cover-image" src="{{static_url}}{{education.img}}" mode="aspectFill"></image>
+    <view class="cover-overlay"></view>
+    <!-- <view class="cover-content">
+      <text class="cover-title">{{education.title}}</text>
+      <view class="cover-meta">
+        <text class="cover-type">{{education.type}}</text>
+        <text class="cover-date">{{education.time}}</text>
+      </view>
+    </view> -->
+  </view>
+
+  <!-- 活动信息 -->
+  <view class="content-container">
+    <view class="info-section">
+      <text class="cover-title">{{education.title}}</text>
+      <text class="section-title">活动详情</text>
+      <view class="info-item">
+        <text class="info-label">活动类型</text>
+        <text class="info-value">{{education.type}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">活动时间</text>
+        <text class="info-value">{{education.time || education.startTime + ' - ' + education.endTime}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">活动地点</text>
+        <text class="info-value">{{education.location}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">主讲人/表演团队</text>
+        <text class="info-value">{{education.presenter || '待定'}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">适合对象</text>
+        <text class="info-value">{{education.targetAudience || '不限'}}</text>
+      </view>
+      <view class="info-item">
+        <text class="info-label">报名情况</text>
+        <text class="info-value">已报名{{education.registrationCount}}人，限额{{education.maxRegistration}}人</text>
+      </view>
+    </view>
+
+    <!-- 活动介绍 -->
+    <view class="desc-section">
+      <text class="section-title">活动介绍</text>
+      <text class="desc-text">{{education.desc || '暂无详细介绍'}}</text>
+    </view>
+
+    <!-- 报名按钮 -->
+    <view class="action-container">
+      <button class="register-btn" bindtap="registerActivity">立即报名</button>
+    </view>
+  </view>
+</view>

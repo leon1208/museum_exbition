@@ -18,6 +18,8 @@ export const apiUrls = {
     collections: `${baseUrl}/wx/museum/collection/`,  // 新增藏品列表接口
     collection_detail: `${baseUrl}/wx/museum/collection/detail/`,  // 新增藏品详情接口
     update_user: `${baseUrl}/wx/my/update`,// 更新用户信息接口
+    activities: `${baseUrl}/wx/museum/activity/`,  // 新增教育活动列表接口
+    activity_detail: `${baseUrl}/wx/museum/activity/detail/`,  // 新增教育活动详情接口
     // 可以添加更多API地址
   },
   auth: {
@@ -128,6 +130,14 @@ export const api = {
       nickname: nickname,
       avatarUrl: avatarUrl
     });
+  },
+  // 获取教育活动列表数据
+  getEducations(museumId) {
+    return authenticatedRequest(`${apiUrls.museum.activities}${museumId}`);
+  },
+  // 获取教育活动详情数据
+  getEducationDetail(educationId) {
+    return authenticatedRequest(`${apiUrls.museum.activity_detail}${activityId}`);
   }
   // 可以添加更多API方法
 };

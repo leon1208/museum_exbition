@@ -635,3 +635,93 @@ def collection_detail(collection_id: int):
         collection_detail["museumName"] = ""
 
     return AjaxResponse.from_success(data=collection_detail)
+
+# 在现有代码基础上添加以下两个函数（插入在exhibition_list_by_museum之后）
+
+@reg.api.route('/wx/museum/activity/<int:museum_id>', methods=["GET"])
+@require_wx_token
+@JsonSerializer()
+def activity_list_by_museum(museum_id: int):
+    """根据博物馆ID获取教育活动列表"""
+    # 从数据库获取真实数据
+    media_service = MuseumMediaService()
+    activity_service = ActivityService()
+
+    # 获取该博物馆下的活动列表
+    activity = Activity()
+    activity.museum_id = museum_id
+    activity.status = 0  # 只获取正常状态的活动
+    activities = activity_service.select_activity_list(activity)
+
+    # 转换活动数据格式
+    activity_list = []
+    for act in activities:
+        activity_item = {
+            "id": act.activity_id,
+            "title": act.activity_name or "",
+            "desc": act.introduction or "",
+            "type": act.activity_type or "",
+            "location": act.location or "",
+            "maxRegistration": act.max_registration or 0,
+            "registrationCount": act.registration_count or 0,
+            "presenter": act.presenter or "",
+            "targetAudience": act.target_audience or "",
+            "startTime": act.activity_start_time.strftime('%Y-%m-%d') if act.activity_start_time else "",
+            "endTime": act.activity_end_time.strftime('%Y-%m-%d') if act.activity_end_time else "",
+            "img": "",  # 后续从媒体表获取图片
+            "contentTags": act.activity_type or ""  # 活动类型作为标签
+        }
+
+        # 从媒体表获取活动图片
+        medias = media_service.select_museum_media_list(object_id=act.activity_id, object_type='activity', media_type='1')
+        if medias:
+            activity_item["img"] = medias[0].media_url
+
+        # 日期格式化
+        activity_item["time"] = f"{act.activity_start_time.strftime('%y年%m月%d日 %H:%M') if act.activity_start_time else ''}{act.activity_end_time.strftime(' 至 %H:%M') if act.activity_end_time else ''}"
+
+        activity_list.append(activity_item)
+
+    return AjaxResponse.from_success(data=activity_list)
+
+
+@reg.api.route('/wx/museum/activity/detail/<int:activity_id>', methods=["GET"])
+@require_wx_token
+@JsonSerializer()
+def activity_detail(activity_id: int):
+    """获取教育活动详情"""
+    # 获取服务实例
+    activity_service = ActivityService()
+    media_service = MuseumMediaService()
+
+    # 获取活动信息
+    activity = activity_service.select_activity_by_id(activity_id)
+    if not activity:
+        return AjaxResponse.from_error(msg="活动不存在")
+
+    # 获取活动媒体
+    activity_medias = media_service.select_museum_media_list(
+        object_id=activity_id, 
+        object_type='activity', 
+        media_type='1'
+    )
+
+    # 构建活动详情数据
+    activity_detail = {
+        "id": activity.activity_id,
+        "title": activity.activity_name or "",
+        "description": activity.introduction or "",
+        "type": activity.activity_type or "",
+        "location": activity.location or "",
+        "maxRegistration": activity.max_registration or 0,
+        "registrationCount": activity.registration_count or 0,
+        "presenter": activity.presenter or "",
+        "targetAudience": activity.target_audience or "",
+        "startTime": activity.activity_start_time.strftime('%Y-%m-%d %H:%M') if activity.activity_start_time else "",
+        "endTime": activity.activity_end_time.strftime('%Y-%m-%d %H:%M') if activity.activity_end_time else "",
+        "img": activity_medias[0].media_url if activity_medias else "",
+        "galleryImages": [media.media_url for media in activity_medias] if activity_medias else [],
+        "status": "ongoing" if activity.status == 0 else "ended"
+    }
+
+    return AjaxResponse.from_success(data=activity_detail)

@@ -83,7 +83,7 @@
   <view class="section">
     <view class="section-header">
       <text class="section-title">教育活动</text>
-      <text class="more">查看更多 ></text>
+      <text class="more" bindtap="goToEducationList">查看更多 ></text>
     </view>
 
     <scroll-view scroll-x class="h-scroll">
@@ -91,6 +91,8 @@
         class="edu-card"
         wx:for="{{educations}}"
         wx:key="title"
+        bindtap="goToEducationDetail"
+        data-education="{{item}}"
       >
         <image class="edu-img" src="{{static_url}}{{item.img}}" mode="aspectFill" />
         <view class="edu-content">

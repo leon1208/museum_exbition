@@ -173,4 +173,20 @@ Page({
     });
   },
 
+  //跳转到教育活动清单页面
+  goToEducationList: function() {
+    wx.navigateTo({
+      url: '../activities/index?museumId=' + this.data.museum.id
+    });
+  },
+
+  // 跳转教育活动详情页面
+  goToEducationDetail: function (e) {
+    const activity = e.currentTarget.dataset.education;
+    // 跳转到教育活动详情页面
+    wx.navigateTo({
+      url: '../activity_detail/index?activity=' + JSON.stringify(activity)
+    });
+  },
+
 })
