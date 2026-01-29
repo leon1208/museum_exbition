@@ -482,8 +482,10 @@ export default {
         if (submitData.activityStartTime && submitData.activityEndTime && typeof submitData.activityEndTime === 'string' && submitData.activityEndTime.includes(':')) {
             // 提取开始时间的日期部分
             const startDatePart = submitData.activityStartTime.split(' ')[0];
+            // 提取结束时间的时间部分
+            const endTimePart = submitData.activityEndTime.split(' ')[1];
             // 合并日期和时间
-            submitData.activityEndTime = `${startDatePart} ${submitData.activityEndTime}`;
+            submitData.activityEndTime = `${startDatePart} ${endTimePart}`;
         }
 
           // 将活动ID转为整数
