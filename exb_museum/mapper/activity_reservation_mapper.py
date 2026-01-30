@@ -7,6 +7,7 @@ from typing import List
 from sqlalchemy import select, delete
 from ruoyi_admin.ext import db
 from exb_museum.domain.po.activity_reservation_po import ActivityReservationPo
+from exb_museum.domain.po.wx_user_po import WxUserPo
 from exb_museum.domain.entity.activity_reservation import ActivityReservation
 from datetime import datetime
 from flask import g
@@ -26,8 +27,10 @@ class ActivityReservationMapper:
         Returns:
             List[ActivityReservation]: 活动预约表列表
         """
-        # 构建查询条件
-        stmt = select(ActivityReservationPo)
+        # 构建查询条件，关联wx_user表
+        stmt = select(ActivityReservationPo, WxUserPo.nickname, WxUserPo.avatar_url).join(
+            WxUserPo, ActivityReservationPo.wx_user_id == WxUserPo.id, isouter=True
+        )
         
         if activity_reservation.reservation_id:
             stmt = stmt.where(ActivityReservationPo.reservation_id == activity_reservation.reservation_id)
@@ -46,8 +49,16 @@ class ActivityReservationMapper:
             g.criterian_meta.page.stmt = stmt
 
         stmt = stmt.order_by(ActivityReservationPo.registration_time.desc())
-        result = db.session.execute(stmt).scalars().all()
-        return [ActivityReservation.model_validate(item) for item in result] if result else []
+        result = db.session.execute(stmt).all()
+        
+        # 将查询结果转换为ActivityReservation对象
+        reservation_list = []
+        for row in result:
+            reservation = ActivityReservation.model_validate(row.ActivityReservationPo)
+            reservation.nickname = row.nickname
+            reservation.avatar_url = row.avatar_url
+            reservation_list.append(reservation)
+        return reservation_list
 
     
     @staticmethod

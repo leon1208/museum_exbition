@@ -92,3 +92,15 @@ class ActivityReservation(BaseEntity):
         Field(default=None, description="备注"),
         ExcelField(name="备注")
     ]
+    # 微信用户昵称
+    nickname: Annotated[
+        Optional[str],
+        Field(default=None, description="微信用户昵称"),
+        ExcelField(name="微信用户昵称")
+    ]
+    # 微信用户头像
+    avatar_url: Annotated[
+        Optional[str],
+        Field(default=None, description="微信用户头像"),
+        ExcelField(name="微信用户头像")
+    ]

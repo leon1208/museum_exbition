@@ -112,7 +112,24 @@ class ActivityReservationService:
         Returns:
             int: 删除的记录数
         """
-        return ActivityReservationMapper.delete_activity_reservation_by_id(reservation_id)
+        ## 更新活动报名人数
+
+        # 先查询预约记录
+        activity_reservation = self.select_activity_reservation_by_id(reservation_id)
+        if not activity_reservation:
+            return 0
+        
+        # 获取活动对象
+        activity_service = ActivityService()
+        activity = activity_service.select_activity_by_id(activity_reservation.activity_id)
+        if not activity:
+            return 0
+
+        result = ActivityReservationMapper.delete_activity_reservation_by_id(reservation_id)
+        if result > 0:
+            # 更新活动报名人数
+            activity_service.update_activity_register_count(activity)
+        return result
 
     @Transactional(db.session)
     def add_activity_reservation(self, activity_id: int, wx_user_id: int, phone_number: str) -> str:

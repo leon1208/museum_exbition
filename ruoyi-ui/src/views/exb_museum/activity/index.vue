@@ -130,6 +130,13 @@
           <el-button
             size="mini"
             type="text"
+            icon="el-icon-view"
+            @click="viewReservations(scope.row)"
+            v-hasPermi="['exb_museum:activity:query']"
+          >查看预约</el-button>
+          <el-button
+            size="mini"
+            type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['exb_museum:activity:edit']"
@@ -255,11 +262,39 @@
     <!-- 媒体上传对话框 - 使用可复用组件 -->
     <MediaUpload :objectType="'activity'" :objectId="currentActivityId" :visible.sync="mediaDialogVisible"/>
 
+    <!-- 查看预约对话框 -->
+    <el-dialog title="活动预约清单" :visible.sync="reservationDialogVisible" width="800px" append-to-body>
+      <el-table :data="reservationList" :loading="reservationLoading" v-loading="reservationLoading">
+        <el-table-column label="昵称" prop="nickname" />
+        <el-table-column label="手机号码" prop="phoneNumber" />
+        <el-table-column label="预约时间" prop="registrationTime">
+          <template slot-scope="scope">
+            {{ parseTime(scope.row.registrationTime, '{y}-{m}-{d} {h}:{i}:{s}') }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+          <template slot-scope="scope">
+            <el-button
+              size="mini"
+              type="text"
+              icon="el-icon-delete"
+              @click="handleDeleteReservation(scope.row)"
+              v-hasPermi="['exb_museum:activity:remove']"
+            >删除预约</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="reservationDialogVisible = false">关 闭</el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
 import { listActivity, getActivity, delActivity, addActivity, updateActivity } from "@/api/exb_museum/activity";
+import { listActivityReservation, delActivityReservation } from "@/api/exb_museum/activityReservation"; // 导入活动预约API
 import MediaUpload from "@/components/MediaUpload/index.vue"; // 导入媒体上传组件
 import { listMuseum } from "@/api/exb_museum/museum"; // 导入博物馆API
 import { getToken } from "@/utils/auth";
@@ -372,6 +407,11 @@ export default {
       // 媒体上传相关
       mediaDialogVisible: false,
       currentActivityId: 0,
+      // 预约清单相关
+      selectedActivityId: 0,
+      reservationDialogVisible: false,
+      reservationList: [],
+      reservationLoading: false,
     };
   },
   created() {
@@ -596,6 +636,26 @@ export default {
     openMediaDialog(row) {
       this.currentActivityId = row.activityId;
       this.mediaDialogVisible = true;
+    },
+    /** 查看活动预约清单 */
+    viewReservations(row) {
+      this.selectedActivityId = row.activityId;
+      this.reservationLoading = true;
+      listActivityReservation(row.activityId).then(response => {
+        this.reservationList = response.data;
+        this.reservationLoading = false;
+        this.reservationDialogVisible = true;
+      });
+    },
+    /** 删除活动预约 */
+    handleDeleteReservation(row) {
+      this.$modal.confirm('是否确认删除该预约记录？').then(() => {
+        return delActivityReservation(row.reservationId);
+      }).then(() => {
+        // 重新加载当前活动的预约列表
+        this.viewReservations({ activityId: this.selectedActivityId });
+        this.$modal.msgSuccess("删除成功");
+      }).catch(() => {});
     },
   }
 };

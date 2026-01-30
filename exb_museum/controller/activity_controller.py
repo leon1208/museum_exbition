@@ -14,7 +14,7 @@ from ruoyi_common.domain.enum import BusinessType
 from ruoyi_common.utils.base import ExcelUtil
 from ruoyi_framework.descriptor.log import Log
 from ruoyi_framework.descriptor.permission import HasPerm, PreAuthorize
-from exb_museum.domain.entity import Activity
+from exb_museum.domain.entity import Activity, ActivityReservation
 from exb_museum.service.activity_service import ActivityService
 
 from .. import reg
@@ -163,3 +163,50 @@ def activity_import_data(
     activity_list = excel_util.import_file(file, sheetname="活动信息表数据")
     msg = activity_service.import_activity(activity_list, update_support)
     return AjaxResponse.from_success(msg=msg)
+
+
+@reg.api.route('/exb_museum/activity/reservation/<int:activity_id>', methods=['GET'])
+@PreAuthorize(HasPerm('exb_museum:activity:query'))
+@JsonSerializer()
+def get_activity_reservations(activity_id: int):
+    """获取指定活动的预约清单"""
+    from exb_museum.service.activity_reservation_service import ActivityReservationService
+    from exb_museum.service.wx_auth_service import WxAuthService
+    
+    activity_reservation_service = ActivityReservationService()
+    wx_auth_service = WxAuthService()
+    
+    # 获取活动预约列表
+    reservations = activity_reservation_service.select_activity_reservation_list(ActivityReservation(activity_id=activity_id))
+    
+    # 构建返回数据
+    reservation_list = []
+    for reservation in reservations:
+        reservation_info = {
+            "reservationId": reservation.reservation_id,
+            "wxUserId": reservation.wx_user_id,
+            "nickname": reservation.nickname if reservation.nickname else "未知用户",
+            "avatarUrl": reservation.avatar_url,
+            "phoneNumber": reservation.phone_number or "",
+            "registrationTime": reservation.registration_time.strftime('%Y-%m-%d %H:%M:%S') if reservation.registration_time else "",
+            "createTime": reservation.create_time.strftime('%Y-%m-%d %H:%M:%S') if reservation.create_time else "",
+        }
+        reservation_list.append(reservation_info)
+    
+    return AjaxResponse.from_success(data=reservation_list)
+ 
+ 
+@reg.api.route('/exb_museum/activity/reservation/<int:reservation_id>', methods=['DELETE'])
+@PreAuthorize(HasPerm('exb_museum:activity:remove'))
+@Log(title='活动预约管理', business_type=BusinessType.DELETE)
+@JsonSerializer()
+def remove_activity_reservation(reservation_id: int):
+    """删除活动预约"""
+    from exb_museum.service.activity_reservation_service import ActivityReservationService
+    
+    activity_reservation_service = ActivityReservationService()
+    result = activity_reservation_service.delete_activity_reservation_by_id(reservation_id)
+    
+    if result > 0:
+        return AjaxResponse.from_success(msg='删除成功')
+    return AjaxResponse.from_error(code=HttpStatus.ERROR, msg='删除失败')
