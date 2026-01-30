@@ -55,7 +55,7 @@
     </view>
 
     <!-- 报名按钮 -->
-    <view class="action-container">
+    <view class="action-container" wx:if="{{education.status=='即将开始'}}">
       <button wx:if="{{!education.isReserved && education.canRegister}}" class="register-btn" bindtap="registerActivity">立即报名</button>
       <button wx:elif="{{education.isReserved}}" class="register-btn-cancel" bindtap="cancelRegisterActivity">取消报名</button>
       <button wx:else class="disabled-btn" disabled>报名结束</button>
