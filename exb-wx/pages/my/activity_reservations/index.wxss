@@ -1,0 +1,188 @@
+/* 我的活动预约清单页面样式 */
+.container {
+  padding-top: 190rpx;
+  padding-left: 10rpx;
+  padding-right: 10rpx;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  max-width: 750rpx;
+  margin: 0 auto;
+  background-color: #f6f7f8;
+  color: #1e293b;
+  overflow: hidden;
+}
+
+.head-title {
+  position: fixed;
+  top: 110rpx;
+  display: flex;
+  align-items: flex-start;
+  z-index: 100;
+  border: none;
+  font-size: large;
+  color: black;
+}
+
+.back-btn {
+  position: fixed;
+  top: 110rpx;
+  left: -30rpx;
+  width: 50rpx;
+  height: 50rpx;
+  background-color: rgba(255, 255, 255, 0.0);
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  z-index: 100;
+  border: none;
+}
+
+.back-btn::after {
+  border: none; /* 移除微信小程序默认按钮边框 */
+}
+
+.reservation-list {
+  width: 100%;
+  overflow-y: auto;
+}
+
+.reservation-item {
+  background-color: #fff;
+  border-radius: 16rpx;
+  overflow: hidden;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.activity-image {
+  width: 100%;
+  height: 200rpx;
+}
+
+.activity-info {
+  padding: 20rpx;
+}
+
+.activity-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10rpx;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.activity-description {
+  font-size: 26rpx;
+  color: #666;
+  margin-bottom: 15rpx;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.activity-time,
+.activity-location {
+  display: flex;
+  align-items: center;
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 8rpx;
+}
+
+.time-icon,
+.location-icon {
+  margin-right: 10rpx;
+  font-size: 28rpx;
+}
+
+.activity-status {
+  margin-top: 10rpx;
+}
+
+.status-text {
+  margin-left: 20rpx;
+}
+
+.status-upcoming {
+  background-color: #4299f0; /* 蓝色背景 */
+  color: white; /* 白色文字 */
+  font-size: 26rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 20rpx;
+}
+ 
+.status-ended {
+  background-color: #ccc; /* 灰色背景 */
+  color: gray; /* 黑色文字 */
+  font-size: 26rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 20rpx;
+}
+ 
+.status-cancelled {
+  background-color: #ff4d4f; /* 红色背景 */
+  color: white; /* 白色文字 */
+  font-size: 26rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 20rpx;
+}
+
+.action-buttons {
+  padding: 0 10rpx 20rpx;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cancel-btn {
+  background-color: #ff6b6b;
+  color: #fff;
+  border: none;
+  border-radius: 20rpx;
+  height: 80rpx;
+  font-size: 32rpx;
+  padding: 20rpx 24rpx;
+}
+
+.cancel-btn::after {
+  border: none;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 100rpx;
+}
+
+.empty-image {
+  width: 200rpx;
+  height: 200rpx;
+  margin-bottom: 30rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #999;
+  margin-bottom: 40rpx;
+}
+
+.go-activities-btn {
+  background-color: #19be6b;
+  color: #fff;
+  border: none;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  padding: 15rpx 30rpx;
+}
+
+.go-activities-btn::after {
+  border: none;
+}

@@ -160,3 +160,18 @@ page {
 .register-btn::after {
   border: none;
 }
+
+.register-btn-cancel {
+  width: 80%;
+  height: 80rpx;
+  background-color: #ff6b6b;
+  color: white;
+  border: none;
+  border-radius: 40rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.register-btn-cancel::after {
+  border: none;
+}

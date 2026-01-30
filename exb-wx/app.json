@@ -9,6 +9,7 @@
     "pages/activities/index",
     "pages/activity_detail/index",
     "pages/my/index",
+    "pages/my/activity_reservations/index",
     "pages/logs/logs"
   ],
   "window": {

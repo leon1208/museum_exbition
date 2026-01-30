@@ -150,9 +150,9 @@ export const api = {
   cancelActivityReservation(reservationId) {
     return authenticatedRequest(`${apiUrls.museum.activity_reservation}${reservationId}`, 'DELETE');
   },
-  // 获取预约活动列表方法
-  getActivityReservations() {
-    return authenticatedRequest(`${apiUrls.museum.activities}`);
+  // 获取我的活动预约清单方法
+  getMyActivityReservations() {
+    return authenticatedRequest(`${apiUrls.museum.activity_reservation}`);
   },
   // 可以添加更多API方法
 };

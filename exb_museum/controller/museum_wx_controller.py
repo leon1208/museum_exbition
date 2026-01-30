@@ -750,9 +750,8 @@ def activity_detail(activity_id: int):
     return AjaxResponse.from_success(data=activity_detail)
 
 
-@reg.api.route('/wx/my/activity_reservation', methods=["GET"])
+@reg.api.route('/wx/my/activity_reservation/', methods=["GET"])
 @require_wx_token
-@QueryValidator(is_page=True)
 @JsonSerializer()
 def wx_my_activity_reservation_list():
     """
@@ -762,8 +761,42 @@ def wx_my_activity_reservation_list():
     activity_reservation_entity.wx_user_id = g.wx_user_id
     
     activity_reservation_service = ActivityReservationService()
+    media_service = MuseumMediaService()
+    activity_service = ActivityService()
+    
     reservations = activity_reservation_service.select_activity_reservation_list(activity_reservation_entity)
-    return TableResponse(code=HttpStatus.SUCCESS, msg='查询成功', rows=reservations)
+    
+    # 构造包含活动详细信息的预约清单
+    from datetime import datetime
+    reservation_list = []
+    for reservation in reservations:
+        activity = activity_service.select_activity_by_id(reservation.activity_id)
+        if activity:
+            # 从媒体表获取活动图片
+            activity_medias = media_service.select_museum_media_list(
+                object_id=reservation.activity_id, 
+                object_type='activity', 
+                media_type='1'
+            )
+            
+            reservation_info = {
+                "reservationId": reservation.reservation_id,
+                "activityId": reservation.activity_id,
+                "title": activity.activity_name or "",
+                "description": activity.introduction or "",
+                "location": activity.location or "",
+                "startTime": activity.activity_start_time.strftime('%Y-%m-%d %H:%M') if activity.activity_start_time else "",
+                "endTime": activity.activity_end_time.strftime('%Y-%m-%d %H:%M') if activity.activity_end_time else "",
+                "img": activity_medias[0].media_url if activity_medias else "",
+                "registrationTime": reservation.registration_time.strftime('%Y-%m-%d %H:%M') if reservation.registration_time else "",
+                "phoneNumber": reservation.phone_number or "",
+                "status": "即将开始" if activity.activity_start_time > datetime.now() else "已经结束" if activity.status == 0 else "已经取消",
+                "time": f"{activity.activity_start_time.strftime('%y年%m月%d日 %H:%M') if activity.activity_start_time else ''}{activity.activity_end_time.strftime(' 至 %H:%M') if activity.activity_end_time else ''}"
+            }
+            reservation_list.append(reservation_info)
+    
+    return AjaxResponse.from_success(data=reservation_list)
+    # return TableResponse(code=HttpStatus.SUCCESS, msg='查询成功', rows=reservation_list)
 
 
 @reg.api.route('/wx/my/activity_reservation/<int:activity_id>', methods=['POST'])

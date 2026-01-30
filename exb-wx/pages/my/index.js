@@ -172,13 +172,13 @@ Page({
 
   goToMyActivities() {
     wx.navigateTo({
-      url: '/pages/my_activities/index'
+      url: '/pages/my/activity_reservations/index'
     });
   },
 
   goToSettings() {
     wx.navigateTo({
-      url: '/pages/settings/index'
+      url: '/pages/my/settings/index'
     });
   },
 

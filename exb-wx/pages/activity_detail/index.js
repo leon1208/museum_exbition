@@ -56,27 +56,29 @@ Page({
       content: `确定要报名参加"${education.title}"吗？`,
       success: (res) => {
         if (res.confirm) {
-          console.log('用户确认报名', education.id);
+          // console.log('用户确认报名', education.id);
           // 这里可以调用报名接口
           api.addActivityReservation(education.id, '')
           .then(response => {
-            console.log('报名成功', response);
-            wx.showToast({
-              title: '报名成功',
-              icon: 'success'
-            });
+            // console.log('报名成功', response);
+            if (response.code === 200) {
+              wx.showToast({
+                title: '报名成功',
+                icon: 'success'
+              });
+            }
             // 刷新活动详情
             this.loadEducationDetail(education.id);
           })
           .catch(error => {
-            console.error('报名失败', error);
+            // console.error('报名失败', error);
             wx.showToast({
               title: '报名失败',
               icon: 'error'
             });
           });
         } else if (res.cancel) {
-          console.log('用户取消报名');
+          // console.log('用户取消报名');
         }
       }
     });
@@ -89,27 +91,29 @@ Page({
       content: `确定要取消报名参加"${education.title}"吗？`,
       success: (res) => {
         if (res.confirm) {
-          console.log('用户确认取消报名', education.id);
+          // console.log('用户确认取消报名', education.id);
           // 这里可以调用取消报名接口
           api.cancelActivityReservation(education.reservationId)
           .then(response => {
-            console.log('取消报名成功', response);
-            wx.showToast({
-              title: '取消报名成功',
-              icon: 'success'
-            });
+            // console.log('取消报名成功', response);
+            if (response.code === 200) {
+              wx.showToast({
+                title: '取消报名成功',
+                icon: 'success'
+              });
+            }
             // 刷新活动详情
             this.loadEducationDetail(education.id);
           })
           .catch(error => {
-            console.error('取消报名失败', error);
+            // console.error('取消报名失败', error);
             wx.showToast({
               title: '取消报名失败',
               icon: 'error'
             });
           });
         } else if (res.cancel) {
-          console.log('用户取消取消报名');
+          // console.log('用户取消取消报名');
         }
       }
     });

@@ -1,0 +1,47 @@
+<!-- 我的活动预约清单页面 -->
+<view class="container">
+  <!-- 页面标题 -->
+  <button class="back-btn" bindtap="goBack">
+    <mp-icon type="field" icon="back" color="black" size="{{15}}"></mp-icon>
+  </button>
+  <view class="head-title">我预约的活动</view>
+
+  <!-- 预约列表 -->
+  <scroll-view class="reservation-list" scroll-y="true" enable-back-to-top="true">
+    <block wx:for="{{reservations}}" wx:key="reservationId">
+      <view class="reservation-item">
+        <!-- 活动图片 -->
+        <image class="activity-image" src="{{static_url}}{{item.img}}" mode="aspectFill"></image>
+        
+        <!-- 活动信息 -->
+        <view class="activity-info">
+          <view class="activity-title">{{item.title}}</view>
+          <view class="activity-description">{{item.description}}</view>
+          
+          <!-- 活动时间 -->
+          <view class="activity-time">
+            <text>{{item.time}}</text>
+            <text class="status-text {{item.status === '即将开始' ? 'status-upcoming' : item.status === '已经结束' ? 'status-ended' : item.status === '已经取消' ? 'status-cancelled' : ''}}">{{item.status}}</text>
+          </view>
+
+          <!-- 活动地点 -->
+          <view class="activity-location">
+            <text>{{item.location}}</text>
+          </view>
+        </view>
+        
+        <!-- 操作按钮 -->
+        <view class="action-buttons">
+          <button wx:if="{{item.status === '即将开始'}}" class="cancel-btn" bindtap="cancelReservation" data-reservation-id="{{item.reservationId}}" data-activity-title="{{item.title}}" style="width:100%">取消预约</button>
+        </view>
+      </view>
+    </block>
+    
+    <!-- 空状态 -->
+    <view wx:if="{{reservations.length === 0}}" class="empty-state">
+      <text class="empty-text">暂无活动预约</text>
+      <!-- <image class="empty-image" src="{{static_url + '/images/empty_reservation.png'}}" mode="widthFix"></image> -->
+      <!-- <button class="go-activities-btn" bindtap="goToActivities">去参加活动</button> -->
+    </view>
+  </scroll-view>
+</view>
