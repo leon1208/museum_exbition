@@ -8,4 +8,5 @@ from .exhibition_po import ExhibitionPo
 from .exhibition_unit_po import ExhibitionUnitPo
 from .collection_po import CollectionPo
 from .activity_po import ActivityPo
+from .activity_reservation_po import ActivityReservationPo
 from .wx_user_po import WxUserPo

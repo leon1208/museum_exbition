@@ -143,6 +143,21 @@ class WxAuthService:
         # )
 
         return True
+    
+    @Transactional(db.session)
+    def get_wx_user(self, app_id: str, openid: str) -> WxUser:
+        """
+        通过app_id和openid查询微信用户
+        
+        Args:
+            app_id: 应用ID
+            openid: 微信用户openid
+            
+        Returns:
+            微信用户对象，失败则返回None
+        """
+        return WxUserMapper.select_wx_user_by_app_id_and_open_id(app_id, openid)
+
 
     @Transactional(db.session)
     def get_or_create_wx_user(self, app_id: str, code: str) -> WxUser:

@@ -8,3 +8,4 @@ from .exhibition_service import ExhibitionService
 from .exhibition_unit_service import ExhibitionUnitService
 from .collection_service import CollectionService
 from .activity_service import ActivityService
+from .activity_reservation_service import ActivityReservationService

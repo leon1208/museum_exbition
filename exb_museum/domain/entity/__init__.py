@@ -8,4 +8,5 @@ from .exhibition import Exhibition
 from .exhibition_unit import ExhibitionUnit
 from .collection import Collection
 from .activity import Activity
+from .activity_reservation import ActivityReservation
 from .wx_user import WxUser

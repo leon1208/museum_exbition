@@ -241,6 +241,31 @@ page {
   font-size: 26rpx;
   font-weight: 500;
   margin-left: 10rpx;
+  margin-right: 20rpx;
+}
+
+.status-upcoming {
+  background-color: #4299f0; /* 蓝色背景 */
+  color: white; /* 白色文字 */
+  font-size: 26rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 20rpx;
+}
+ 
+.status-ended {
+  background-color: #ccc; /* 灰色背景 */
+  color: gray; /* 黑色文字 */
+  font-size: 26rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 20rpx;
+}
+ 
+.status-cancelled {
+  background-color: #ff4d4f; /* 红色背景 */
+  color: white; /* 白色文字 */
+  font-size: 26rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 20rpx;
 }
 
 .location-info {

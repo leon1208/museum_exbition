@@ -10,8 +10,9 @@ from ruoyi_common.utils.base import LogUtil
 from ruoyi_common.utils import security_util
 from ruoyi_admin.ext import db
 from ruoyi_common.sqlalchemy.transaction import Transactional
-from exb_museum.domain.entity import Activity
+from exb_museum.domain.entity import Activity, ActivityReservation
 from exb_museum.mapper.activity_mapper import ActivityMapper
+from exb_museum.mapper.activity_reservation_mapper import ActivityReservationMapper
 
 
 class ActivityService:
@@ -71,6 +72,25 @@ class ActivityService:
         """
         # 设置更新人
         activity.update_by_user(security_util.get_username()) 
+        return ActivityMapper.update_activity(activity)
+    
+    @Transactional(db.session)
+    def update_activity_register_count(self, activity: Activity) -> int:
+        """
+        更新活动注册人数
+
+        Args:
+            activity (Activity): 活动信息表对象
+
+        Returns:
+            int: 更新的记录数
+        """        
+        # 通过activity_reservation统计注册人数
+        reservation_list = ActivityReservationMapper.select_activity_reservation_list(ActivityReservation(activity_id=activity.activity_id))
+        register_count = len(reservation_list)
+
+        # 更新活动注册人数
+        activity.registration_count = register_count
         return ActivityMapper.update_activity(activity)
     
     @Transactional(db.session)

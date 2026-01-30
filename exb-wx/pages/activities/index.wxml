@@ -50,6 +50,7 @@
         <view class="date-info">
           <text class="iconfont icon-calendar-days" style="font-size: 25px;"></text>
           <text class="date-text">{{item.time || item.startTime + ' - ' + item.endTime}}</text>
+          <text class="date-status {{item.status === '即将开始' ? 'status-upcoming' : item.status === '已经结束' ? 'status-ended' : item.status === '已经取消' ? 'status-cancelled' : ''}}">{{item.status}}</text>
         </view>
         <view class="location-info">
           <text class="iconfont icon-location-dot" style="font-size: 25px;"></text>

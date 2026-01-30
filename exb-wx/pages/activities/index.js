@@ -11,6 +11,7 @@ Page({
     educations: [],
     filteredEducations: [],
     currentFilter: '全部',
+    canRegister: false,
     filters: ['全部', '讲座', '手工', '表演', '其他'],
     static_url: config.STATIC_URL,
     isLoading: true
@@ -57,7 +58,8 @@ Page({
         this.setData({
           educations: educations,
           filteredEducations: this.applyFilter(educations, this.data.currentFilter),
-          isLoading: false
+          isLoading: false,
+          canRegister: response.data.canRegister || false
         });
       } else {
         throw new Error(response.msg || '获取教育活动列表失败');
@@ -73,7 +75,8 @@ Page({
       this.setData({
         educations: [],
         filteredEducations: [],
-        isLoading: false
+        isLoading: false,
+        canRegister: false,
       });
     }
   },

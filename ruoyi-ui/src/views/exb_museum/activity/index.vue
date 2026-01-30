@@ -23,7 +23,7 @@
         <el-select
           v-model="queryParams.activityType"
           placeholder="请输入活动类型"
-          clearable=true
+          clearable
           @keyup.enter.native="handleQuery"
         >
           <el-option v-for="item in activityTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
@@ -175,7 +175,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="活动类型" prop="activityType">
-          <el-select v-model="form.activityType" placeholder="请选择活动类型" clearable=true>
+          <el-select v-model="form.activityType" placeholder="请选择活动类型" clearable>
             <el-option v-for="item in activityTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
@@ -482,8 +482,7 @@ export default {
         if (submitData.activityStartTime && submitData.activityEndTime && typeof submitData.activityEndTime === 'string' && submitData.activityEndTime.includes(':')) {
             // 提取开始时间的日期部分
             const startDatePart = submitData.activityStartTime.split(' ')[0];
-            // 提取结束时间的时间部分
-            const endTimePart = submitData.activityEndTime.split(' ')[1];
+            const endTimePart = submitData.activityEndTime.includes(' ')? submitData.activityEndTime.split(' ')[1] : submitData.activityEndTime;
             // 合并日期和时间
             submitData.activityEndTime = `${startDatePart} ${endTimePart}`;
         }

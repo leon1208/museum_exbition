@@ -60,6 +60,9 @@ class ActivityMapper:
         if "criterian_meta" in g and g.criterian_meta.page:
             g.criterian_meta.page.stmt = stmt
 
+        ##按活动开始时间倒序
+        stmt = stmt.order_by(ActivityPo.activity_start_time.desc()
+                             )
         result = db.session.execute(stmt).scalars().all()
         return [Activity.model_validate(item) for item in result] if result else []
 

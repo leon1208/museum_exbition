@@ -18,10 +18,11 @@ from ruoyi_common.descriptor.serializer import BaseSerializer, JsonSerializer
 from ruoyi_common.descriptor.validator import QueryValidator, FileUploadValidator
 from ruoyi_framework.descriptor.permission import HasPerm, PreAuthorize
 
-from exb_museum.domain.entity import MuseumMedia, Museum, Collection, Exhibition, ExhibitionUnit, Activity  # 添加活动实体导入
+from exb_museum.domain.entity import MuseumMedia, Museum, Collection, Exhibition, ExhibitionUnit, Activity, ActivityReservation  # 添加活动预约实体导入
 from exb_museum.service.museum_media_service import MuseumMediaService
 from exb_museum.service.museum_service import MuseumService
 from exb_museum.service.activity_service import ActivityService  # 添加活动服务导入
+from exb_museum.service.activity_reservation_service import ActivityReservationService  # 添加活动预约服务导入
 from exb_museum.service.wx_auth_service import WxAuthService
 from functools import wraps
 
@@ -64,10 +65,16 @@ def require_wx_token(f, check_sign=False):
         if check_sign and not auth_service.verify_request(method, path, body, timestamp, nonce, sign, token):
             return JsonSerializer().serialize(f, AjaxResponse.from_error(msg="无效的请求签名"))
 
+        # 获取wx_user_id
+        wx_user = auth_service.get_wx_user(payload.get('app_id'), payload.get('open_id'))
+        if not wx_user:
+            return JsonSerializer().serialize(f, AjaxResponse.from_error(msg="用户不存在"))
+
         # 将用户信息存储到全局对象中
         g.wx_user_payload = payload
         g.wx_open_id = payload.get('open_id')
         g.wx_app_id = payload.get('app_id')
+        g.wx_user_id = wx_user.id
         return f(*args, **kwargs)
     return decorated_function
 
@@ -653,6 +660,9 @@ def activity_list_by_museum(museum_id: int):
     activity.status = 0  # 只获取正常状态的活动
     activities = activity_service.select_activity_list(activity)
 
+
+    from datetime import datetime
+
     # 转换活动数据格式
     activity_list = []
     for act in activities:
@@ -669,7 +679,9 @@ def activity_list_by_museum(museum_id: int):
             "startTime": act.activity_start_time.strftime('%Y-%m-%d') if act.activity_start_time else "",
             "endTime": act.activity_end_time.strftime('%Y-%m-%d') if act.activity_end_time else "",
             "img": "",  # 后续从媒体表获取图片
-            "contentTags": act.activity_type or ""  # 活动类型作为标签
+            "contentTags": act.activity_type or "",  # 活动类型作为标签 
+            "canRegister": act.status == 0 and act.activity_start_time > datetime.now() and act.registration_count < act.max_registration,
+            "status": "即将开始" if act.activity_start_time > datetime.now() else "已经结束" if act.status == 0 else "已经取消",
         }
 
         # 从媒体表获取活动图片
@@ -705,7 +717,7 @@ def activity_detail(activity_id: int):
         object_type='activity', 
         media_type='1'
     )
-
+    from datetime import datetime
     # 构建活动详情数据
     activity_detail = {
         "id": activity.activity_id,
@@ -721,7 +733,70 @@ def activity_detail(activity_id: int):
         "endTime": activity.activity_end_time.strftime('%Y-%m-%d %H:%M') if activity.activity_end_time else "",
         "img": activity_medias[0].media_url if activity_medias else "",
         "galleryImages": [media.media_url for media in activity_medias] if activity_medias else [],
-        "status": "ongoing" if activity.status == 0 else "ended"
+        "status": "即将开始" if activity.activity_start_time > datetime.now() else "已经结束" if activity.status == 0 else "已经取消",
     }
 
+    # 检查用户是否已预约该活动
+    activity_reservation_service = ActivityReservationService()
+    existing_reservation = activity_reservation_service.select_activity_reservation_by_activity_and_user(
+        activity_id, g.wx_user_id
+    )
+
+    activity_detail["isReserved"] = bool(existing_reservation)
+    activity_detail["reservationId"] = existing_reservation.reservation_id if existing_reservation else None
+    activity_detail["canRegister"] = activity.status == 0 and activity.activity_start_time > datetime.now() and activity.registration_count < activity.max_registration
+    activity_detail["time"] = f"{activity.activity_start_time.strftime('%y年%m月%d日 %H:%M') if activity.activity_start_time else ''}{activity.activity_end_time.strftime(' 至 %H:%M') if activity.activity_end_time else ''}"
+
     return AjaxResponse.from_success(data=activity_detail)
+
+
+@reg.api.route('/wx/my/activity_reservation', methods=["GET"])
+@require_wx_token
+@QueryValidator(is_page=True)
+@JsonSerializer()
+def wx_my_activity_reservation_list():
+    """
+    获取当前微信用户的活动预约清单
+    """    
+    activity_reservation_entity = ActivityReservation()
+    activity_reservation_entity.wx_user_id = g.wx_user_id
+    
+    activity_reservation_service = ActivityReservationService()
+    reservations = activity_reservation_service.select_activity_reservation_list(activity_reservation_entity)
+    return TableResponse(code=HttpStatus.SUCCESS, msg='查询成功', rows=reservations)
+
+
+@reg.api.route('/wx/my/activity_reservation/<int:activity_id>', methods=['POST'])
+@require_wx_token
+@JsonSerializer()
+def wx_add_activity_reservation(activity_id: int):
+    """
+    微信用户新增活动预约
+    """
+    data = request.get_json()
+    phone_number = data.get('phone_number')
+    
+    if not activity_id:
+        return AjaxResponse.from_error(code=HttpStatus.ERROR, msg='活动ID不能为空')
+    
+    activity_reservation_service = ActivityReservationService()
+    result = activity_reservation_service.add_activity_reservation(activity_id, g.wx_user_id, phone_number)
+    if result == '预约成功':
+        return AjaxResponse.from_success(msg=result)
+    else:
+        return AjaxResponse.from_error(code=HttpStatus.ERROR, msg=result)
+
+
+@reg.api.route('/wx/my/activity_reservation/<int:reservation_id>', methods=['DELETE'])
+@require_wx_token
+@JsonSerializer()
+def wx_cancel_activity_reservation(reservation_id: int):
+    """
+    微信用户取消活动预约
+    """
+    activity_reservation_service = ActivityReservationService()
+    result = activity_reservation_service.cancel_activity_reservation(reservation_id, g.wx_user_id)
+    if result == '取消预约成功':
+        return AjaxResponse.from_success(msg=result)
+    else:
+        return AjaxResponse.from_error(code=HttpStatus.ERROR, msg=result)

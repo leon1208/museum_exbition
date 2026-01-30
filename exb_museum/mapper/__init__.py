@@ -8,4 +8,5 @@ from .exhibition_mapper import ExhibitionMapper
 from .exhibition_unit_mapper import ExhibitionUnitMapper
 from .collection_mapper import CollectionMapper
 from .activity_mapper import ActivityMapper
+from .activity_reservation_mapper import ActivityReservationMapper
 from .wx_user_mapper import WxUserMapper

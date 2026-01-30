@@ -20,6 +20,7 @@ export const apiUrls = {
     update_user: `${baseUrl}/wx/my/update`,// 更新用户信息接口
     activities: `${baseUrl}/wx/museum/activity/`,  // 新增教育活动列表接口
     activity_detail: `${baseUrl}/wx/museum/activity/detail/`,  // 新增教育活动详情接口
+    activity_reservation: `${baseUrl}/wx/my/activity_reservation/`,  // 预约活动接口
     // 可以添加更多API地址
   },
   auth: {
@@ -136,8 +137,22 @@ export const api = {
     return authenticatedRequest(`${apiUrls.museum.activities}${museumId}`);
   },
   // 获取教育活动详情数据
-  getEducationDetail(educationId) {
+  getEducationDetail(activityId) {
     return authenticatedRequest(`${apiUrls.museum.activity_detail}${activityId}`);
-  }
+  },
+  // 新增预约活动方法
+  addActivityReservation(activityId, phoneNumber) {
+    return authenticatedRequest(`${apiUrls.museum.activity_reservation}${activityId}`, 'POST', {
+      phone_number: phoneNumber
+    });
+  },
+  // 取消预约活动方法
+  cancelActivityReservation(reservationId) {
+    return authenticatedRequest(`${apiUrls.museum.activity_reservation}${reservationId}`, 'DELETE');
+  },
+  // 获取预约活动列表方法
+  getActivityReservations() {
+    return authenticatedRequest(`${apiUrls.museum.activities}`);
+  },
   // 可以添加更多API方法
 };
