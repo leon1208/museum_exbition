@@ -22,7 +22,7 @@ Page({
    * 页面显示时重新加载数据
    */
   onShow: function () {
-    this.loadMyActivityReservations();
+    // this.loadMyActivityReservations();
   },
 
   /**
