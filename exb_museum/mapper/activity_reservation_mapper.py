@@ -45,7 +45,7 @@ class ActivityReservationMapper:
         if "criterian_meta" in g and g.criterian_meta.page:
             g.criterian_meta.page.stmt = stmt
 
-        stmt = stmt.order_by(ActivityReservationPo.create_time.desc())
+        stmt = stmt.order_by(ActivityReservationPo.registration_time.desc())
         result = db.session.execute(stmt).scalars().all()
         return [ActivityReservation.model_validate(item) for item in result] if result else []
 
