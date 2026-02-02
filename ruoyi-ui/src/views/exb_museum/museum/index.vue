@@ -197,6 +197,13 @@
               v-for="dict in sys_yes_noOptions" :key="dict.value" :label="dict.value">{{ dict.label }}</el-radio>
           </el-radio-group>
         </el-form-item>
+        <el-form-item label="所属部门" prop="deptId">
+          <treeselect 
+            v-model="form.deptId" 
+            :options="deptOptions" 
+            placeholder="请选择所属部门"
+            @select="handleDeptSelect"/>
+        </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input 
             v-model="form.remark" 
@@ -329,11 +336,15 @@ import {
 } from "@/api/exb_museum/museum";
 import { getToken } from "@/utils/auth";
 import MediaUpload from "@/components/MediaUpload/index.vue";
+import { treeselect } from "@/api/system/dept"
+import Treeselect from '@riophae/vue-treeselect'
+import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 import { listMuseumHall, getMuseumHall, delMuseumHall, addMuseumHall, updateMuseumHall } from "@/api/exb_museum/museum_hall";
 
 export default {
   name: "Museum",
   components: {
+    Treeselect,
     MediaUpload,
   },
   data() {
@@ -406,6 +417,9 @@ export default {
         status: [
           { required: true, message: "状态不能为空", trigger: "blur" }
         ],
+        deptId: [
+          { required: true, message: "管理部门不能为空", trigger: "change" }
+        ],
         remark: [
           { required: false, message: "备注不能为空", trigger: "blur" }
         ]
@@ -445,10 +459,12 @@ export default {
       },
       isHallEdit: false,
       showHallForm: false,
+      deptOptions: [],
     };
   },
   created() {
     this.getList();
+    this.getDeptTree();
   },
   methods: {
     /** 查询博物馆信息表列表 */
@@ -501,7 +517,8 @@ export default {
         createTime: null,
         updateBy: null,
         updateTime: null,
-        remark: null
+        remark: null,
+        deptId: null,
       };
       this.resetForm("form");
     },
@@ -739,6 +756,21 @@ export default {
         this.getHallList();
         this.$modal.msgSuccess("删除成功");
       }).catch(() => {});
+    },
+
+    // 获取部门下拉树结构
+    getDeptTree() {
+      // this.$refs.deptId.clear();
+      treeselect().then(response => {
+        // this.deptOptions = this.handleTree(response.data, "deptId");
+        this.deptOptions = response.data
+        console.log(this.deptOptions);
+      });
+    },
+
+    // 部门选择
+    handleDeptSelect(data) {
+      this.form.deptId = data.deptId;
     },
   }
 }

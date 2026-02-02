@@ -10,6 +10,7 @@ from flask import g
 from sqlalchemy import select, update, delete
 
 from ruoyi_admin.ext import db
+from ruoyi_system.domain.po import SysDeptPo
 from exb_museum.domain.entity import Museum
 from exb_museum.domain.po import MuseumPo
 
@@ -38,9 +39,14 @@ class MuseumMapper:
         if museum.app_id:
             stmt = stmt.where(MuseumPo.app_id == museum.app_id)
 
+        if "criterian_meta" in g and g.criterian_meta.scope is not None:
+            stmt = select(MuseumPo).join(SysDeptPo, MuseumPo.dept_id == SysDeptPo.dept_id)
+            stmt = stmt.where(g.criterian_meta.scope)
+        
         if "criterian_meta" in g and g.criterian_meta.page:
             g.criterian_meta.page.stmt = stmt
 
+        print(stmt.compile(compile_kwargs={"literal_binds": True}))
         result = db.session.execute(stmt).scalars().all()
         return [Museum.model_validate(item) for item in result] if result else []
 
@@ -102,6 +108,7 @@ class MuseumMapper:
         new_po.update_time = museum.update_time or now
         new_po.remark = museum.remark
         new_po.app_id = museum.app_id
+        new_po.dept_id = museum.dept_id
         db.session.add(new_po)
 
         db.session.flush()
@@ -135,6 +142,7 @@ class MuseumMapper:
         existing.update_time = museum.update_time or now
         existing.remark = museum.remark
         existing.app_id = museum.app_id
+        existing.dept_id = museum.dept_id
         return 1
 
     @staticmethod

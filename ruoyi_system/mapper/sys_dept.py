@@ -47,7 +47,7 @@ class SysDeptMapper:
             criterions.append(SysDeptPo.dept_name.like(f'%{dept.dept_name}%'))
         if dept.status:
             criterions.append(SysDeptPo.status==dept.status)
-        if "criterian_meta" in g and g.criterian_meta.scope:
+        if "criterian_meta" in g and g.criterian_meta.scope is not None:
             criterions.append(g.criterian_meta.scope)
         
         stmt = select(*cls.default_columns).where(*criterions)

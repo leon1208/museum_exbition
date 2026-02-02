@@ -103,3 +103,9 @@ class MuseumPo(db.Model):
         nullable=True,
         comment='小程序AppSecret'
     )
+    dept_id: Mapped[Optional[int]] = mapped_column(
+        'dept_id',
+        BigInteger,
+        nullable=True,
+        comment='所属部门ID'
+    )

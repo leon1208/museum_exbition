@@ -9,7 +9,7 @@ from pydantic import ConfigDict, Field, validate_call
 from pydantic.dataclasses import dataclass
 from sqlalchemy.orm.util import AliasedClass
 from sqlalchemy.sql.expression import or_
-from sqlalchemy import func
+from sqlalchemy import func, select, text
 
 from ruoyi_common.base.model import CriterianMeta
 from ruoyi_common.descriptor.validator import ValidatorScopeFunction
@@ -52,16 +52,17 @@ class DataScope:
     
     def __call__(self, func) -> Any:
         
-        vsfunc = ValidatorScopeFunction(func)
+        # vsfunc = ValidatorScopeFunction(func)
         
         @wraps(func)
         def wrapper(*args, **kwargs):
-            unbound_model = vsfunc.unbound_model
-            if unbound_model:
-                key,_ = unbound_model
-                # bo = kwargs.get(key)
-                # self.handle_data_scope(bo)
-            return vsfunc(*args, **kwargs)
+            # unbound_model = vsfunc.unbound_model
+            # if unbound_model:
+            #     key,_ = unbound_model
+            #     bo = kwargs.get(key)
+            #     self.handle_data_scope(bo)
+            self.handle_data_scope(BaseEntity())
+            return func(*args, **kwargs)
         return wrapper
 
     def handle_data_scope(self, bo: BaseEntity):
@@ -77,6 +78,11 @@ class DataScope:
             # 检查用户是否为超级管理员（用户ID为1或者具有admin角色）
             if not SecurityUtil.is_admin(login_user.user_id) and not self.is_user_admin(current_user):
                 self.filter_data_scope(current_user)
+            else:
+                # print(g.criterian_meta.scope) ## 这里非常奇怪，不知道什么地方会把这个criterian_meta.scope初始化成[]
+                # 所以必须设置成None，否则会报错
+                if 'criterian_meta' in g:
+                    g.criterian_meta.scope = None
     
     def is_user_admin(self, user: SysUser) -> bool:
         """
@@ -100,62 +106,61 @@ class DataScope:
         过滤数据权限范围
         
         Args:
-            bo (BaseEntity): 校验对象
             user (SysUser): 当前用户
         """
-        criterian_meta:CriterianMeta = g.criterian_meta
-        
+
         criterions = []
         for role in user.roles:
             if role.data_scope == DataScopeEnum.ALL.value:
                 # 全部数据权限
-                criterions = []
-                break
+                if 'criterian_meta' in g:
+                   g.criterian_meta.scope = None
+                return
             elif role.data_scope == DataScopeEnum.CUSTOM.value:
-                # 自定义数据权限
-                subquery = SysRoleDeptPo.query(SysRoleDeptPo.dept_id) \
-                    .filter(
-                        SysRoleDeptPo.role_id == role.role_id
-                        ).subquery()
+                subquery = select(SysRoleDeptPo.dept_id) \
+                    .where(SysRoleDeptPo.role_id == role.role_id) \
+                    .subquery()
                 if self.dept is True:
-                    criterion = SysDeptPo.dept_id.in_(subquery)
+                    criterions.append(SysDeptPo.dept_id.in_(subquery))
                 elif isinstance(self.dept, AliasedClass):
-                    criterion = self.dept.dept_id.in_(subquery)
-                if criterion:
-                    criterions.append(criterion)
+                    criterions.append(self.dept.dept_id.in_(subquery))
             elif role.data_scope == DataScopeEnum.DEPT.value:
                 # 本部门数据权限
                 if self.dept is True:
-                    criterion = SysDeptPo.dept_id == user.dept_id
+                    criterions.append(SysDeptPo.dept_id == user.dept_id)
                 elif isinstance(self.dept, AliasedClass):
-                    criterion = self.dept.dept_id == user.dept_id
-                if criterion:
-                    criterions.append(criterion)
+                    criterions.append(self.dept.dept_id == user.dept_id)
             elif role.data_scope == DataScopeEnum.DEPT_AND_CHILD.value:
                 # 本部门及子部门数据权限
-                subquery = SysDeptPo.query(SysDeptPo.dept_id) \
-                    .filter(
+                subquery = (
+                    select(SysDeptPo.dept_id)
+                    .where(
                         or_(
                             SysDeptPo.dept_id == user.dept_id,
-                            func.find_in_set(user.dept_id, SysDeptPo.ancestors)
-                            )
-                        ).subquery()
+                            func.find_in_set(user.dept_id, SysDeptPo.ancestors),
+                        )
+                    )
+                )
                 if self.dept is True:
-                    criterion = SysDeptPo.dept_id.in_(subquery)
+                    criterions.append(SysDeptPo.dept_id.in_(subquery))
                 elif isinstance(self.dept, AliasedClass):
-                    criterion = self.dept.dept_id.in_(subquery)
-                if criterion:
-                    criterions.append(criterion)
+                    criterions.append(self.dept.dept_id.in_(subquery))
             elif role.data_scope == DataScopeEnum.SELF.value:
                 # 仅本人数据权限
                 if self.user is True:
-                    criterion = SysUserPo.user_id == user.user_id
+                    criterions.append(SysUserPo.user_id == user.user_id)
                 elif isinstance(self.user, AliasedClass):
-                    criterion = self.user.user_id == user.user_id
-                else:
-                    criterion = "1=0"
-                criterions.append(criterion)
+                    criterions.append(self.user.user_id == user.user_id)
             else:
                 print(ValueError("Invalid data_scope value: {}".format(role.data_scope)))
-        data_scope = or_(*criterions)
-        criterian_meta.scope = data_scope
+        
+        if len(criterions) > 0:
+            data_scope = or_(*criterions)
+        else:
+            data_scope = text("1=2")
+
+        if 'criterian_meta' in g:
+            criterian_meta:CriterianMeta = g.criterian_meta
+            criterian_meta.scope = data_scope
+        else:
+            print("Warning: No criterian_meta found in g. Data scope not set.")

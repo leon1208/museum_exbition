@@ -10,12 +10,14 @@ from ruoyi_common.constant import UserConstants
 from ruoyi_common.domain.entity import SysDept, SysRole, TreeSelect
 from ruoyi_common.exception import ServiceException
 from ruoyi_system.mapper import SysDeptMapper, SysRoleMapper
+from ruoyi_framework.descriptor.datascope import DataScope
 from ruoyi_admin.ext import db
 
 
 class SysDeptService:
     
     @classmethod
+    @DataScope(dept=True)
     def select_dept_list(cls, dept:SysDept) -> List[SysDept]:
         """
         查询部门列表

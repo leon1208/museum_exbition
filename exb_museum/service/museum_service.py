@@ -11,11 +11,13 @@ from ruoyi_common.utils import security_util
 from ruoyi_common.sqlalchemy.transaction import Transactional
 from exb_museum.domain.entity import Museum
 from exb_museum.mapper.museum_mapper import MuseumMapper
+from ruoyi_framework.descriptor.datascope import DataScope
 from ruoyi_admin.ext import db
 
 class MuseumService:
     """博物馆信息表服务类"""
 
+    @DataScope(dept=True)
     def select_museum_list(self, museum: Museum) -> List[Museum]:
         """
         查询博物馆信息表列表

@@ -103,6 +103,13 @@ class Museum(BaseEntity):
         Field(default=None, description="小程序AppSecret"),
         ExcelField(name="小程序AppSecret")
     ]
+    # 所属部门ID
+    dept_id: Annotated[
+        Optional[int],
+        BeforeValidator(str_to_int),
+        Field(default=None, description="所属部门ID"),
+        ExcelField(name="所属部门ID")
+    ]
 
     # 页码
     page_num: Optional[int] = Field(default=1, description="页码")
