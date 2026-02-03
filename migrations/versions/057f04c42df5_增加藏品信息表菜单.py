@@ -73,7 +73,7 @@ def upgrade() -> None:
     insert_stmt = insert(menu_table).values(
         menu_id=2045,
         menu_name='藏品信息表查询',
-        parent_id=2043,
+        parent_id=2044,
         order_num=1,
         path='#',
         component='',
@@ -117,7 +117,7 @@ def upgrade() -> None:
     insert_stmt = insert(menu_table).values(
         menu_id=2046,
         menu_name='藏品信息表新增',
-        parent_id=2043,
+        parent_id=2044,
         order_num=2,
         path='#',
         component='',
@@ -161,7 +161,7 @@ def upgrade() -> None:
     insert_stmt = insert(menu_table).values(
         menu_id=2047,
         menu_name='藏品信息表修改',
-        parent_id=2043,
+        parent_id=2044,
         order_num=3,
         path='#',
         component='',
@@ -205,7 +205,7 @@ def upgrade() -> None:
     insert_stmt = insert(menu_table).values(
         menu_id=2048,
         menu_name='藏品信息表删除',
-        parent_id=2043,
+        parent_id=2044,
         order_num=4,
         path='#',
         component='',
@@ -249,7 +249,7 @@ def upgrade() -> None:
     insert_stmt = insert(menu_table).values(
         menu_id=2049,
         menu_name='藏品信息表导出',
-        parent_id=2043,
+        parent_id=2044,
         order_num=5,
         path='#',
         component='',
@@ -293,7 +293,7 @@ def upgrade() -> None:
     insert_stmt = insert(menu_table).values(
         menu_id=2050,
         menu_name='藏品信息表导入',
-        parent_id=2043,
+        parent_id=2044,
         order_num=6,
         path='#',
         component='',
