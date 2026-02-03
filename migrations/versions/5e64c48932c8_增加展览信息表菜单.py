@@ -30,7 +30,7 @@ def upgrade() -> None:
         menu_id=2037,
         menu_name='展览信息表',
         parent_id=2029,
-        order_num=1,
+        order_num=2,
         path='exhibition',
         component='exb_museum/exhibition/index',
         is_frame=1,
