@@ -12,10 +12,12 @@ from ruoyi_admin.ext import db
 from ruoyi_common.sqlalchemy.transaction import Transactional
 from exb_museum.domain.entity import Exhibition
 from exb_museum.mapper.exhibition_mapper import ExhibitionMapper
+from ruoyi_framework.descriptor.datascope import DataScope
 
 class ExhibitionService:
     """展览信息表服务类"""
 
+    @DataScope(dept=True)
     def select_exhibition_list(self, exhibition: Exhibition) -> List[Exhibition]:
         """
         查询展览信息表列表

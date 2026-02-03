@@ -29,7 +29,7 @@ class MuseumMapper:
             List[museum]: 博物馆信息表列表
         """
         # 构建查询条件
-        stmt = select(MuseumPo)
+        stmt = select(MuseumPo).join(SysDeptPo, MuseumPo.dept_id == SysDeptPo.dept_id)
         if museum.museum_name:
             stmt = stmt.where(MuseumPo.museum_name.like("%" + str(museum.museum_name) + "%"))
         if museum.address:
@@ -40,7 +40,6 @@ class MuseumMapper:
             stmt = stmt.where(MuseumPo.app_id == museum.app_id)
 
         if "criterian_meta" in g and g.criterian_meta.scope is not None:
-            stmt = select(MuseumPo).join(SysDeptPo, MuseumPo.dept_id == SysDeptPo.dept_id)
             stmt = stmt.where(g.criterian_meta.scope)
         
         if "criterian_meta" in g and g.criterian_meta.page:

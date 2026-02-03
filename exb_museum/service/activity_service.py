@@ -13,11 +13,13 @@ from ruoyi_common.sqlalchemy.transaction import Transactional
 from exb_museum.domain.entity import Activity, ActivityReservation
 from exb_museum.mapper.activity_mapper import ActivityMapper
 from exb_museum.mapper.activity_reservation_mapper import ActivityReservationMapper
+from ruoyi_framework.descriptor.datascope import DataScope
 
 
 class ActivityService:
     """活动信息表服务类"""
 
+    @DataScope(dept=True)
     def select_activity_list(self, activity: Activity) -> List[Activity]:
         """
         查询活动信息表列表

@@ -12,10 +12,12 @@ from ruoyi_common.utils import security_util
 from ruoyi_common.sqlalchemy.transaction import Transactional
 from exb_museum.domain.entity import Collection
 from exb_museum.mapper.collection_mapper import CollectionMapper
+from ruoyi_framework.descriptor.datascope import DataScope
 
 class CollectionService:
     """藏品信息表服务类"""
 
+    @DataScope(dept=True)
     def select_collection_list(self, collection: Collection) -> List[Collection]:
         """
         查询藏品信息表列表

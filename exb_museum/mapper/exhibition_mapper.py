@@ -11,7 +11,8 @@ from sqlalchemy import select, update, delete
 
 from ruoyi_admin.ext import db
 from exb_museum.domain.entity import Exhibition
-from exb_museum.domain.po import ExhibitionPo
+from exb_museum.domain.po import ExhibitionPo, MuseumPo
+from ruoyi_system.domain.po import SysDeptPo
 
 class ExhibitionMapper:
     """展览信息表Mapper"""
@@ -28,8 +29,9 @@ class ExhibitionMapper:
             List[exhibition]: 展览信息表列表
         """
         # 构建查询条件
-        stmt = select(ExhibitionPo)
-
+        stmt = select(ExhibitionPo) \
+            .join(MuseumPo, ExhibitionPo.museum_id == MuseumPo.museum_id) \
+            .join(SysDeptPo, MuseumPo.dept_id == SysDeptPo.dept_id)
 
         if exhibition.exhibition_name:
             stmt = stmt.where(ExhibitionPo.exhibition_name.like("%" + str(exhibition.exhibition_name) + "%"))
@@ -54,7 +56,9 @@ class ExhibitionMapper:
 
         if exhibition.status is not None:
             stmt = stmt.where(ExhibitionPo.status == exhibition.status)
-
+        
+        if "criterian_meta" in g and g.criterian_meta.scope is not None:
+            stmt = stmt.where(g.criterian_meta.scope)
 
         if "criterian_meta" in g and g.criterian_meta.page:
             g.criterian_meta.page.stmt = stmt

@@ -11,7 +11,8 @@ from sqlalchemy import select, update, delete
 
 from ruoyi_admin.ext import db
 from exb_museum.domain.entity import Activity
-from exb_museum.domain.po import ActivityPo
+from exb_museum.domain.po import ActivityPo, MuseumPo
+from ruoyi_system.domain.po import SysDeptPo
 
 
 class ActivityMapper:
@@ -29,7 +30,9 @@ class ActivityMapper:
             List[Activity]: 活动信息表列表
         """
         # 构建查询条件
-        stmt = select(ActivityPo)
+        stmt = select(ActivityPo) \
+            .join(MuseumPo, ActivityPo.museum_id == MuseumPo.museum_id) \
+            .join(SysDeptPo, MuseumPo.dept_id == SysDeptPo.dept_id)
 
         if activity.activity_name:
             stmt = stmt.where(ActivityPo.activity_name.like("%" + str(activity.activity_name) + "%"))
@@ -56,6 +59,9 @@ class ActivityMapper:
             stmt = stmt.where(ActivityPo.del_flag == activity.del_flag)
 
         stmt = stmt.where(ActivityPo.del_flag != 1)  # 只查询未删除的记录
+
+        if "criterian_meta" in g and g.criterian_meta.scope is not None:
+            stmt = stmt.where(g.criterian_meta.scope)
 
         if "criterian_meta" in g and g.criterian_meta.page:
             g.criterian_meta.page.stmt = stmt
