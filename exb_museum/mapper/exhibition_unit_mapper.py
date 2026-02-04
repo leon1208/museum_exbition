@@ -122,6 +122,20 @@ class ExhibitionUnitMapper:
         if not existing:
             return 0
         now = datetime.now()
+
+        # 检查section是否发生了变化，如果发生变化，根据新的section更新sort_order
+        if existing.section != exhibition_unit.section:
+            max_sort_order = ExhibitionUnitMapper.get_max_sort_order_by_exhibition_and_section(
+                exhibition_unit.exhibition_id, exhibition_unit.section
+            )
+            exhibition_unit.sort_order = max_sort_order + 1 if max_sort_order is not None else 1
+            # units = ExhibitionUnitMapper.select_exhibition_units_by_exhibition_and_section(
+            #     existing.exhibition_id, exhibition_unit.section
+            # )
+            # # 更新所有单元的sort_order
+            # for unit in units:
+            #     ExhibitionUnitMapper.update_sort_order(unit.unit_id, unit.sort_order + 1)
+
         # 主键不参与更新
         existing.unit_name = exhibition_unit.unit_name
         existing.exhibition_id = exhibition_unit.exhibition_id
