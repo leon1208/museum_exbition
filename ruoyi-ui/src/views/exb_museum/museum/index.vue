@@ -20,7 +20,7 @@
        <el-form-item label="状态" prop="status">
         <el-select v-model="queryParams.status" placeholder="请选择状态" clearable>
           <el-option
-            v-for="dict in sys_yes_noOptions"
+            v-for="dict in dict.type.sys_normal_disable"
             :key="dict.value"
             :label="dict.label"
             :value="dict.value"
@@ -93,7 +93,11 @@
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column label="博物馆名称" align="center" v-if="columns[0].visible" prop="museumName" />
       <el-table-column label="博物馆地址" align="center" v-if="columns[1].visible" prop="address" />
-      <el-table-column label="状态" align="center" v-if="columns[2].visible" prop="status" :formatter="dict_status_format" />
+      <el-table-column label="状态" align="center" v-if="columns[2].visible" prop="status">
+        <template slot-scope="scope">
+          <dict-tag :options="dict.type.sys_normal_disable" :value="scope.row.status"/>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -193,8 +197,7 @@
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status">
-            <el-radio
-              v-for="dict in sys_yes_noOptions" :key="dict.value" :label="dict.value">{{ dict.label }}</el-radio>
+            <el-radio v-for="item in dict.type.sys_normal_disable" :key="parseInt(item.value)" :label="parseInt(item.value)">{{item.label}}</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="所属部门" prop="deptId">
@@ -252,7 +255,11 @@
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column label="展厅名称" align="center" prop="hallName" />
         <el-table-column label="位置" align="center" prop="location" />
-        <el-table-column label="状态" align="center" prop="status" :formatter="dict_hallStatus_format" />
+        <el-table-column label="状态" align="center" prop="status">
+          <template slot-scope="scope">
+            <dict-tag :options="dict.type.sys_normal_disable" :value="scope.row.status"/>
+          </template>
+        </el-table-column>
         <el-table-column label="备注" align="center" prop="remark" />
         <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
           <template slot-scope="scope">
@@ -293,7 +300,7 @@
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="hallForm.status">
             <el-radio
-              v-for="dict in sys_yes_noOptions" :key="dict.value" :label="dict.value">{{ dict.label }}</el-radio>
+              v-for="item in dict.type.sys_normal_disable" :key="parseInt(item.value)" :label="parseInt(item.value)">{{item.label}}</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
@@ -343,6 +350,7 @@ import { listMuseumHall, getMuseumHall, delMuseumHall, addMuseumHall, updateMuse
 
 export default {
   name: "Museum",
+  dicts: ['sys_normal_disable'],
   components: {
     Treeselect,
     MediaUpload,
@@ -368,11 +376,6 @@ export default {
         { key: 0, label: '博物馆名称', visible: true },
         { key: 1, label: '博物馆地址', visible: true },
         { key: 2, label: '状态', visible: true },
-      ],
-      // 状态（0正常 1停用）字典
-      sys_yes_noOptions: [
-        { value: 0, label: '正常' },
-        { value: 1, label: '停用' },
       ],
       // 弹出层标题
       title: "",
@@ -476,10 +479,6 @@ export default {
         this.total = response.total || rows.length;
         this.loading = false;
       });
-    },
-    // 状态（0正常 1停用）字典翻译
-    dict_status_format(row, column) {
-      return this.selectDictLabel(this.sys_yes_noOptions, row.status);
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
@@ -658,11 +657,6 @@ export default {
       });
     },
 
-    // 展厅状态字典翻译
-    dict_hallStatus_format(row, column) {
-      return this.selectDictLabel(this.sys_yes_noOptions, row.status);
-    },
-
     // 展厅多选框选中数据
     handleHallSelectionChange(selection) {
       this.hallIds = selection.map(item => item.hallId)
@@ -764,7 +758,6 @@ export default {
       treeselect().then(response => {
         // this.deptOptions = this.handleTree(response.data, "deptId");
         this.deptOptions = response.data
-        console.log(this.deptOptions);
       });
     },
 

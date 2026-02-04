@@ -89,7 +89,7 @@ class Collection(BaseEntity):
         BeforeValidator(str_to_int),
         Field(default=None, description="状态"),
         VoField(query=True),
-        ExcelField(name="状态")
+        ExcelField(name="状态", dict_type="sys_normal_disable")
     ]
     # 删除标志
     del_flag: Annotated[

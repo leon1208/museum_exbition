@@ -34,7 +34,7 @@
       </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-select v-model="queryParams.status" placeholder="请选择状态" clearable>
-          <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
+          <el-option v-for="item in dict.type.sys_normal_disable" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -117,7 +117,11 @@
       <el-table-column label="主办单位" align="center" :show-overflow-tooltip="true" v-if="columns[5].visible" prop="organizer" />
       <el-table-column label="展览类型" align="center" :show-overflow-tooltip="true" v-if="columns[6].visible" prop="exhibitionType" :formatter="dict_exhibitionType_format" />
       <el-table-column label="内容标签" align="center" :show-overflow-tooltip="true" v-if="columns[7].visible" prop="contentTags" />
-      <el-table-column label="状态" align="center" :show-overflow-tooltip="true" v-if="columns[8].visible" prop="status" :formatter="dict_status_format" />
+      <el-table-column label="状态" align="center" :show-overflow-tooltip="true" v-if="columns[8].visible" prop="status">
+        <template slot-scope="scope">
+          <dict-tag :options="dict.type.sys_normal_disable" :value="scope.row.status"/>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -230,7 +234,7 @@ size="mini"
 
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status">
-            <el-radio v-for="item in statusOptions" :key="item.value" :label="item.value">{{item.label}}</el-radio>
+            <el-radio v-for="item in dict.type.sys_normal_disable" :key="parseInt(item.value)" :label="parseInt(item.value)">{{item.label}}</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
@@ -310,6 +314,7 @@ import { listMuseumHall } from "@/api/exb_museum/museum_hall"; // 导入展厅AP
 
 export default {
   name: "Exhibition",
+  dicts: ['sys_normal_disable'],  
   components: {
     MediaUpload,
     ExhibitionUnit,
@@ -343,7 +348,7 @@ export default {
         { label: '文化', value: '文化' },
         { label: '科技', value: '科技' },
         { label: '考古', value: '考古' },
-{ label: '古代', value: '古代' },
+        { label: '古代', value: '古代' },
         { label: '现代', value: '现代' },
         { label: '当代', value: '当代' },
         { label: '文物', value: '文物' },
@@ -379,9 +384,9 @@ export default {
         { key: 3, label: '展览开始时间', visible: true },
         { key: 4, label: '展览结束时间', visible: true },
         { key: 5, label: '主办单位', visible: true },
-        { key: 6, label: '展览类型（0长期 1临时）', visible: true },
+        { key: 6, label: '展览类型', visible: true },
         { key: 7, label: '内容标签', visible: true },
-        { key: 8, label: '状态（0正常 1停用）', visible: true },
+        { key: 8, label: '状态', visible: true },
       ],
       // 弹出层标题
       title: "",
@@ -448,11 +453,7 @@ export default {
           { required: true, message: "更新时间不能为空", trigger: "blur" }
         ]
       },
-      // 状态（0正常 1停用）字典
-      statusOptions: [
-        { value: 0, label: '正常' },
-        { value: 1, label: '停用' },
-      ],
+
       // 展览类型（0长期 1临时）字典
       exhibitionTypeOptions: [
         { value: 0, label: '长期' },
@@ -512,10 +513,6 @@ export default {
         this.total = response.total;
         this.loading = false;
       });
-    },
-    // 状态（0正常 1停用）字典翻译
-    dict_status_format(row, column) {
-      return this.selectDictLabel(this.statusOptions, row.status);
     },
     // 展览类型（0长期 1临时）字典翻译
     dict_exhibitionType_format(row, column) {

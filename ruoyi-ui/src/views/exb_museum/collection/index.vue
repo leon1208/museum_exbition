@@ -36,7 +36,7 @@
       </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-select v-model="queryParams.status" placeholder="请选择状态" clearable>
-          <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
+          <el-option v-for="item in dict.type.sys_normal_disable" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -109,7 +109,11 @@
       <el-table-column label="年代" align="center" :show-overflow-tooltip="true" v-if="columns[3].visible" prop="age" />
       <!-- <el-table-column label="所属展览" align="center" :show-overflow-tooltip="true" v-if="columns[4].visible" prop="exhibitionName" :formatter="dict_exhibitionId_format" /> -->
       <el-table-column label="所属博物馆" align="center" :show-overflow-tooltip="true" v-if="columns[4].visible" prop="museumName" :formatter="dict_museumId_format" />
-      <el-table-column label="状态" align="center" :show-overflow-tooltip="true" v-if="columns[5].visible" prop="status" :formatter="dict_status_format" />
+      <el-table-column label="状态" align="center" :show-overflow-tooltip="true" v-if="columns[5].visible" prop="status">
+        <template slot-scope="scope">
+          <dict-tag :options="dict.type.sys_normal_disable" :value="scope.row.status"/>
+        </template>
+      </el-table-column>      
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -187,7 +191,7 @@
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status">
-            <el-radio v-for="item in statusOptions" :key="item.value" :label="item.value">{{item.label}}</el-radio>
+            <el-radio v-for="item in dict.type.sys_normal_disable" :key="parseInt(item.value)" :label="parseInt(item.value)">{{item.label}}</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
@@ -248,6 +252,7 @@ import MediaUpload from "@/components/MediaUpload/index.vue";
 
 export default {
   name: "Collection",
+  dicts: ['sys_normal_disable'], 
   components: {
     MediaUpload,
   },
@@ -376,11 +381,6 @@ export default {
           { required: true, message: "更新时间不能为空", trigger: "blur" }
         ]
       },
-      // 状态（0正常 1停用）字典
-      statusOptions: [
-        { value: 0, label: '正常' },
-        { value: 1, label: '停用' },
-      ],
       // 藏品类型字典
       collectionTypeOptions: [
         { value: '油画', label: '油画' },
@@ -445,10 +445,6 @@ export default {
         this.total = response.total;
         this.loading = false;
       });
-    },
-    // 状态（0正常 1停用）字典翻译
-    dict_status_format(row, column) {
-      return this.selectDictLabel(this.statusOptions, row.status);
     },
     // 藏品类型字典翻译
     dict_collectionType_format(row, column) {

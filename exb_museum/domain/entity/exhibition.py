@@ -97,7 +97,7 @@ class Exhibition(BaseEntity):
         BeforeValidator(str_to_int),
         Field(default=None, description="状态（0正常 1停用）"),
         VoField(query=True),
-        ExcelField(name="状态（0正常 1停用）")
+        ExcelField(name="状态", dict_type="sys_normal_disable")
     ]
     # 删除标志（0存在 1删除）
     del_flag: Annotated[
