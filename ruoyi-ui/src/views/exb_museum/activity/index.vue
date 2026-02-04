@@ -134,13 +134,6 @@
           <el-button
             size="mini"
             type="text"
-            icon="el-icon-view"
-            @click="viewReservations(scope.row)"
-            v-hasPermi="['exb_museum:activity:query']"
-          >查看预约</el-button>
-          <el-button
-            size="mini"
-            type="text"
             icon="el-icon-edit"
             @click="handleUpdate(scope.row)"
             v-hasPermi="['exb_museum:activity:edit']"
@@ -159,6 +152,13 @@
             @click="openMediaDialog(scope.row)"
             v-hasPermi="['exb_museum:media:add']"
           >媒体管理</el-button>
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-view"
+            @click="viewReservations(scope.row)"
+            v-hasPermi="['exb_museum:activity:query']"
+          >查看预约</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -224,7 +224,13 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" placeholder="请输入备注" />
+          <el-input 
+            v-model="form.remark" 
+            placeholder="请输入备注"
+            type="textarea"
+            :rows="2"
+            :autosize="{ minRows: 2, maxRows: 4 }"
+          />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
