@@ -31,8 +31,8 @@ Page({
     currentAudioUrl: '',
     currentAudioName: '',
     audioState: 'stopped', // 'playing', 'paused', 'stopped'
-    hasAudioMedia: false,
-    hasImageMedia: false
+    hasAudio: false,
+    hasImage: false
   },
 
   /**
@@ -159,8 +159,8 @@ Page({
         this.setData({
           collection: collection,
           mediaList: mediaList,
-          hasAudioMedia: collection.hasAudioMedia || false,
-          hasImageMedia: collection.hasImageMedia || false,
+          hasAudio: collection.hasAudio || false,
+          hasImage: collection.hasImage || false,
           audioUrl: collection.audioUrl || '',
           currentIndex: 0,
           isLoading: false

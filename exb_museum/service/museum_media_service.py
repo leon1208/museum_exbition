@@ -34,6 +34,57 @@ class MuseumMediaService:
         """
         return MuseumMediaMapper.select_museum_media_list(object_id, object_type, media_type)
     
+    def select_museum_media_list_batch(self, object_ids: List[int] = None, object_type: str = None, media_type: str = None) -> dict[int, List[MuseumMedia]]:
+        """
+        批量查询博物馆媒体列表
+        
+        Args:
+            object_ids (List[int], optional): 对象ID列表
+            object_type (str, optional): 对象类型
+            media_type (str, optional): 媒体类型
+            
+        Returns:
+            dict[int, List[MuseumMedia]]: 博物馆媒体列表，键为对象ID，值为该对象的媒体列表
+        """
+        all_collection_medias = MuseumMediaMapper.select_museum_media_list_batch(object_ids, object_type, media_type)
+        collection_medias_map = {}
+        for media in all_collection_medias:
+            if media.object_id not in collection_medias_map:
+                collection_medias_map[media.object_id] = []
+            collection_medias_map[media.object_id].append(media)
+        return collection_medias_map
+    
+    def extend_media_list_fields(self, media_list: List[MuseumMedia]) -> dict[str, any]:
+        """
+        将博物馆媒体列表上的一些字段经过处理后，安装到对应的对象上
+        
+        Args:
+            media_list (List[MuseumMedia]): 博物馆媒体列表
+            
+        Returns:
+            dict[str, any]: 包含处理后的字段的字典
+        """
+        if not media_list: media_list = []
+
+        media_fields = {
+            "hasAudio": any(media.media_type == 3 for media in media_list),  # 是否有音频
+            "hasImage": any(media.media_type == 1 for media in media_list),  # 是否有图片
+            "hasVideo": any(media.media_type == 2 for media in media_list),  # 是否有视频
+            "img": next((media.media_url for media in media_list if media.media_type == 1), ""),
+            "imageUrl": next((media.media_url for media in media_list if media.media_type == 1), ""),
+            "videoUrl": next((media.media_url for media in media_list if media.media_type == 2), ""),
+            "audioUrl": next((media.media_url for media in media_list if media.media_type == 3), ""),
+            "mediaList": [
+                {
+                    "url": media.cover_url if media.media_type == 2 else media.media_url,  # 视频使用封面图
+                    "type": media.media_type,  # 1为图片，2为视频，3为音频
+                    "mediaUrl": media.media_url  # 媒体原始URL
+                } 
+                for media in media_list
+            ],
+        }
+        return media_fields
+
     def select_museum_media_by_id(self, media_id: int) -> MuseumMedia:
         """
         通过ID查询博物馆媒体

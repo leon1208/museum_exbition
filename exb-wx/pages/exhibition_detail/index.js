@@ -25,13 +25,12 @@ Page({
       exhibitionType: '',
       contentTags: '',
       sections: '',
-      coverImg: '',
-      galleryImages: []
+      imageUrl: '',
     },
     units: [],
     sections: [], // 添加这个字段用于保存章节顺序
     groupedUnits: [], // 按section分组的展览单元
-    collections: [], // 从展览单元中提取的主要展品
+    // collections: [], // 从展览单元中提取的主要展品
     showFullIntro: false,
     introText: '',
     // 音频相关数据
@@ -166,12 +165,11 @@ Page({
             exhibitionType: exhibitionData.exhibitionType || '',
             contentTags: exhibitionData.contentTags ? exhibitionData.contentTags.split(',') : [],
             sections: exhibitionData.sections ? exhibitionData.sections.split(',') : [],
-            coverImg: exhibitionData.coverImg || 'https://via.placeholder.com/400x300',
-            galleryImages: exhibitionData.galleryImages || []
+            imageUrl: exhibitionData.imageUrl || '/wx_static/tmp_images/placeholder_image.png',
           },
           units: units,
           groupedUnits: groupedUnits,
-          collections: this.extractCollectionsFromUnits(units),
+          // collections: this.extractCollectionsFromUnits(units),
           isLoading: false
         });
         
@@ -195,31 +193,31 @@ Page({
   /**
    * 从展览单元中提取主要展品
    */
-  extractCollectionsFromUnits: function(units) {
-    const collections = [];
+  // extractCollectionsFromUnits: function(units) {
+  //   const collections = [];
     
-    units.forEach(unit => {
-      if (unit.type === 0 && unit.collectionsDetail && Array.isArray(unit.collectionsDetail)) {
-        // 展品单元类型，提取其中的藏品信息
-        unit.collectionsDetail.forEach(collection => {
-          // 查找音频媒体
-          const audioMedia = collection.mediaList?.find(media => media.type === 2);
+  //   units.forEach(unit => {
+  //     if (unit.type === 0 && unit.collectionsDetail && Array.isArray(unit.collectionsDetail)) {
+  //       // 展品单元类型，提取其中的藏品信息
+  //       unit.collectionsDetail.forEach(collection => {
+  //         // 查找音频媒体
+  //         const audioMedia = collection.mediaList?.find(media => media.type === 2);
           
-          collections.push({
-            id: collection.id,
-            name: collection.name,
-            artist: collection.author || collection.material || '未知',
-            image: collection.imageUrl || collection.mediaList[0]?.url || '/wx_static/tmp_images/placeholder_image.png',
-            hasAudio: !!audioMedia, // 假设type为2表示音频
-            audioUrl: audioMedia?.url || '', // 添加音频URL
-            description: collection.description || ''
-          });
-        });
-      }
-    });
+  //         collections.push({
+  //           id: collection.id,
+  //           name: collection.name,
+  //           artist: collection.author || collection.material || '未知',
+  //           image: collection.imageUrl || collection.mediaList[0]?.url || '/wx_static/tmp_images/placeholder_image.png',
+  //           hasAudio: !!audioMedia, // 假设type为2表示音频
+  //           audioUrl: audioMedia?.url || '', // 添加音频URL
+  //           description: collection.description || ''
+  //         });
+  //       });
+  //     }
+  //   });
     
-    return collections;
-  },
+  //   return collections;
+  // },
 
   /**
    * 按section分组展览单元

@@ -25,7 +25,7 @@
           </view>
         </swiper-item>
         <!-- 如果没有图片类型的媒体，使用占位图 -->
-        <swiper-item wx:if="{{!hasImageMedia || mediaList.length === 0}}">
+        <swiper-item wx:if="{{!hasImage || mediaList.length === 0}}">
           <view class="carousel-item">
             <image class="carousel-image" src="/wx_static/tmp_images/placeholder_image.png" mode="aspectFill"></image>
           </view>
@@ -48,7 +48,7 @@
       <view class="divider"></view>
 
       <!-- 语音讲解 -->
-      <view class="audio-section" wx:if="{{hasAudioMedia && !isLoading}}">
+      <view class="audio-section" wx:if="{{hasAudio && !isLoading}}">
         <view class="audio-player-container">
           <view class="audio-btn" bindtap="playCollectionAudio">
             <mp-icon type="field" icon="{{audioState === 'playing' ? 'pause' : 'play2'}}" color="#4299f0" size="{{40}}"></mp-icon>          
@@ -146,7 +146,7 @@
   </scroll-view>
 
   <!-- 底部操作栏 -->
-  <!-- <view class="bottom-bar" wx:if="{{!isLoading && !hasAudioMedia}}">
+  <!-- <view class="bottom-bar" wx:if="{{!isLoading && !hasAudio}}">
     <button class="action-btn" bindtap="collectCollection">
       <mp-icon type="field" icon="star" color="gray" size="{{40}}"></mp-icon>
       <text>收藏</text>

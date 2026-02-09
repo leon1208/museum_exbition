@@ -13,7 +13,7 @@ from exb_museum.service.museum_media_service import MuseumMediaService
 from exb_museum.service.collection_service import CollectionService
 from exb_museum.service.exhibition_service import ExhibitionService
 from exb_museum.service.exhibition_unit_service import ExhibitionUnitService  # 添加展览单元服务导入
-from ruoyi_common.base.model import AjaxResponse, TableResponse
+from ruoyi_common.base.model import AjaxResponse, TableResponse, PageModel, CriterianMeta
 from ruoyi_common.constant import HttpStatus, Constants
 from ruoyi_common.descriptor.serializer import BaseSerializer, JsonSerializer
 from ruoyi_common.descriptor.validator import QueryValidator, FileUploadValidator
@@ -140,12 +140,16 @@ def museum_home(app_id: str):
     collection_service = CollectionService()
     exhibition_service = ExhibitionService()
 
+    g.criterian_meta = CriterianMeta()
+    g.criterian_meta.page = PageModel(pageNum=1, pageSize=5) #大坑啊，这里要用驼峰命名，因为前端都是驼峰的
+    g.criterian_meta.scope = None # 不限制范围，必须加
+
     # 获取博物馆信息
     museum = museum_service.select_museum_by_app_id(app_id)
     if not museum:
         return AjaxResponse.from_error(msg="博物馆不存在")
     
-    # 获取展览媒体
+    # 获取博物馆的媒体
     media_list = media_service.select_museum_media_list(object_id=museum.museum_id, object_type='museum', media_type='1')
 
     # 获取该博物馆下的藏品列表
@@ -169,6 +173,7 @@ def museum_home(app_id: str):
 
     # 构建返回数据
     # 转换藏品数据格式
+    collectio_media_map = media_service.select_museum_media_list_batch(object_ids=[col.collection_id for col in collections], object_type='collection', media_type='1')
     collection_list = []
     for col in collections:
         collection_item = {
@@ -183,53 +188,44 @@ def museum_home(app_id: str):
             "type": col.collection_type or ""
         }
         # 从媒体表获取藏品图片
-        medias = media_service.select_museum_media_list(object_id=col.collection_id, object_type='collection', media_type='1')
-        if medias:
-            collection_item["img"] = medias[0].media_url
+        medias = collectio_media_map.get(col.collection_id, [])
+        media_field = media_service.extend_media_list_fields(medias)
+        collection_item.update(media_field)
 
         collection_list.append(collection_item)
 
     # 转换展览数据格式
+    exhibition_media_map = media_service.select_museum_media_list_batch(object_ids=[exh.exhibition_id for exh in exhibitions], object_type='exhibition', media_type='1')
     exhibition_list = []
     for exh in exhibitions:
         exhibition_item = {
             "id": exh.exhibition_id,
             "title": exh.exhibition_name or "",
-            "desc": exh.description or "",
-            "date": f"{exh.start_time.strftime('%m月%d日') if exh.start_time else ''} - {exh.end_time.strftime('%m月%d日') if exh.end_time else ''}",
+            "description": exh.description or "",
+            "date": exh.get_formated_date(),
             "place": exh.hall or "",
-            "status": "",
-            "statusText": "",
+            "status": exh.get_status(),
+            "statusText": exh.get_status_text(),
             "img": "",  # 后续可以从媒体表获取图片
             "organizer": exh.organizer or "",
             "startTime": exh.start_time.strftime('%Y-%m-%d') if exh.start_time else "",
             "endTime": exh.end_time.strftime('%Y-%m-%d') if exh.end_time else ""
         }
         # 从媒体表获取展览图片
-        medias = media_service.select_museum_media_list(object_id=exh.exhibition_id, object_type='exhibition', media_type='1')
-        if medias:
-            exhibition_item["img"] = medias[0].media_url
+        medias = exhibition_media_map.get(exh.exhibition_id, [])
+        media_field = media_service.extend_media_list_fields(medias)
+        exhibition_item.update(media_field)
         
-        # 通过当前时间和展览时间判断展览状态
-        now = datetime.now()
-        if now < exh.start_time:
-            exhibition_item["status"] = "upcoming"
-            exhibition_item["statusText"] = "即将开始"
-        elif now > exh.end_time:
-            exhibition_item["status"] = "ended"
-            exhibition_item["statusText"] = "已结束"
-        else:
-            exhibition_item["status"] = "ongoing"
-            exhibition_item["statusText"] = "正在热展"
-
         exhibition_list.append(exhibition_item)
+
     # 转换活动数据格式
+    activity_media_map = media_service.select_museum_media_list_batch(object_ids=[act.activity_id for act in activities], object_type='activity', media_type='1')
     activity_list = []
     for act in activities:
         activity_item = {
             "id": act.activity_id,
             "title": act.activity_name or "",
-            "desc": act.introduction or "",
+            "description": act.introduction or "",
             "type": act.activity_type or "",
             "location": act.location or "",
             "maxRegistration": act.max_registration or 0,
@@ -237,17 +233,14 @@ def museum_home(app_id: str):
             "presenter": act.presenter or "",
             "targetAudience": act.target_audience or "",
             "startTime": act.activity_start_time.strftime('%Y-%m-%d') if act.activity_start_time else "",
-            "endTime": act.activity_end_time.strftime('%Y-%m-%d') if act.activity_end_time else ""
+            "endTime": act.activity_end_time.strftime('%Y-%m-%d') if act.activity_end_time else "",
+            "time": act.get_formatted_time(),
         }
 
         # 从媒体表获取活动图片
-        medias = media_service.select_museum_media_list(object_id=act.activity_id, object_type='activity', media_type='1')
-        if medias:
-            activity_item["img"] = medias[0].media_url
-
-        # 日期格式
-        # 格式化时间为 '26年1月22日 12:00' 格式，如果有endTime, 则添加结束时间
-        activity_item["time"] = f"{act.activity_start_time.strftime('%y年%m月%d日 %H:%M') if act.activity_start_time else ''}{act.activity_end_time.strftime(' 至 %H:%M') if act.activity_end_time else ''}"
+        medias = activity_media_map.get(act.activity_id, [])
+        media_field = media_service.extend_media_list_fields(medias)
+        activity_item.update(media_field)
 
         activity_list.append(activity_item)
     
@@ -259,7 +252,6 @@ def museum_home(app_id: str):
             "description": museum.description,
             "openStatus": "今日开放",
             "openTime": "10:00 - 18:00",
-            # "bgImage": media_list[0].media_url if media_list else "",
             "bgImageList": [media.media_url for media in media_list] if media_list else []
         },
         "collections": collection_list,
@@ -284,40 +276,34 @@ def exhibition_list_by_museum(museum_id: int):
     exhibition.status = 0  # 只获取正常状态的展览
     exhibitions = exhibition_service.select_exhibition_list(exhibition)
 
+    # 批量获取展览图片
+    exhibition_media_map = media_service.select_museum_media_list_batch(
+        object_ids=[exh.exhibition_id for exh in exhibitions],
+        object_type='exhibition',
+        media_type='1'
+    )
+
     # 转换展览数据格式
     exhibition_list = []
     for exh in exhibitions:
         exhibition_item = {
             "id": exh.exhibition_id,
             "title": exh.exhibition_name or "",
-            "desc": exh.description or "",
-            "date": f"{exh.start_time.strftime('%Y年%m月%d日') if exh.start_time else ''} 至 {exh.end_time.strftime('%Y年%m月%d日') if exh.end_time else ''}",
+            "description": exh.description or "",
+            "date": exh.get_formated_date(),
             "place": exh.hall or "",
-            "status": "",
-            "statusText": "",
-            "img": "",  # 后续可以从媒体表获取图片
+            "status": exh.get_status(),
+            "statusText": exh.get_status_text(),
             "organizer": exh.organizer or "",
             "startTime": exh.start_time.strftime('%Y-%m-%d') if exh.start_time else "",
             "endTime": exh.end_time.strftime('%Y-%m-%d') if exh.end_time else "",
-            "exhibitionType": "长期" if exh.exhibition_type == 0 else "临时" if exh.exhibition_type == 1 else "",
+            "exhibitionType": exh.get_exhibtion_type_desc(),
             "contentTags": exh.content_tags or ""
         }
         # 从媒体表获取展览图片
-        medias = media_service.select_museum_media_list(object_id=exh.exhibition_id, object_type='exhibition', media_type='1')
-        if medias:
-            exhibition_item["img"] = medias[0].media_url
-        
-        # 通过当前时间和展览时间判断展览状态
-        now = datetime.now()
-        if now < exh.start_time:
-            exhibition_item["status"] = "upcoming"
-            exhibition_item["statusText"] = "即将开始"
-        elif now > exh.end_time:
-            exhibition_item["status"] = "ended"
-            exhibition_item["statusText"] = "已结束"
-        else:
-            exhibition_item["status"] = "ongoing"
-            exhibition_item["statusText"] = "正在热展"
+        exhibition_medias = exhibition_media_map.get(exh.exhibition_id, [])
+        medias_field = media_service.extend_media_list_fields(exhibition_medias)        
+        exhibition_item.update(medias_field)
 
         exhibition_list.append(exhibition_item)
 
@@ -355,17 +341,24 @@ def exhibition_detail(exhibition_id: int):
         "id": exhibition.exhibition_id,
         "title": exhibition.exhibition_name or "",
         "description": exhibition.description or "",
-        "date": f"{exhibition.start_time.strftime('%Y年%m月%d日') if exhibition.start_time else ''} 至 {exhibition.end_time.strftime('%Y年%m月%d日') if exhibition.end_time else ''}",
+        "date": exhibition.get_formated_date(),
         "startDate": exhibition.start_time.strftime('%Y-%m-%d') if exhibition.start_time else "",
         "endDate": exhibition.end_time.strftime('%Y-%m-%d') if exhibition.end_time else "",
         "organizer": exhibition.organizer or "",
         "hall": exhibition.hall or "",
-        "exhibitionType": "长期" if exhibition.exhibition_type == 0 else "临时" if exhibition.exhibition_type == 1 else "",
+        "exhibitionType": exhibition.get_exhibtion_type_desc(),
         "contentTags": exhibition.content_tags or "",
         "sections": exhibition.sections or "",
-        "coverImg": exhibition_medias[0].media_url if exhibition_medias else "",
-        "galleryImages": [media.media_url for media in exhibition_medias] if exhibition_medias else []
     }
+    media_fields = media_service.extend_media_list_fields(exhibition_medias)
+    exhibition_data.update(media_fields)
+
+    # 获取展览单元的媒体
+    unit_medias_map = media_service.select_museum_media_list_batch(
+        object_ids=[unit.unit_id for unit in exhibition_units],
+        object_type='exhibition_unit',
+        media_type=[1,2,3]
+    )
 
     # 处理展览单元信息
     units_data = []
@@ -379,60 +372,12 @@ def exhibition_detail(exhibition_id: int):
             "exhibitLabel": unit.exhibit_label or "",
             "guideText": unit.guide_text or "",
             "collections": unit.collections or "",  # JSON字符串格式的藏品ID列表
-            "mediaList": [],  # 初始化媒体列表,
-            "hasAudio": False,
-            "audioUrl": ""
         }
 
-        # 如果是展品单元，获取关联的藏品信息和媒体
-        if unit.unit_type == 0 and unit.collections:
-            import json
-            try:
-                collection_ids = json.loads(unit.collections) if unit.collections else []
-                if collection_ids:
-                    # 获取藏品详细信息
-                    collection_list = []
-                    for col_id in collection_ids:
-                        collection = collection_service.select_collection_by_id(col_id)
-                        if collection:
-                            # 获取藏品媒体
-                            col_medias = media_service.select_museum_media_list(
-                                object_id=col_id, 
-                                object_type='collection', 
-                                media_type='1'
-                            )
-                            
-                            collection_data = {
-                                "id": collection.collection_id,
-                                "name": collection.collection_name or "",
-                                "age": collection.age or "",
-                                "description": collection.description or "",
-                                "material": collection.material or "",
-                                "sizeInfo": collection.size_info or "",
-                                "author": collection.author or "",
-                                "type": collection.collection_type or "",
-                                "imageUrl": col_medias[0].media_url if col_medias else "",
-                                "mediaList": [{"url": media.media_url, "type": media.media_type} for media in col_medias]
-                            }
-                            collection_list.append(collection_data)
-                    
-                    unit_data["collectionsDetail"] = collection_list
-            except Exception as e:
-                print(f"解析藏品ID列表时出错: {str(e)}")
-                unit_data["collectionsDetail"] = []
-
         # 获取展览单元的媒体
-        unit_medias = media_service.select_museum_media_list(
-            object_id=unit.unit_id, 
-            object_type='exhibition_unit', 
-            media_type=[1,2,3]
-        )
-        unit_data["mediaList"] = [{"url": media.cover_url if media.media_type==2 else media.media_url, "type": media.media_type} for media in unit_medias if media.media_type in [1,2]]
-
-        # 检查是否有音频
-        unit_data["hasAudio"] = any(media.media_type == 3 for media in unit_medias)
-        if unit_data["hasAudio"]:
-            unit_data["audioUrl"] = next((media.media_url for media in unit_medias if media.media_type == 3), "")
+        unit_medias = unit_medias_map.get(unit.unit_id, [])
+        unit_medias_field = media_service.extend_media_list_fields(unit_medias)
+        unit_data.update(unit_medias_field)
         
         units_data.append(unit_data)
 
@@ -483,49 +428,61 @@ def unit_detail(unit_id: int):
         "collections": unit.collections or "",  # JSON字符串格式的藏品ID列表
         "exhibitionId": unit.exhibition_id,
         "exhibitionName": exhibition.exhibition_name if exhibition else "",
-        "mediaList":[{"url": media.cover_url if media.media_type==2 else media.media_url, "type": media.media_type, 'mediaUrl':media.media_url} for media in unit_medias if media.media_type in [1,2]],
-        "hasAudio": any(media.media_type == 3 for media in unit_medias),
-        "audioUrl": next((media.media_url for media in unit_medias if media.media_type == 3), "")
     }
 
+    unit_medias_field = media_service.extend_media_list_fields(unit_medias)
+    unit_data.update(unit_medias_field)
+
     # 如果是展品单元，获取关联的藏品信息和媒体
+    collection_list = _get_unit_collections(unit)
+    if collection_list and len(collection_list) > 0:
+        unit_data["collectionsDetail"] = collection_list
+
+    return AjaxResponse.from_success(data=unit_data)
+
+
+def _get_unit_collections(unit: ExhibitionUnit) -> list:
+    """获取展览单元关联的藏品列表"""
+
+    # 获取服务实例
+    media_service = MuseumMediaService()
+    collection_service = CollectionService()
+
     if unit.unit_type == 0 and unit.collections:
         import json
         try:
             collection_ids = json.loads(unit.collections) if unit.collections else []
-            if collection_ids:
-                # 获取藏品详细信息
-                collection_list = []
-                for col_id in collection_ids:
-                    collection = collection_service.select_collection_by_id(col_id)
-                    if collection:
-                        # 获取藏品媒体
-                        col_medias = media_service.select_museum_media_list(
-                            object_id=col_id, 
-                            object_type='collection', 
-                            media_type='1'
-                        )
-                        
-                        collection_data = {
-                            "id": collection.collection_id,
-                            "name": collection.collection_name or "",
-                            "age": collection.age or "",
-                            "description": collection.description or "",
-                            "material": collection.material or "",
-                            "sizeInfo": collection.size_info or "",
-                            "author": collection.author or "",
-                            "type": collection.collection_type or "",
-                            "imageUrl": col_medias[0].media_url if col_medias else "",
-                            "mediaList": [{"url": media.media_url, "type": media.media_type} for media in col_medias]
-                        }
-                        collection_list.append(collection_data)
-                
-                unit_data["collectionsDetail"] = collection_list
-        except Exception as e:
-            print(f"解析藏品ID列表时出错: {str(e)}")
-            unit_data["collectionsDetail"] = []
+        except json.JSONDecodeError:
+            collection_ids = []
 
-    return AjaxResponse.from_success(data=unit_data)
+        collections = collection_service.select_collection_by_ids(collection_ids)
+        collection_medias_map = media_service.select_museum_media_list_batch(
+            object_ids=collection_ids,
+            object_type='collection',
+            media_type='1'
+        )
+
+        collection_list = []
+        for collection in collections:
+            collection_data = {
+                "id": collection.collection_id,
+                "name": collection.collection_name or "",
+                "age": collection.age or "",
+                "description": collection.description or "",
+                "material": collection.material or "",
+                "sizeInfo": collection.size_info or "",
+                "author": collection.author or "",
+                "type": collection.collection_type or "",
+            }
+            # 添加藏品的媒体列表
+            collection_medias = collection_medias_map.get(collection.collection_id, [])
+            media_fields = media_service.extend_media_list_fields(collection_medias)
+            collection_data.update(media_fields)
+
+            collection_list.append(collection_data)
+        
+        return collection_list
+    return None
 
 
 @reg.api.route('/wx/museum/collection/<int:museum_id>', methods=["GET"])
@@ -549,6 +506,13 @@ def collection_list_by_museum(museum_id: int):
 
     # 获取藏品列表
     collections = collection_service.select_collection_list(collection_query)
+
+    # 从媒体表获取藏品图片
+    collection_medias_map = media_service.select_museum_media_list_batch(
+        object_ids=[col.collection_id for col in collections],
+        object_type='collection',
+        media_type='1'
+    )
     
     # 转换藏品数据格式，适配小程序前端需求
     collection_list = []
@@ -562,18 +526,13 @@ def collection_list_by_museum(museum_id: int):
             "sizeInfo": col.size_info or "",
             "author": col.author or "",
             "description": col.description or "",
-            "imageUrl": "",  # 后续从媒体表获取图片
             "museumId": col.museum_id
         }
         
         # 从媒体表获取藏品图片
-        medias = media_service.select_museum_media_list(
-            object_id=col.collection_id, 
-            object_type='collection', 
-            media_type='1'
-        )
-        if medias:
-            collection_item["imageUrl"] = medias[0].media_url
+        collection_medias = collection_medias_map.get(col.collection_id, [])
+        medias_field = media_service.extend_media_list_fields(collection_medias)
+        collection_item.update(medias_field)
 
         collection_list.append(collection_item)
 
@@ -613,32 +572,15 @@ def collection_detail(collection_id: int):
         "description": collection.description or "",
         "museumId": collection.museum_id,
         "museumName": "",  # 后续可从博物馆表获取名称
-        "intro": collection.description or "",  # 展品介绍
-        "mediaList": [
-            {
-                "url": media.cover_url if media.media_type == 1 else media.media_url,  # 视频使用封面图
-                "type": media.media_type,  # 1为图片，2为视频，3为音频
-                "mediaUrl": media.media_url  # 媒体原始URL
-            } 
-            for media in medias
-        ],
-        "hasAudioMedia": any(media.media_type == 3 for media in medias),  # 是否有音频
-        "hasImageMedia": any(media.media_type == 1 for media in medias),  # 是否有图片
-        "imageUrl": next((media.media_url for media in medias if media.media_type == 1), ""),  # 第一张图片作为主要图片
-        "videoUrl": next((media.media_url for media in medias if media.media_type == 2), ""),  # 第一个视频
-        "audioUrl": next((media.media_url for media in medias if media.media_type == 3), "")   # 第一个音频 
     }
-    
-    # 如果需要博物馆名称，可以额外查询
-    try:
-        from exb_museum.service.museum_service import MuseumService
-        museum_service = MuseumService()
-        museum = museum_service.select_museum_by_id(collection.museum_id)
-        if museum:
-            collection_detail["museumName"] = museum.museum_name or ""
-    except Exception as e:
-        print(f"获取博物馆信息时出错: {str(e)}")
-        collection_detail["museumName"] = ""
+
+    medias_field = media_service.extend_media_list_fields(medias)
+    collection_detail.update(medias_field)
+
+    museum_service = MuseumService()
+    museum = museum_service.select_museum_by_id(collection.museum_id)
+    if museum:
+        collection_detail["museumName"] = museum.museum_name or ""
 
     return AjaxResponse.from_success(data=collection_detail)
 
@@ -659,6 +601,13 @@ def activity_list_by_museum(museum_id: int):
     activity.status = 0  # 只获取正常状态的活动
     activities = activity_service.select_activity_list(activity)
 
+    # 从媒体表获取活动图片
+    activity_medias_map = media_service.select_museum_media_list_batch(
+        object_ids=[act.activity_id for act in activities],
+        object_type='activity',
+        media_type='1'
+    )
+
     # 转换活动数据格式
     activity_list = []
     for act in activities:
@@ -674,7 +623,6 @@ def activity_list_by_museum(museum_id: int):
             "targetAudience": act.target_audience or "",
             "startTime": act.activity_start_time.strftime('%Y-%m-%d') if act.activity_start_time else "",
             "endTime": act.activity_end_time.strftime('%Y-%m-%d') if act.activity_end_time else "",
-            "img": "",  # 后续从媒体表获取图片
             "contentTags": act.activity_type or "",  # 活动类型作为标签 
             "canRegister": act.can_register(),
             "status": act.get_status_display(),
@@ -682,9 +630,9 @@ def activity_list_by_museum(museum_id: int):
         }
 
         # 从媒体表获取活动图片
-        medias = media_service.select_museum_media_list(object_id=act.activity_id, object_type='activity', media_type='1')
-        if medias:
-            activity_item["img"] = medias[0].media_url
+        activity_medias = activity_medias_map.get(act.activity_id, [])
+        medias_field = media_service.extend_media_list_fields(activity_medias)        
+        activity_item.update(medias_field)
 
         activity_list.append(activity_item)
 
@@ -724,12 +672,13 @@ def activity_detail(activity_id: int):
         "targetAudience": activity.target_audience or "",
         "startTime": activity.activity_start_time.strftime('%Y-%m-%d %H:%M') if activity.activity_start_time else "",
         "endTime": activity.activity_end_time.strftime('%Y-%m-%d %H:%M') if activity.activity_end_time else "",
-        "img": activity_medias[0].media_url if activity_medias else "",
-        "galleryImages": [media.media_url for media in activity_medias] if activity_medias else [],
         "status": activity.get_status_display(),
         "time": activity.get_formatted_time(),
         "canRegister": activity.can_register(),
     }
+
+    medias_field = media_service.extend_media_list_fields(activity_medias)
+    activity_detail.update(medias_field)
 
     # 检查用户是否已预约该活动
     activity_reservation_service = ActivityReservationService()
@@ -758,19 +707,17 @@ def wx_my_activity_reservation_list():
     activity_service = ActivityService()
     
     reservations = activity_reservation_service.select_activity_reservation_list(activity_reservation_entity)
+    activity_medias_map = media_service.select_museum_media_list_batch(
+        object_ids=[reservation.activity_id for reservation in reservations],
+        object_type='activity',
+        media_type='1'
+    )
     
     # 构造包含活动详细信息的预约清单
     reservation_list = []
     for reservation in reservations:
         activity = activity_service.select_activity_by_id(reservation.activity_id)
         if activity:
-            # 从媒体表获取活动图片
-            activity_medias = media_service.select_museum_media_list(
-                object_id=reservation.activity_id, 
-                object_type='activity', 
-                media_type='1'
-            )
-            
             reservation_info = {
                 "reservationId": reservation.reservation_id,
                 "activityId": reservation.activity_id,
@@ -779,12 +726,17 @@ def wx_my_activity_reservation_list():
                 "location": activity.location or "",
                 "startTime": activity.activity_start_time.strftime('%Y-%m-%d %H:%M') if activity.activity_start_time else "",
                 "endTime": activity.activity_end_time.strftime('%Y-%m-%d %H:%M') if activity.activity_end_time else "",
-                "img": activity_medias[0].media_url if activity_medias else "",
                 "registrationTime": reservation.registration_time.strftime('%Y-%m-%d %H:%M') if reservation.registration_time else "",
                 "phoneNumber": reservation.phone_number or "",
                 "status": activity.get_status_display(),
                 "time": activity.get_formatted_time(),
             }
+
+            # 从媒体表获取活动图片
+            activity_medias = activity_medias_map.get(reservation.activity_id, [])
+            medias_field = media_service.extend_media_list_fields(activity_medias)
+            reservation_info.update(medias_field)
+
             reservation_list.append(reservation_info)
     
     return AjaxResponse.from_success(data=reservation_list)

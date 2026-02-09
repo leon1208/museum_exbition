@@ -72,6 +72,22 @@ class CollectionMapper:
         result = db.session.get(CollectionPo, collection_id)
         return Collection.model_validate(result) if result else None
     
+    def select_collection_by_ids(collection_ids: List[int]) -> List[Collection]:
+        """
+        根据ID列表查询藏品信息表列表
+
+        Args:
+            collection_ids (List[int]): 藏品ID列表
+
+        Returns:
+            List[collection]: 藏品信息表列表
+        """
+        if not collection_ids or len(collection_ids) == 0:
+            return []
+
+        stmt = select(CollectionPo).where(CollectionPo.collection_id.in_(collection_ids))
+        result = db.session.execute(stmt).scalars().all()
+        return [Collection.model_validate(item) for item in result] if result else []
 
     @staticmethod
     def insert_collection(collection: Collection) -> int:

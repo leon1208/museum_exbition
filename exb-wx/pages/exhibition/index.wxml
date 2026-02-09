@@ -65,7 +65,7 @@
           <text class="iconfont icon-calendar-days" style="font-size: 25px;"></text>
           <text class="date-text">{{item.date || item.startDate + ' - ' + item.endDate}}</text>
         </view>
-        <text class="exhibition-description">{{item.desc}}</text>
+        <text class="exhibition-description">{{item.description}}</text>
         <view class="detail-button">
           <text class="detail-text">查看详情</text>
           <mp-icon type="field" icon="arrow" color="#4299f0" size="{{15}}"></mp-icon>

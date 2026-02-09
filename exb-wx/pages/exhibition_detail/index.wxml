@@ -32,7 +32,7 @@
     
     <!-- 展览封面图 -->
     <view class="cover-container" wx:if="{{!isLoading}}">
-      <image class="cover-img" src="{{static_url}}{{exhibition.coverImg}}" mode="aspectFill"></image>
+      <image class="cover-img" src="{{static_url}}{{exhibition.imageUrl}}" mode="aspectFill"></image>
       <view class="cover-gradient"></view>
     </view>
 
@@ -107,14 +107,14 @@
           <view class="collections-grid">
             <view class="collection-item" wx:for="{{section.units}}" wx:key="id" bindtap="viewUnitDetail" data-index="{{index}}" data-section-index="{{sectionIndex}}" data-unit-id="{{item.id}}">
               <view class="collection-img-container">
-                <image class="collection-img" src="{{static_url}}{{item.mediaList[0].url || item.image || '/wx_static/tmp_images/placeholder_image.png'}}" mode="widthFix"></image>
+                <image class="collection-img" src="{{static_url}}{{item.imageUrl || '/wx_static/tmp_images/placeholder_image.png'}}" mode="widthFix"></image>
                 <!-- 音频图标 -->
                 <view class="audio-icon" wx:if="{{item.hasAudio}}" catchtap="playUnitAudio" 
                       data-audio-url="{{static_url}}{{item.audioUrl}}" 
                       data-audio-name="{{item.title || item.name}}"
                       data-album-name="{{section.sectionName}}"
                       data-artist-name="{{exhibition.title}}"
-                      data-cover-url="{{static_url}}{{item.mediaList[0].url || item.image || '/wx_static/tmp_images/placeholder_image.png'}}">
+                      data-cover-url="{{static_url}}{{item.imageUrl || '/wx_static/tmp_images/placeholder_image.png'}}">
                   <mp-icon type="field" icon="voice" color="lightgray" size="{{35}}"></mp-icon>
                 </view>
               </view>

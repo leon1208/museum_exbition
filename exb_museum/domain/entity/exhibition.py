@@ -143,3 +143,28 @@ class Exhibition(BaseEntity):
     page_num: Optional[int] = Field(default=1, description="页码")
     # 每页数量
     page_size: Optional[int] = Field(default=10, description="每页数量")
+
+
+    def get_exhibtion_type_desc(self) -> str:
+        return "长期" if self.exhibition_type == 0 else "临时" if self.exhibition_type == 1 else ""
+
+    def get_formated_date(self) -> str:
+        return f"{self.start_time.strftime('%y年%m月%d日') if self.start_time else ''} 至 {self.end_time.strftime('%y年%m月%d日') if self.end_time else ''}"
+    
+    def get_status(self) -> str:
+        now = datetime.now()
+        if now < self.start_time:
+            return "upcoming"
+        elif now > self.end_time:
+            return "ended"
+        else:
+            return "ongoing"
+        
+    def get_status_text(self) -> str:
+        now = datetime.now()
+        if now < self.start_time:
+            return "即将开始"
+        elif now > self.end_time:
+            return "已结束"
+        else:
+            return "正在热展"

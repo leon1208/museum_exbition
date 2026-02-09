@@ -43,6 +43,18 @@ class CollectionService:
         """
         return CollectionMapper.select_collection_by_id(collection_id)
     
+    def select_collection_by_ids(self, collection_ids: List[int]) -> List[Collection]:
+        """
+        根据ID列表查询藏品信息表列表
+
+        Args:
+            collection_ids (List[int]): 藏品ID列表
+
+        Returns:
+            List[collection]: 藏品信息表列表
+        """
+        return CollectionMapper.select_collection_by_ids(collection_ids)
+    
 
     @Transactional(db.session)
     def insert_collection(self, collection: Collection) -> int:

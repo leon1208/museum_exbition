@@ -45,6 +45,34 @@ class MuseumMediaMapper:
         return [MuseumMedia.model_validate(item) for item in result] if result else []
     
     @staticmethod
+    def select_museum_media_list_batch(object_ids: List[int] = None, object_type: str = None, media_type: Union[str, List[str], None] = None) -> List[MuseumMedia]:
+        """
+        批量查询博物馆媒体列表
+        
+        Args:
+            object_ids (List[int], optional): 对象ID列表
+            object_type (str, optional): 对象类型
+            media_type (str or List[str], optional): 媒体类型，支持单个类型或多个类型
+            
+        Returns:
+            List[MuseumMediaPo]: 博物馆媒体列表
+        """
+        query = db.session.query(MuseumMediaPo).filter(MuseumMediaPo.del_flag == 0)
+        
+        if object_ids and object_type:
+            query = query.filter(and_(MuseumMediaPo.object_id.in_(object_ids), MuseumMediaPo.object_type == object_type))
+        
+        if media_type:
+            # 支持单个类型(str)或多个类型(List[str])
+            if isinstance(media_type, list):
+                query = query.filter(MuseumMediaPo.media_type.in_(media_type))
+            else:
+                query = query.filter(MuseumMediaPo.media_type == media_type)
+        
+        result = query.order_by(MuseumMediaPo.sort.asc(), MuseumMediaPo.create_time.desc()).all()
+        return [MuseumMedia.model_validate(item) for item in result] if result else []
+
+    @staticmethod
     def select_museum_media_by_id(media_id: int) -> MuseumMedia:
         """
         通过ID查询博物馆媒体

@@ -74,7 +74,7 @@ Page({
       exhibitions: [
         {
           title: '2024 现代艺术展',
-          desc: '一场当代表现主义的探索之旅。',
+          description: '一场当代表现主义的探索之旅。',
           date: '10月12日 - 12月30日',
           place: '二层 A厅',
           status: 'hot',
@@ -83,7 +83,7 @@ Page({
         },
         {
           title: '罗马帝国的荣耀',
-          desc: '探索塑造世界的伟大帝国。',
+          description: '探索塑造世界的伟大帝国。',
           date: '1月10日 - 3月15日',
           place: '中央大厅',
           status: 'upcoming',
