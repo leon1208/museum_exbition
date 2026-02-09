@@ -14,8 +14,6 @@
   ],
   "window": {
     "navigationStyle": "custom",
-    "navigationBarTextStyle1": "black",
-    "navigationBarTitleText1": "展慧",
     "navigationBarBackgroundColor": "#ffffff",
     "pageOrientation": "portrait"
   },

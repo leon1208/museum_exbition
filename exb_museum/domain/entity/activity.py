@@ -150,3 +150,20 @@ class Activity(BaseEntity):
     page_num: Optional[int] = Field(default=1, description="页码")
     # 每页数量
     page_size: Optional[int] = Field(default=10, description="每页数量")
+    
+    def can_register(self) -> bool:
+        """判断是否可以注册"""
+        return (
+            self.status == 0 
+            and self.activity_start_time 
+            and self.activity_start_time > datetime.now()
+            and self.registration_count < self.max_registration
+        )
+
+    def get_status_display(self) -> str:
+        """获取状态显示文本"""
+        return "即将开始" if self.activity_start_time > datetime.now() else "已经结束" if self.status == 0 else "已经取消"
+
+    def get_formatted_time(self) -> str:
+        """获取格式化的时间显示"""
+        return f"{self.activity_start_time.strftime('%y年%m月%d日 %H:%M') if self.activity_start_time else ''}{self.activity_end_time.strftime(' 至 %H:%M') if self.activity_end_time else ''}"

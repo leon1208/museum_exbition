@@ -51,7 +51,7 @@
     <!-- 活动介绍 -->
     <view class="desc-section">
       <text class="section-title">活动介绍</text>
-      <text class="desc-text">{{education.desc || '暂无详细介绍'}}</text>
+      <text class="desc-text" user-select="true">{{education.description || '暂无详细介绍'}}</text>
     </view>
 
     <!-- 报名按钮 -->

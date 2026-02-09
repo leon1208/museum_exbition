@@ -7,6 +7,7 @@ from flask import request, g
 from flask_login import login_required
 from typing import List
 from werkzeug.datastructures import FileStorage
+from datetime import datetime
 
 from exb_museum.service.museum_media_service import MuseumMediaService
 from exb_museum.service.collection_service import CollectionService
@@ -152,7 +153,7 @@ def museum_home(app_id: str):
     collection.museum_id = museum.museum_id
     collection.status = 0  # 只获取正常状态的藏品
     collections = collection_service.select_collection_list(collection)
-    
+
     # 获取该博物馆下的展览列表
     exhibition = Exhibition()
     exhibition.museum_id = museum.museum_id
@@ -210,7 +211,6 @@ def museum_home(app_id: str):
             exhibition_item["img"] = medias[0].media_url
         
         # 通过当前时间和展览时间判断展览状态
-        from datetime import datetime
         now = datetime.now()
         if now < exh.start_time:
             exhibition_item["status"] = "upcoming"
@@ -308,7 +308,6 @@ def exhibition_list_by_museum(museum_id: int):
             exhibition_item["img"] = medias[0].media_url
         
         # 通过当前时间和展览时间判断展览状态
-        from datetime import datetime
         now = datetime.now()
         if now < exh.start_time:
             exhibition_item["status"] = "upcoming"
@@ -660,16 +659,13 @@ def activity_list_by_museum(museum_id: int):
     activity.status = 0  # 只获取正常状态的活动
     activities = activity_service.select_activity_list(activity)
 
-
-    from datetime import datetime
-
     # 转换活动数据格式
     activity_list = []
     for act in activities:
         activity_item = {
             "id": act.activity_id,
             "title": act.activity_name or "",
-            "desc": act.introduction or "",
+            "description": act.introduction or "",
             "type": act.activity_type or "",
             "location": act.location or "",
             "maxRegistration": act.max_registration or 0,
@@ -680,17 +676,15 @@ def activity_list_by_museum(museum_id: int):
             "endTime": act.activity_end_time.strftime('%Y-%m-%d') if act.activity_end_time else "",
             "img": "",  # 后续从媒体表获取图片
             "contentTags": act.activity_type or "",  # 活动类型作为标签 
-            "canRegister": act.status == 0 and act.activity_start_time > datetime.now() and act.registration_count < act.max_registration,
-            "status": "即将开始" if act.activity_start_time > datetime.now() else "已经结束" if act.status == 0 else "已经取消",
+            "canRegister": act.can_register(),
+            "status": act.get_status_display(),
+            "time": act.get_formatted_time(),
         }
 
         # 从媒体表获取活动图片
         medias = media_service.select_museum_media_list(object_id=act.activity_id, object_type='activity', media_type='1')
         if medias:
             activity_item["img"] = medias[0].media_url
-
-        # 日期格式化
-        activity_item["time"] = f"{act.activity_start_time.strftime('%y年%m月%d日 %H:%M') if act.activity_start_time else ''}{act.activity_end_time.strftime(' 至 %H:%M') if act.activity_end_time else ''}"
 
         activity_list.append(activity_item)
 
@@ -717,7 +711,6 @@ def activity_detail(activity_id: int):
         object_type='activity', 
         media_type='1'
     )
-    from datetime import datetime
     # 构建活动详情数据
     activity_detail = {
         "id": activity.activity_id,
@@ -733,7 +726,9 @@ def activity_detail(activity_id: int):
         "endTime": activity.activity_end_time.strftime('%Y-%m-%d %H:%M') if activity.activity_end_time else "",
         "img": activity_medias[0].media_url if activity_medias else "",
         "galleryImages": [media.media_url for media in activity_medias] if activity_medias else [],
-        "status": "即将开始" if activity.activity_start_time > datetime.now() else "已经结束" if activity.status == 0 else "已经取消",
+        "status": activity.get_status_display(),
+        "time": activity.get_formatted_time(),
+        "canRegister": activity.can_register(),
     }
 
     # 检查用户是否已预约该活动
@@ -744,8 +739,6 @@ def activity_detail(activity_id: int):
 
     activity_detail["isReserved"] = bool(existing_reservation)
     activity_detail["reservationId"] = existing_reservation.reservation_id if existing_reservation else None
-    activity_detail["canRegister"] = activity.status == 0 and activity.activity_start_time > datetime.now() and activity.registration_count < activity.max_registration
-    activity_detail["time"] = f"{activity.activity_start_time.strftime('%y年%m月%d日 %H:%M') if activity.activity_start_time else ''}{activity.activity_end_time.strftime(' 至 %H:%M') if activity.activity_end_time else ''}"
 
     return AjaxResponse.from_success(data=activity_detail)
 
@@ -767,7 +760,6 @@ def wx_my_activity_reservation_list():
     reservations = activity_reservation_service.select_activity_reservation_list(activity_reservation_entity)
     
     # 构造包含活动详细信息的预约清单
-    from datetime import datetime
     reservation_list = []
     for reservation in reservations:
         activity = activity_service.select_activity_by_id(reservation.activity_id)
@@ -790,13 +782,12 @@ def wx_my_activity_reservation_list():
                 "img": activity_medias[0].media_url if activity_medias else "",
                 "registrationTime": reservation.registration_time.strftime('%Y-%m-%d %H:%M') if reservation.registration_time else "",
                 "phoneNumber": reservation.phone_number or "",
-                "status": "即将开始" if activity.activity_start_time > datetime.now() else "已经结束" if activity.status == 0 else "已经取消",
-                "time": f"{activity.activity_start_time.strftime('%y年%m月%d日 %H:%M') if activity.activity_start_time else ''}{activity.activity_end_time.strftime(' 至 %H:%M') if activity.activity_end_time else ''}"
+                "status": activity.get_status_display(),
+                "time": activity.get_formatted_time(),
             }
             reservation_list.append(reservation_info)
     
     return AjaxResponse.from_success(data=reservation_list)
-    # return TableResponse(code=HttpStatus.SUCCESS, msg='查询成功', rows=reservation_list)
 
 
 @reg.api.route('/wx/my/activity_reservation/<int:activity_id>', methods=['POST'])
