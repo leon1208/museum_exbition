@@ -48,6 +48,7 @@ class DataScope:
     
     dept : bool = True
     user : bool = False
+    skip_wx: bool = True
     
     
     def __call__(self, func) -> Any:
@@ -61,6 +62,9 @@ class DataScope:
             #     key,_ = unbound_model
             #     bo = kwargs.get(key)
             #     self.handle_data_scope(bo)
+            if 'wx_user_payload' in g and self.skip_wx:
+                return func(*args, **kwargs)
+            
             self.handle_data_scope(BaseEntity())
             return func(*args, **kwargs)
         return wrapper
