@@ -177,7 +177,8 @@
           <el-input v-model="form.author" placeholder="请输入作者" />
         </el-form-item>
         <el-form-item label="藏品简介" prop="description">
-          <el-input v-model="form.description" placeholder="请输入藏品简介" />
+          <el-input v-model="form.description" placeholder="请输入藏品简介" 
+            type="textarea" :rows="4" :autosize="{ minRows: 4, maxRows: 8 }" />
         </el-form-item>
         <!-- <el-form-item label="所属展览" prop="exhibitionId">
           <el-select v-model="form.exhibitionId" placeholder="请选择所属展览" clearable @change="handleExhibitionChangeForForm" filterable>
