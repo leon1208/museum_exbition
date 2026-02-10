@@ -50,12 +50,17 @@
       <!-- 语音讲解 -->
       <view class="audio-section" wx:if="{{hasAudio && !isLoading}}">
         <view class="audio-player-container">
-          <view class="audio-btn" bindtap="playCollectionAudio">
-            <mp-icon type="field" icon="{{audioState === 'playing' ? 'pause' : 'play2'}}" color="#4299f0" size="{{40}}"></mp-icon>          
+          <view class="audio-btn" bindtap="playCollectionAudio"
+            data-audio-url="{{static_url}}{{collection.audioUrl}}"
+            data-audio-name="{{collection.name}}"
+            data-audio-album="藏品语音讲解"
+            data-artist-name="{{collection.author || '未知作者'}}"
+            data-cover-url="{{static_url}}{{collection.imageUrl || '/wx_static/tmp_images/placeholder_image.png'}}">
+            <mp-icon type="field" icon="{{audioState === 'playing' && currentAudioUrl === static_url + collection.audioUrl? 'pause' : 'play2'}}" color="#4299f0" size="{{30}}"></mp-icon>          
           </view>
           <view class="detail-content">
-            <text class="audio-name">{{'藏品语音讲解'}}</text>
-            <text class="audio-value">{{audioState === 'playing' ? '正在播放' : '正在播放'}}</text>
+            <text class="audio-name">语音导览</text>
+            <text class="audio-value">{{audioState === 'playing' && currentAudioUrl === static_url + collection.audioUrl? '正在播放' : '点击播放'}}</text>
           </view>
         </view>
       </view>

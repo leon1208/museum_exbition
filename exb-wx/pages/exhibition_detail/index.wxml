@@ -2,20 +2,6 @@
 <view class="container">
   <!-- 顶部导航栏 -->
   <!-- https://wechat-miniprogram.github.io/weui/docs/icon.html#icon-%E5%88%97%E8%A1%A8 -->
-  <!-- <view class="nav-bar">
-    <button class="nav-btn" bindtap="goBack">
-      <text class="icon">arrow_back</text>
-    </button>
-    <text class="nav-title" wx:if="{{showTitle}}">展览详情</text>
-    <view class="nav-right">
-      <button class="nav-btn" bindtap="toggleFavorite">
-        <text class="icon">{{isFavorite ? 'favorite' : 'favorite_border'}}</text>
-      </button>
-      <button class="nav-btn" bindtap="shareExhibition">
-        <text class="icon">share</text>
-      </button>
-    </view>
-  </view> -->
 
   <!-- 返回按钮 -->
   <button class="back-btn" bindtap="goBack">
@@ -132,10 +118,10 @@
   </scroll-view>
 
   <!-- 底部操作栏 -->
-  <view class="bottom-bar" wx:if="{{!isLoading}}">
+  <!-- <view class="bottom-bar" wx:if="{{!isLoading}}">
     <button class="action-btn" bindtap="startAudioGuide" style="width: 100%;">
       <mp-icon type="field" icon="{{audioState === 'playing' ? 'pause' : 'play2'}}" color="gray" size="{{40}}"></mp-icon>
       <text>{{audioState === 'playing' ? (currentAudioName + ' - 暂停') : (currentAudioName || '语音导览')}}</text>
     </button>
-  </view>
+  </view> -->
 </view>

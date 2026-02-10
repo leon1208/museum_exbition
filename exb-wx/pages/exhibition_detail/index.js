@@ -410,7 +410,7 @@ Page({
    */
   playUnitAudio: function (e) {
     const audioUrl = e.currentTarget.dataset.audioUrl;
-    const audioName = e.currentTarget.dataset.audioName || '未知音频';
+    const audioName = e.currentTarget.dataset.audioName || '展览单元音频';
     const albumName = e.currentTarget.dataset.albumName || '';
     const artistName = e.currentTarget.dataset.artistName || '';
     const coverUrl = e.currentTarget.dataset.coverUrl || '';
@@ -430,53 +430,53 @@ Page({
   /**
    * 开始语音导览
    */
-  startAudioGuide: function () {
-    // 检查是否有正在进行的音频播放
-    if (this.data.audioState === 'playing') {
-      // 如果正在播放，则暂停
-      audioManager.pause();
-      wx.showToast({
-        title: '语音导览已暂停',
-        icon: 'none'
-      });
-      return;
-    } else if (this.data.audioState === 'paused') {
-      // 如果已暂停，则继续播放
-      audioManager.resume();
-      wx.showToast({
-        title: '语音导览继续播放',
-        icon: 'none'
-      });
-      return;
-    }
+  // startAudioGuide: function () {
+  //   // 检查是否有正在进行的音频播放
+  //   if (this.data.audioState === 'playing') {
+  //     // 如果正在播放，则暂停
+  //     audioManager.pause();
+  //     wx.showToast({
+  //       title: '语音导览已暂停',
+  //       icon: 'none'
+  //     });
+  //     return;
+  //   } else if (this.data.audioState === 'paused') {
+  //     // 如果已暂停，则继续播放
+  //     audioManager.resume();
+  //     wx.showToast({
+  //       title: '语音导览继续播放',
+  //       icon: 'none'
+  //     });
+  //     return;
+  //   }
     
-    // 如果是停止状态或没有音频在播放，开始新的语音导览
-    wx.showModal({
-      title: '语音导览',
-      content: '是否开始语音导览？',
-      success: (res) => {
-        if (res.confirm) {
-          wx.showToast({
-            title: '正在启动语音导览...',
-            icon: 'loading'
-          });
+  //   // 如果是停止状态或没有音频在播放，开始新的语音导览
+  //   wx.showModal({
+  //     title: '语音导览',
+  //     content: '是否开始语音导览？',
+  //     success: (res) => {
+  //       if (res.confirm) {
+  //         wx.showToast({
+  //           title: '正在启动语音导览...',
+  //           icon: 'loading'
+  //         });
           
-          // 模拟语音导览启动
-          setTimeout(() => {
-            wx.hideToast();
-            wx.showToast({
-              title: '语音导览已启动',
-              icon: 'success'
-            });
+  //         // 模拟语音导览启动
+  //         setTimeout(() => {
+  //           wx.hideToast();
+  //           wx.showToast({
+  //             title: '语音导览已启动',
+  //             icon: 'success'
+  //           });
             
-            // 在实际应用中，这里应该播放预设的语音导览音频
-            // 使用全局音频管理器播放语音导览
-            // audioManager.play(guideAudioUrl, '语音导览');
-          }, 1500);
-        }
-      }
-    });
-  },
+  //           // 在实际应用中，这里应该播放预设的语音导览音频
+  //           // 使用全局音频管理器播放语音导览
+  //           // audioManager.play(guideAudioUrl, '语音导览');
+  //         }, 1500);
+  //       }
+  //     }
+  //   });
+  // },
 
   /**
    * 生命周期函数--监听页面卸载

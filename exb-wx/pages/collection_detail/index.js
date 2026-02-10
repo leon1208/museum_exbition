@@ -213,11 +213,15 @@ Page({
   /**
    * 播放藏品音频
    */
-  playCollectionAudio: function () {
+  playCollectionAudio: function (e) {
     // 查找音频媒体
-    const audioMedia = this.data.collection.mediaList.find(media => media.type === 2);
-    
-    if (!audioMedia || !audioMedia.url) {
+    const audioUrl = this.data.collection.audioUrl;
+    const audioName = this.data.collection.name || '藏品音频';
+    const albumName = e.currentTarget.dataset.albumName || '';
+    const artistName = e.currentTarget.dataset.artistName || '';
+    const coverUrl = e.currentTarget.dataset.coverUrl || '';
+
+    if (!audioUrl) {
       wx.showToast({
         title: '暂无音频',
         icon: 'none'
@@ -226,13 +230,7 @@ Page({
     }
     
     // 使用全局音频管理器播放音频
-    audioManager.play(
-      this.data.static_url + audioMedia.url, 
-      this.data.collection.name || '藏品语音讲解',
-      '藏品详情',
-      this.data.collection.author || '未知作者',
-      this.data.static_url + (this.data.collection.mediaList.find(media => media.type === 0)?.url || '/wx_static/tmp_images/placeholder_image.png')
-    );
+    audioManager.play(this.data.static_url + audioUrl, audioName, albumName, artistName, coverUrl);
   },
 
   /**

@@ -67,11 +67,11 @@
             data-album-name="{{unit.section}}"
             data-artist-name="{{exhibition.title}}"
             data-cover-url="{{static_url}}{{unit.images[0].url || '/wx_static/tmp_images/placeholder_image.png'}}">
-             <mp-icon type="field" icon="{{audioState === 'playing' ? 'pause' : 'play2'}}" color="#4299f0" size="{{30}}"></mp-icon>
+             <mp-icon type="field" icon="{{audioState === 'playing' && currentAudioUrl === static_url + unit.audioUrl? 'pause' : 'play2'}}" color="#4299f0" size="{{30}}"></mp-icon>
           </view>
           <view class="detail-content">
             <text class="label">语音导览</text>
-            <text class="value">{{audioState === 'playing' ? '正在播放' : '点击播放'}}</text>
+            <text class="value">{{audioState === 'playing' && currentAudioUrl === static_url + unit.audioUrl? '正在播放' : '点击播放'}}</text>
           </view>
         </view>
       </view>
