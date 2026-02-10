@@ -28,6 +28,10 @@
                    mode="aspectFill"
                    bindtap="previewImage"
                    data-index="{{index}}"></image>
+             <!-- 视频播放图标 -->
+            <view class="video-play-icon" wx:if="{{item.type === 2}}" bindtap="previewImage" data-index="{{index}}">
+              <mp-icon type="field" icon="play" color="white" size="100"></mp-icon>
+            </view>
           </view>
         </swiper-item>
       </swiper>
@@ -52,6 +56,7 @@
           <text class="tag tag-primary" wx:if="{{unit.unitType === 0}}">展品单元</text>
           <text class="tag tag-secondary" wx:elif="{{unit.unitType === 1}}">文字单元</text>
           <text class="tag tag-accent" wx:elif="{{unit.unitType === 2}}">多媒体单元</text>
+          <text class="tag tag-secondary" wx:if="{{unit.hasVideo}}">多媒体视频</text>
           <text class="tag tag-section" wx:if="{{unit.section}}">{{unit.section}}</text>
         </view>
       </view>

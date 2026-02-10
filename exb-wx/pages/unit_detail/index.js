@@ -24,6 +24,8 @@ Page({
       images: [],
       audioUrl: '',
       hasAudio: false,
+      videoUrl: '',
+      hasVideo: false,
       collectionsDetail: [] // 新增：关联的藏品详情
     },
     currentIndex: 0, // 当前轮播图索引
@@ -184,6 +186,8 @@ Page({
             images: images,
             audioUrl: unitData.audioUrl || audioUrl,
             hasAudio: unitData.hasAudio || hasAudio,
+            videoUrl: unitData.videoUrl || '',
+            hasVideo: unitData.hasVideo || false,
             collectionsDetail: unitData.collectionsDetail || [] // 添加关联藏品详情
           },
           isLoading: false
